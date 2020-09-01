@@ -40,7 +40,6 @@ func homePageHandler(c echo.Context) error {
 	}
 	err := tmpl.Execute(&html, templateData)
 	if err != nil {
-		fmt.Println(err)
 		return c.HTML(http.StatusOK, "<h1>Error</h1>")
 	}
 	return c.HTML(http.StatusOK, string(html.Bytes()))
