@@ -11,7 +11,8 @@ import (
 	"github.com/labstack/echo"
 )
 
-type states struct {
+// StatesWithCities is a struct to hold state and its cities
+type StatesWithCities struct {
 	State  string
 	Cities []string
 }
@@ -19,7 +20,7 @@ type states struct {
 func homePageHandler(c echo.Context) error {
 	tmpl := template.Must(template.ParseFiles("templates/main.html"))
 	var html bytes.Buffer
-	statesWithCities := []states{
+	statesWithCities := []StatesWithCities{
 		{
 			State:  "AL",
 			Cities: []string{"Selecione uma cidade", "Maceio", "Capela"},
@@ -29,15 +30,15 @@ func homePageHandler(c echo.Context) error {
 			Cities: []string{"Selecione uma cidade", "Rio branco", "Rio Negro"},
 		},
 	}
-	sts := []string{"ALAGOAS-AL", "ACRE-AC"}
-	s := struct {
-		StateWithCities []states
+	states := []string{"ALAGOAS-AL", "ACRE-AC"}
+	templateData := struct {
+		StateWithCities []StatesWithCities
 		States          []string
 	}{
 		statesWithCities,
-		sts,
+		states,
 	}
-	err := tmpl.Execute(&html, s)
+	err := tmpl.Execute(&html, templateData)
 	if err != nil {
 		fmt.Println(err)
 		return c.HTML(http.StatusOK, "<h1>Error</h1>")
