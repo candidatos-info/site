@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>candidatos.info</title>
+    <style>
+        .mainForm {
+            margin: auto;
+            width: 50%;
+            border: 3px solid grey;
+            padding: 10px;
+        }
+
+        .form-group {
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="selections" class="mainForm">
+        <div class="form-group">
+            <label for="sel1">Estado</label>
+            <select name="stateForm" class="form-control" id="stateForm" class="stateForm">
+                <option>Selecione um estado</option>
+                <option>ACRE-AC</option>
+                <option>ALAGOAS-AL</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Estado</label>
+            <select class="form-control" id="cityForm" class="cityForm">
+                <option>Selecione uma cidade</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Role</label>
+            <select class="form-control" id="rolesForm" class="rolesForm">
+                <option>Selecione um tipo de candidato</option>
+                <option>Vereador</option>
+                <option>Prefeito</option>
+            </select>
+        </div>
+        <button id="search">Pesquisar</button>
+    </form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        var cities = {
+            "AL": ["Selecione uma cidade", "Maceio", "Capela", "Branquinha"],
+            "AC": ["Selecione uma cidade", "Rio Branco", "Rio Preto"],
+        };
+        $(document).on('change', '#stateForm', function () {
+            const selectedState = ($("#stateForm").val());
+            if (selectedState != "Selecione um estado") { // if one state is selected
+                const state = selectedState.split("-")[1];
+                var $cities = $("#cityForm");
+                $cities.empty();
+                const citiesOfState = cities[state];
+                $.each(citiesOfState, function (key, value) {
+                    $cities.append($("<option></option>").text(value));
+                });
+            }
+        });
+        $(document).ready(function () {
+            $("#search").click(function () {
+                alert($("#stateForm").val());
+            });
+        });
+    </script>
+</body>
+
+</html>
