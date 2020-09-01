@@ -46,8 +46,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         var cities = {
-            "AL": ["Selecione uma cidade", "Maceio", "Capela", "Branquinha"],
-            "AC": ["Selecione uma cidade", "Rio Branco", "Rio Preto"],
+        {{ range .State }}
+
+        "{{ .State }}": [{{ range .Cities }} {{ . }}, {{ end }}],
+
+        {{ end }}
         };
         $(document).on('change', '#stateForm', function () {
             const selectedState = ($("#stateForm").val());
