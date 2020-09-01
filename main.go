@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -40,9 +41,21 @@ func homePageHandler(c echo.Context) error {
 	return c.HTML(http.StatusOK, string(html.Bytes()))
 }
 
+func profilesPageHandler(c echo.Context) error {
+	request := c.Request()
+	state := request.FormValue("stateForm")
+	city := request.FormValue("cityForm")
+	role := request.FormValue("rolesForm")
+	fmt.Println(state)
+	fmt.Println(city)
+	fmt.Println(role)
+	return c.String(http.StatusOK, "OI")
+}
+
 func main() {
 	e := echo.New()
 	e.GET("/", homePageHandler)
+	e.POST("/profiles", profilesPageHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")

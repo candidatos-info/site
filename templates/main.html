@@ -18,7 +18,7 @@
 </head>
 
 <body>
-    <form id="selections" class="mainForm">
+    <form id="selections" name="mainForm" class="mainForm" method="POST" enctype="multipart/form-data" action="/profiles">
         <div class="form-group">
             <label for="sel1">Estado</label>
             <select name="stateForm" class="form-control" id="stateForm" class="stateForm">
@@ -28,20 +28,20 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="sel1">Estado</label>
-            <select class="form-control" id="cityForm" class="cityForm">
+            <label for="sel1">Cidade</label>
+            <select name="cityForm" class="form-control" id="cityForm" class="cityForm">
                 <option>Selecione uma cidade</option>
             </select>
         </div>
         <div class="form-group">
             <label for="sel1">Role</label>
-            <select class="form-control" id="rolesForm" class="rolesForm">
+            <select name="roleForm" class="form-control" id="rolesForm" class="rolesForm">
                 <option>Selecione um tipo de candidato</option>
                 <option>Vereador</option>
                 <option>Prefeito</option>
             </select>
         </div>
-        <button id="search">Pesquisar</button>
+        <!--<button id="search">Pesquisar</button>-->
     </form>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
@@ -64,12 +64,26 @@
                 });
             }
         });
-        $(document).ready(function () {
-            $("#search").click(function () {
-                alert($("#stateForm").val());
-            });
-        });
-    </script>
+	$(document).on("change", "#rolesForm", function() {
+		const selectedState = $("#stateForm").val();
+                const selectedCity = $("#cityForm").val();
+                const selectedRole = $("#roleForm").val();
+                if(selectedRole === "Selecione um tipo de candidato") {
+                        alert("Selecione um tipo de candidato!");
+                        return;
+                }
+		if (selectedState === "Selecione um estado") {
+                        alert("Selectione um estado!");
+                        return;
+                } else if (selectedCity === "Selecione uma cidade" || selectedCity === "" || selectedCity == undefined || selectedCity == null) {
+                        alert("Selecione uma cidade");
+                        return;
+                } else {
+                        document.forms["mainForm"].submit();
+                }
+
+	});
+	</script>
 </body>
 
 </html>
