@@ -19,7 +19,7 @@ type states struct {
 func homePageHandler(c echo.Context) error {
 	tmpl := template.Must(template.ParseFiles("templates/main.html"))
 	var html bytes.Buffer
-	shortPosts := []states{
+	statesWithCities := []states{
 		{
 			State:  "AL",
 			Cities: []string{"Selecione uma cidade", "Maceio", "Capela"},
@@ -29,13 +29,17 @@ func homePageHandler(c echo.Context) error {
 			Cities: []string{"Selecione uma cidade", "Rio branco", "Rio Negro"},
 		},
 	}
-	states := struct {
-		State []states
+	sts := []string{"ALAGOAS-AL", "ACRE-AC"}
+	s := struct {
+		StateWithCities []states
+		States          []string
 	}{
-		shortPosts,
+		statesWithCities,
+		sts,
 	}
-	err := tmpl.Execute(&html, states)
+	err := tmpl.Execute(&html, s)
 	if err != nil {
+		fmt.Println(err)
 		return c.HTML(http.StatusOK, "<h1>Error</h1>")
 	}
 	return c.HTML(http.StatusOK, string(html.Bytes()))

@@ -23,8 +23,9 @@
             <label for="sel1">Estado</label>
             <select name="stateForm" class="form-control" id="stateForm" class="stateForm">
                 <option>Selecione um estado</option>
-                <option>ACRE-AC</option>
-                <option>ALAGOAS-AL</option>
+                {{ range .States }}
+		<option>{{ . }}</option>
+                {{ end }}
             </select>
         </div>
         <div class="form-group">
@@ -41,12 +42,11 @@
                 <option>Prefeito</option>
             </select>
         </div>
-        <!--<button id="search">Pesquisar</button>-->
     </form>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         var cities = {
-        {{ range .State }}
+        {{ range .StateWithCities }}
 
         "{{ .State }}": [{{ range .Cities }} {{ . }}, {{ end }}],
 
