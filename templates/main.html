@@ -4,28 +4,17 @@
 <head>
     <title>candidatos.info</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        .mainForm {
-            margin: auto;
-            width: 50%;
-            border: 3px solid grey;
-            padding: 10px;
-	}
-
-        .form-group {
-            margin: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/main.css"> 
 </head>
 
 <body>
-    <form id="selections" name="mainForm" class="mainForm" method="POST" enctype="multipart/form-data" action="/profiles">
+    <form id="selections" name="mainForm" class="mainForm" method="POST" action="/profiles">
         <div class="form-group">
             <label for="sel1">Estado</label>
             <select name="stateForm" class="form-control" id="stateForm" class="stateForm">
                 <option>Selecione um estado</option>
                 {{ range .States }}
-		<option>{{ . }}</option>
+                <option>{{ . }}</option>
                 {{ end }}
             </select>
         </div>
@@ -65,26 +54,26 @@
                 });
             }
         });
-	$(document).on("change", "#rolesForm", function() {
-		const selectedState = $("#stateForm").val();
-                const selectedCity = $("#cityForm").val();
-                const selectedRole = $("#roleForm").val();
-                if(selectedRole === "Selecione um tipo de candidato") {
-                        alert("Selecione um tipo de candidato!");
-                        return;
-                }
-		if (selectedState === "Selecione um estado") {
-                        alert("Selectione um estado!");
-                        return;
-                } else if (selectedCity === "Selecione uma cidade" || selectedCity === "" || selectedCity == undefined || selectedCity == null) {
-                        alert("Selecione uma cidade");
-                        return;
-                } else {
-                        document.forms["mainForm"].submit();
-                }
+        $(document).on("change", "#rolesForm", function () {
+            const selectedState = $("#stateForm").val();
+            const selectedCity = $("#cityForm").val();
+            const selectedRole = $("#roleForm").val();
+            if (selectedRole === "Selecione um tipo de candidato") {
+                alert("Selecione um tipo de candidato!");
+                return;
+            }
+            if (selectedState === "Selecione um estado") {
+                alert("Selectione um estado!");
+                return;
+            } else if (selectedCity === "Selecione uma cidade" || selectedCity === "" || selectedCity == undefined || selectedCity == null) {
+                alert("Selecione uma cidade");
+                return;
+            } else {
+                document.forms["mainForm"].submit();
+            }
 
-	});
-	</script>
+        });
+    </script>
 </body>
 
 </html>

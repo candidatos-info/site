@@ -1,0 +1,11 @@
+.mainForm {
+    margin: auto;
+    width: 50%;
+    border: 3px solid grey;
+    padding: 10px;
+}
+
+.form-group {
+    margin: 10px;
+}
+

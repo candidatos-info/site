@@ -40,24 +40,25 @@ func homePageHandler(c echo.Context) error {
 	}
 	err := tmpl.Execute(&html, templateData)
 	if err != nil {
+		log.Printf("failed to execute template of home page, erro %v", err)
 		return c.HTML(http.StatusOK, "<h1>Error</h1>")
 	}
 	return c.HTML(http.StatusOK, string(html.Bytes()))
 }
 
 func profilesPageHandler(c echo.Context) error {
-	request := c.Request()
-	state := request.FormValue("stateForm")
-	city := request.FormValue("cityForm")
-	role := request.FormValue("rolesForm")
+	state := c.FormValue("stateForm")
+	city := c.FormValue("cityForm")
+	role := c.FormValue("rolesForm")
 	fmt.Println(state)
 	fmt.Println(city)
 	fmt.Println(role)
-	return c.String(http.StatusOK, "OI")
+	return c.String(http.StatusOK, "")
 }
 
 func main() {
 	e := echo.New()
+	e.Static("/static", "templates/css")
 	e.GET("/", homePageHandler)
 	e.POST("/profiles", profilesPageHandler)
 	port := os.Getenv("PORT")
