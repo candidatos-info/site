@@ -48,13 +48,14 @@
     <script>
         $('.select2').select2();
         $(document).on('change', '#statesSelect', function () {
-            const selectedState = ($("#stateForm").val());
+            const selectedState = ($("#statesSelect").val());
             if (selectedState != "Selecione um estado") { // if one state is selected
-                var $cities = $("#citiesSelect");
-                $cities.empty();
-                const citiesOfState = ["Selecione uma cidade", "Seattle", "San Francisco", "Palo Alto", "Montain View"];
-                $.each(citiesOfState, function (key, value) {
-                    $cities.append($("<option></option>").text(value));
+                $.get("/api/v1/cities?state=" + selectedState, {}, function (data, textStatus, jqXHR) {
+                    var $cities = $("#citiesSelect");
+                    $cities.empty();
+                    $.each(data, function (key, value) {
+                        $cities.append($("<option></option>").text(value));
+                    });
                 });
             }
         });
