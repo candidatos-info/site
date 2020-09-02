@@ -1,0 +1,24 @@
+.mainForm {
+    margin: auto;
+    width: 50%;
+    border: 3px solid grey;
+    padding: 10px;
+}
+
+.form-group {
+    margin: 10px;
+}
+
+.select2-container .select2-selection--single {
+    height: 34px !important;
+}
+
+.select2-container--default .select2-selection--single {
+    border: 1px solid #ccc !important;
+    border-radius: 0px !important;
+}
+
+.mainForm>.cotainer>.row {
+    padding: 10px;
+    margin: 5px;
+}

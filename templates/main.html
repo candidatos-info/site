@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>candidatos.info</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <form id="selections" name="mainForm" class="mainForm" method="POST" action="/profiles">
+        <div class="container">
+            <div class="row">
+                <form class="col-md-4">
+                    <select class="form-control select2" id="statesSelect">
+                        <option>Selecione um estado</option>
+                        {{ range .States }}
+                        <option>{{ . }}</option>
+                        {{ end }}
+                    </select>
+                </form>
+            </div>
+            <div class="row">
+                <form class="col-md-4">
+                    <select class="form-control select2" id="citiesSelect">
+                        <option>Selecione uma cidade</option>
+                    </select>
+                </form>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <select name="roleForm" class="form-control" id="rolesSelect" class="rolesForm">
+                        <option>Selecione um cargo</option>
+                        {{ range .CandidateTypes }}
+                        <option>{{ . }}</option>
+                        {{ end }}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </form>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script>
+        $('.select2').select2();
+        $(document).on('change', '#statesSelect', function () {
+            const selectedState = ($("#statesSelect").val());
+            if (selectedState != "Selecione um estado") { // if one state is selected
+                $.get("/api/v1/cities?state=" + selectedState, {}, function (data, textStatus, jqXHR) {
+                    var $cities = $("#citiesSelect");
+                    $cities.empty();
+                    $.each(data, function (key, value) {
+                        $cities.append($("<option></option>").text(value));
+                    });
+                });
+            }
+        });
+        $(document).on("change", "#rolesSelect", function () {
+            const selectedState = $("#statesSelect").val();
+            const selectedCity = $("#citiesSelect").val();
+            const selectedRole = $("#rolesSelect").val();
+            if (selectedRole === "Selecione um tipo de candidato") {
+                alert("Selecione um tipo de candidato!");
+                return;
+            }
+            if (selectedState === "Selecione um estado") {
+                alert("Selectione um estado!");
+                return;
+            } else if (selectedCity === "Selecione uma cidade" || selectedCity === "" || selectedCity == undefined || selectedCity == null) {
+                alert("Selecione uma cidade");
+                return;
+            } else {
+                document.forms["mainForm"].submit();
+            }
+        });
+    </script>
+</body>
+
+</html>
