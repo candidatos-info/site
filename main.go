@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -40,21 +39,24 @@ func homePageHandler(c echo.Context) error {
 	templateData := struct {
 		StateWithCities []StatesWithCities
 		States          []string
+		CandidateTypes  []string
 	}{
 		statesWithCities,
 		states,
+		[]string{"Prefeito", "Verador", "Vice-Prefeito"},
 	}
 	return c.Render(http.StatusOK, "main.html", templateData)
 }
 
 func profilesPageHandler(c echo.Context) error {
-	state := c.FormValue("stateForm")
-	city := c.FormValue("cityForm")
-	role := c.FormValue("rolesForm")
-	fmt.Println(state)
-	fmt.Println(city)
-	fmt.Println(role)
-	return c.String(http.StatusOK, "")
+	// state := c.FormValue("stateForm")
+	// city := c.FormValue("cityForm")
+	// role := c.FormValue("rolesForm")
+	// fmt.Println(state)
+	// fmt.Println(city)
+	// fmt.Println(role)
+	// return c.String(http.StatusOK, "")
+	return c.Render(http.StatusOK, "profiles.html", "")
 }
 
 func main() {
@@ -64,7 +66,7 @@ func main() {
 	}
 	e.Static("/static", "templates/")
 	e.GET("/", homePageHandler)
-	e.POST("/profiles", profilesPageHandler)
+	e.GET("/profiles", profilesPageHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
