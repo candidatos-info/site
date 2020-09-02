@@ -58,7 +58,7 @@ func profilesPageHandler(c echo.Context) error {
 
 func main() {
 	e := echo.New()
-	e.Static("/static", "templates/css")
+	e.Static("/static", "templates/")
 	e.GET("/", homePageHandler)
 	e.POST("/profiles", profilesPageHandler)
 	port := os.Getenv("PORT")
