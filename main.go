@@ -1,15 +1,23 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/labstack/echo"
 )
+
+type tmplt struct {
+	templates *template.Template
+}
+
+func (t *tmplt) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	return t.templates.ExecuteTemplate(w, name, data)
+}
 
 // StatesWithCities is a struct to hold state and its cities
 type StatesWithCities struct {
@@ -18,8 +26,6 @@ type StatesWithCities struct {
 }
 
 func homePageHandler(c echo.Context) error {
-	tmpl := template.Must(template.ParseFiles("templates/main.html"))
-	var html bytes.Buffer
 	statesWithCities := []StatesWithCities{
 		{
 			State:  "AL",
@@ -38,12 +44,7 @@ func homePageHandler(c echo.Context) error {
 		statesWithCities,
 		states,
 	}
-	err := tmpl.Execute(&html, templateData)
-	if err != nil {
-		log.Printf("failed to execute template of home page, erro %v", err)
-		return c.HTML(http.StatusOK, "<h1>Error</h1>")
-	}
-	return c.HTML(http.StatusOK, string(html.Bytes()))
+	return c.Render(http.StatusOK, "main.html", templateData)
 }
 
 func profilesPageHandler(c echo.Context) error {
@@ -58,6 +59,9 @@ func profilesPageHandler(c echo.Context) error {
 
 func main() {
 	e := echo.New()
+	e.Renderer = &tmplt{
+		templates: template.Must(template.ParseGlob("templates/*.html")),
+	}
 	e.Static("/static", "templates/")
 	e.GET("/", homePageHandler)
 	e.POST("/profiles", profilesPageHandler)
