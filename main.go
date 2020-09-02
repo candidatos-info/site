@@ -1,13 +1,21 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
 
+	"cloud.google.com/go/datastore"
+	"github.com/candidatos-info/site/db"
 	"github.com/labstack/echo"
+)
+
+var (
+	dbClient *db.Client
 )
 
 type tmplt struct {
@@ -19,13 +27,22 @@ func (t *tmplt) Render(w io.Writer, name string, data interface{}, c echo.Contex
 }
 
 func homePageHandler(c echo.Context) error {
-	// TODO get states and candidate types from DB
+	roles, err := dbClient.GetCandidateRoles()
+	if err != nil {
+		log.Printf("failed to retrieve candidate roles from db, erro %v", err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	states, err := dbClient.GetAvailableStates()
+	if err != nil {
+		log.Printf("failed to retrieve states from db, erro %v", err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
 	templateData := struct {
 		States         []string
 		CandidateTypes []string
 	}{
-		[]string{"ALAGOAS", "ACRE"},
-		[]string{"Prefeito", "Verador", "Vice-Prefeito"},
+		states,
+		roles,
 	}
 	return c.Render(http.StatusOK, "main.html", templateData)
 }
@@ -39,12 +56,29 @@ func profilesPageHandler(c echo.Context) error {
 }
 
 func citiesOfState(c echo.Context) error {
-	// TODO get state from query params using -> state := c.QueryParam("state")
-	// TODO query cities of state 'state'
-	return c.JSON(http.StatusOK, []string{"Maceio", "Capela", "Atalia", "Penedo"}) // TODO change for the query result
+	state := c.QueryParam("state")
+	if state == "" {
+		return c.String(http.StatusBadRequest, "estado inválido")
+	}
+	citesOfState, err := dbClient.GetCitiesOfState(state)
+	if err != nil {
+		log.Printf("failed to retrieve cities of state [%s], erro %v", state, err)
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("erro ao buscar cidades do estado [%s], erro %v", state, err))
+	}
+	return c.JSON(http.StatusOK, citesOfState)
 }
 
 func main() {
+	projectID := os.Getenv("PROJECT_ID")
+	if projectID == "" {
+		log.Fatal("missing PROJECT_ID environment variable")
+	}
+	client, err := datastore.NewClient(context.Background(), projectID)
+	if err != nil {
+		log.Fatalf("falha ao criar cliente do Datastore, erro %q", err)
+	}
+	dbClient = db.NewClient(client)
+	log.Println("connected to database")
 	e := echo.New()
 	e.Renderer = &tmplt{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
