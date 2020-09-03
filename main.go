@@ -27,12 +27,7 @@ func (t *tmplt) Render(w io.Writer, name string, data interface{}, c echo.Contex
 }
 
 func homePageHandler(c echo.Context) error {
-	roles, err := dbClient.GetCandidateRoles()
-	if err != nil {
-		log.Printf("failed to retrieve candidate roles from db, erro %v", err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	states, err := dbClient.GetAvailableStates()
+	states, err := dbClient.GetStates()
 	if err != nil {
 		log.Printf("failed to retrieve states from db, erro %v", err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -42,7 +37,7 @@ func homePageHandler(c echo.Context) error {
 		CandidateTypes []string
 	}{
 		states,
-		roles,
+		[]string{"vereador", "prefeito"},
 	}
 	return c.Render(http.StatusOK, "main.html", templateData)
 }
@@ -60,7 +55,7 @@ func citiesOfState(c echo.Context) error {
 	if state == "" {
 		return c.String(http.StatusBadRequest, "estado inválido")
 	}
-	citesOfState, err := dbClient.GetCitiesOfState(state)
+	citesOfState, err := dbClient.GetCities(state)
 	if err != nil {
 		log.Printf("failed to retrieve cities of state [%s], erro %v", state, err)
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("erro ao buscar cidades do estado [%s], erro %v", state, err))
