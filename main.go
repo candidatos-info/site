@@ -42,10 +42,14 @@ func homePageHandler(c echo.Context) error {
 }
 
 func profilesPageHandler(c echo.Context) error {
-	// TODO show chosen state
-	// TODO show chosen city
-	// TODO show chosen candidate role
-	// TODO render a list of profiles
+	city := c.QueryParam("city")
+	fmt.Println("GIVEN CIT ", city)
+	state := c.QueryParam("state")
+	fmt.Println("STATE ", state)
+	role := c.QueryParam("role")
+	fmt.Println("ROLE ", role)
+	year := c.Param("year")
+	fmt.Println("YEAR ", year)
 	return c.Render(http.StatusOK, "profiles.html", "")
 }
 
@@ -75,7 +79,7 @@ func main() {
 	}
 	e.Static("/static", "templates/")
 	e.GET("/", homePageHandler)
-	e.GET("/profiles", profilesPageHandler)
+	e.POST("/profiles/:year", profilesPageHandler)
 	e.GET("/api/v1/cities", citiesOfState) // return the cities of a given state passed as a query param
 	port := os.Getenv("PORT")
 	if port == "" {
