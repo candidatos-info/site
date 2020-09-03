@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"cloud.google.com/go/datastore"
 )
@@ -21,20 +22,24 @@ type state struct {
 	Cities []string
 }
 
-//Client manages all iteractions with mongodb
-type Client struct {
+//DataStoreClient manages all iteractions with mongodb
+type DataStoreClient struct {
 	client *datastore.Client
 }
 
-// NewClient retuns a new Client
-func NewClient(client *datastore.Client) *Client {
-	return &Client{
+// NewDataStoreClient retuns a new Client
+func NewDataStoreClient(gcpProjectID string) *DataStoreClient {
+	client, err := datastore.NewClient(context.Background(), gcpProjectID)
+	if err != nil {
+		log.Fatalf("falha ao criar cliente do Datastore, erro %q", err)
+	}
+	return &DataStoreClient{
 		client: client,
 	}
 }
 
 // GetStates returns a list with availables states
-func (c *Client) GetStates() ([]string, error) {
+func (c *DataStoreClient) GetStates() ([]string, error) {
 	var entities []*state
 	q := datastore.NewQuery(statesCollection)
 	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
@@ -48,7 +53,7 @@ func (c *Client) GetStates() ([]string, error) {
 }
 
 // GetCities returns the city of a given state
-func (c *Client) GetCities(s string) ([]string, error) {
+func (c *DataStoreClient) GetCities(s string) ([]string, error) {
 	var entities []*state
 	q := datastore.NewQuery(statesCollection).Filter("State=", s)
 	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {

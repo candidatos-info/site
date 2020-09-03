@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"io"
@@ -9,13 +8,13 @@ import (
 	"net/http"
 	"os"
 
-	"cloud.google.com/go/datastore"
 	"github.com/candidatos-info/site/db"
 	"github.com/labstack/echo"
 )
 
 var (
-	dbClient *db.Client
+	dbClient       *db.DataStoreClient
+	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
 )
 
 type tmplt struct {
@@ -37,7 +36,7 @@ func homePageHandler(c echo.Context) error {
 		CandidateTypes []string
 	}{
 		states,
-		[]string{"vereador", "prefeito"},
+		candidateRoles,
 	}
 	return c.Render(http.StatusOK, "main.html", templateData)
 }
@@ -68,11 +67,7 @@ func main() {
 	if projectID == "" {
 		log.Fatal("missing PROJECT_ID environment variable")
 	}
-	client, err := datastore.NewClient(context.Background(), projectID)
-	if err != nil {
-		log.Fatalf("falha ao criar cliente do Datastore, erro %q", err)
-	}
-	dbClient = db.NewClient(client)
+	dbClient = db.NewDataStoreClient(projectID)
 	log.Println("connected to database")
 	e := echo.New()
 	e.Renderer = &tmplt{
