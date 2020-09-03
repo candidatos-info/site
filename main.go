@@ -1,13 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/candidatos-info/site/db"
 	"github.com/labstack/echo"
+)
+
+var (
+	dbClient       *db.DataStoreClient
+	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
 )
 
 type tmplt struct {
@@ -19,39 +26,60 @@ func (t *tmplt) Render(w io.Writer, name string, data interface{}, c echo.Contex
 }
 
 func homePageHandler(c echo.Context) error {
-	// TODO get states and candidate types from DB
+	states, err := dbClient.GetStates()
+	if err != nil {
+		log.Printf("failed to retrieve states from db, erro %v", err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
 	templateData := struct {
 		States         []string
 		CandidateTypes []string
 	}{
-		[]string{"ALAGOAS", "ACRE"},
-		[]string{"Prefeito", "Verador", "Vice-Prefeito"},
+		states,
+		candidateRoles,
 	}
 	return c.Render(http.StatusOK, "main.html", templateData)
 }
 
 func profilesPageHandler(c echo.Context) error {
-	// TODO show chosen state
-	// TODO show chosen city
-	// TODO show chosen candidate role
-	// TODO render a list of profiles
+	city := c.QueryParam("city")
+	fmt.Println("GIVEN CIT ", city)
+	state := c.QueryParam("state")
+	fmt.Println("STATE ", state)
+	role := c.QueryParam("role")
+	fmt.Println("ROLE ", role)
+	year := c.Param("year")
+	fmt.Println("YEAR ", year)
 	return c.Render(http.StatusOK, "profiles.html", "")
 }
 
 func citiesOfState(c echo.Context) error {
-	// TODO get state from query params using -> state := c.QueryParam("state")
-	// TODO query cities of state 'state'
-	return c.JSON(http.StatusOK, []string{"Maceio", "Capela", "Atalia", "Penedo"}) // TODO change for the query result
+	state := c.QueryParam("state")
+	if state == "" {
+		return c.String(http.StatusBadRequest, "estado inválido")
+	}
+	citesOfState, err := dbClient.GetCities(state)
+	if err != nil {
+		log.Printf("failed to retrieve cities of state [%s], erro %v", state, err)
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("erro ao buscar cidades do estado [%s], erro %v", state, err))
+	}
+	return c.JSON(http.StatusOK, citesOfState)
 }
 
 func main() {
+	projectID := os.Getenv("PROJECT_ID")
+	if projectID == "" {
+		log.Fatal("missing PROJECT_ID environment variable")
+	}
+	dbClient = db.NewDataStoreClient(projectID)
+	log.Println("connected to database")
 	e := echo.New()
 	e.Renderer = &tmplt{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
 	}
 	e.Static("/static", "templates/")
 	e.GET("/", homePageHandler)
-	e.GET("/profiles", profilesPageHandler)
+	e.POST("/profiles/:year", profilesPageHandler)
 	e.GET("/api/v1/cities", citiesOfState) // return the cities of a given state passed as a query param
 	port := os.Getenv("PORT")
 	if port == "" {

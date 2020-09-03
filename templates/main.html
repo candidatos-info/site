@@ -12,11 +12,11 @@
 </head>
 
 <body>
-    <form id="selections" name="mainForm" class="mainForm" method="POST" action="/profiles">
+    <form id="selections" name="mainForm" class="mainForm" method="POST" enctype="multipart/form-data">
         <div class="container">
             <div class="row">
                 <form class="col-md-4">
-                    <select class="form-control select2" id="statesSelect">
+                    <select class="form-control select2" id="statesSelect" name="state">
                         <option>Selecione um estado</option>
                         {{ range .States }}
                         <option>{{ . }}</option>
@@ -26,14 +26,14 @@
             </div>
             <div class="row">
                 <form class="col-md-4">
-                    <select class="form-control select2" id="citiesSelect">
+                    <select class="form-control select2" id="citiesSelect" name="city">
                         <option>Selecione uma cidade</option>
                     </select>
                 </form>
             </div>
             <div class="row">
                 <div class="form-group">
-                    <select name="roleForm" class="form-control" id="rolesSelect" class="rolesForm">
+                    <select name="role" class="form-control" id="rolesSelect" class="rolesForm" role="role">
                         <option>Selecione um cargo</option>
                         {{ range .CandidateTypes }}
                         <option>{{ . }}</option>
@@ -46,6 +46,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script>
+        const electionYear = 2016;
         $('.select2').select2();
         $(document).on('change', '#statesSelect', function () {
             const selectedState = ($("#statesSelect").val());
@@ -54,7 +55,7 @@
                     var $cities = $("#citiesSelect");
                     $cities.empty();
                     $.each(data, function (key, value) {
-                        $cities.append($("<option></option>").text(value));
+                        $cities.append($("<option></option>").text(value).attr("value", value));
                     });
                 });
             }
@@ -74,6 +75,7 @@
                 alert("Selecione uma cidade");
                 return;
             } else {
+                $("#selections").attr("action", "/profiles/" + electionYear + "?city=" + selectedCity + "&state=" + selectedState + "&role=" + selectedRole);
                 document.forms["mainForm"].submit();
             }
         });
