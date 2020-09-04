@@ -1,14 +1,51 @@
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+}
+
 .mainContainer {
     margin: 0 auto;
-    width: 50%;
+    width: 100%;
+    text-align: center;
 }
 
 .candidateInfo {
     display: flex;
-    margin-bottom: 25;
-    padding: 10px;
+    padding: 50px;
+    width: 100%;
+    margin-left:550px;
+    margin-right: 550px;
 }
 
-.mainContent img {
+.candidateInfo img {
+    height:128px; 
+    width:128px;
+    justify-content: center;
+}
+
+.candidateInfo p {
+    padding: 3px 4px;
+    margin: 10px;
+    text-align: left;
+}
+.proposals {
+    margin: 0 auto;
+    width: 100%;
+    text-align: center;
+}
+/* .candidateInfo img {
     margin-right: 10px;
 }
+
+.candidateInfo p {
+    margin-left: 10px;
+} */
+
+/* section.candidateInfo p{
+    display: flex;
+    padding: 50px;
+    margin-left: 50px;
+    margin-right: 50px;
+} */

@@ -1,22 +1,29 @@
 .mainForm {
-    margin: auto;
+    margin: 0 auto;
     width: 50%;
     border: 3px solid grey;
-    padding: 10px;
+    padding: 5px;
+    padding-top:10px;
 }
 
-.form-group {
+.container {
+    align-items: center;
     margin: 10px;
+    display: inline-block;
+    justify-content: center;
 }
 
 .select2-container .select2-selection--single {
     height: 34px !important;
+    width: 250px;
+    margin: 1.5px;
 }
 
 .select2-container--default .select2-selection--single {
     border: 1px solid #ccc !important;
     border-radius: 0px !important;
 }
+
 
 .mainForm>.cotainer>.row {
     padding: 10px;
