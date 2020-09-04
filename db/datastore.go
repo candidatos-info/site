@@ -159,6 +159,6 @@ func (c *DataStoreClient) GetCandidateBySequencialID(year int, state, city, sequ
 		Twitter:      "abmf",
 		Party:        "PT",
 		PhotoURL:     "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		Description:  "viado que da o cu e chupa pau",
+		Description:  "Um homem de bem e honesto",
 	}, nil
 }
