@@ -1,0 +1,14 @@
+.mainContainer {
+    margin: 0 auto;
+    width: 50%;
+}
+
+.candidateInfo {
+    display: flex;
+    margin-bottom: 25;
+    padding: 10px;
+}
+
+.mainContent img {
+    margin-right: 10px;
+}

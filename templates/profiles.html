@@ -16,8 +16,7 @@
         <h1>{{ .Role }}</h1>
         <div class="flex">
             {{ range .Candidatures }}
-            <form
-                action="/candidato/{{ $.Year }}/{{ $.State }}/{{ $.City }}/{{ .SequencialCandidate }}?role={{ $.Role }}">
+            <form action="/candidato/{{ $.Year }}/{{ $.State }}/{{ $.City }}/{{ $.Role }}/{{ .SequencialCandidate }}">
                 <button type=" submit">
                     <div>
                         <img src={{ .PhotoURL }} height="128" width="128">

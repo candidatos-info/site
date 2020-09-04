@@ -44,11 +44,27 @@ func homePageHandler(c echo.Context) error {
 
 func profilesPageHandler(c echo.Context) error {
 	city := c.QueryParam("city")
+	if city == "" {
+		return c.String(http.StatusBadRequest, "cidade inválida")
+	}
 	state := c.QueryParam("state")
+	if state == "" {
+		return c.String(http.StatusBadRequest, "estado inválido")
+	}
 	role := c.QueryParam("role")
+	if role == "" {
+		return c.String(http.StatusBadRequest, "cargo inválido")
+	}
 	year := c.Param("year")
-	y, _ := strconv.Atoi(year)
-	candidates, _ := dbClient.FindCandidatesWithParams(state, city, role, y)
+	if year == "" {
+		return c.String(http.StatusBadRequest, "ano inválido")
+	}
+	yearAsInt, err := strconv.Atoi(year)
+	if err != nil {
+		log.Printf("failed to parse given year [%s] to int, erro %v", year, err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	candidates, _ := dbClient.FindCandidatesWithParams(state, city, role, yearAsInt)
 	templateData := struct {
 		State        string
 		City         string
@@ -60,23 +76,42 @@ func profilesPageHandler(c echo.Context) error {
 		city,
 		role,
 		candidates,
-		y,
+		yearAsInt,
 	}
 	return c.Render(http.StatusOK, "profiles.html", templateData)
 }
 
 func candidatePageHandler(c echo.Context) error {
 	year := c.Param("year")
+	if year == "" {
+		return c.String(http.StatusBadRequest, "ano inválido")
+	}
 	yearAsInt, err := strconv.Atoi(year)
 	if err != nil {
 		log.Printf("failed to parse given year [%s] to int, erro %v", year, err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	state := c.Param("state")
+	if state == "" {
+		return c.String(http.StatusBadRequest, "estado inválido")
+	}
 	city := c.Param("city")
-	role := c.QueryParam("role")
+	if city == "" {
+		return c.String(http.StatusBadRequest, "cidade inválida")
+	}
+	role := c.Param("role")
+	if role == "" {
+		return c.String(http.StatusBadRequest, "cargo inválido")
+	}
 	sequencialCandidate := c.Param("sequencialCandidate")
-	candidate, _ := dbClient.GetCandidateBySequencialID(yearAsInt, state, city, sequencialCandidate)
+	if sequencialCandidate == "" {
+		return c.String(http.StatusBadRequest, "sequencial de candidato inválido")
+	}
+	candidate, err := dbClient.GetCandidateBySequencialID(yearAsInt, state, city, sequencialCandidate)
+	if err != nil {
+		log.Printf("failed to retrieve candidates using year [%d], state [%s], city [%s] and sequencial code [%s], erro %v\n", yearAsInt, state, city, sequencialCandidate, err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
 	templateData := struct {
 		State        string
 		City         string
@@ -128,7 +163,7 @@ func main() {
 	e.Static("/static", "templates/")
 	e.GET("/", homePageHandler)
 	e.POST("/profiles/:year", profilesPageHandler)
-	e.GET("/candidato/:year/:state/:city/:sequencialCandidate", candidatePageHandler)
+	e.GET("/candidato/:year/:state/:city/:role/:sequencialCandidate", candidatePageHandler)
 	e.GET("/api/v1/cities", citiesOfState) // return the cities of a given state passed as a query param
 	port := os.Getenv("PORT")
 	if port == "" {
