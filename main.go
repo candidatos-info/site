@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/candidatos-info/site/db"
 	"github.com/labstack/echo"
@@ -43,14 +44,63 @@ func homePageHandler(c echo.Context) error {
 
 func profilesPageHandler(c echo.Context) error {
 	city := c.QueryParam("city")
-	fmt.Println("GIVEN CIT ", city)
 	state := c.QueryParam("state")
-	fmt.Println("STATE ", state)
 	role := c.QueryParam("role")
-	fmt.Println("ROLE ", role)
 	year := c.Param("year")
-	fmt.Println("YEAR ", year)
-	return c.Render(http.StatusOK, "profiles.html", "")
+	y, _ := strconv.Atoi(year)
+	candidates, _ := dbClient.FindCandidatesWithParams(state, city, role, y)
+	templateData := struct {
+		State        string
+		City         string
+		Role         string
+		Candidatures []*db.CandidateForDB
+		Year         int
+	}{
+		state,
+		city,
+		role,
+		candidates,
+		y,
+	}
+	return c.Render(http.StatusOK, "profiles.html", templateData)
+}
+
+func candidatePageHandler(c echo.Context) error {
+	year := c.Param("year")
+	yearAsInt, err := strconv.Atoi(year)
+	if err != nil {
+		log.Printf("failed to parse given year [%s] to int, erro %v", year, err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	state := c.Param("state")
+	city := c.Param("city")
+	role := c.QueryParam("role")
+	sequencialCandidate := c.Param("sequencialCandidate")
+	candidate, _ := dbClient.GetCandidateBySequencialID(yearAsInt, state, city, sequencialCandidate)
+	templateData := struct {
+		State        string
+		City         string
+		Role         string
+		PhotoURL     string
+		Name         string
+		Party        string
+		Twitter      string
+		Description  string
+		BallotNumber int
+	}{
+		state,
+		city,
+		role,
+		candidate.PhotoURL,
+		candidate.BallotName,
+		candidate.Party,
+		candidate.Twitter,
+		candidate.Description,
+		candidate.BallotNumber,
+	}
+	e := c.Render(http.StatusOK, "candidate.html", templateData)
+	fmt.Println(e)
+	return e
 }
 
 func citiesOfState(c echo.Context) error {
@@ -80,6 +130,7 @@ func main() {
 	e.Static("/static", "templates/")
 	e.GET("/", homePageHandler)
 	e.POST("/profiles/:year", profilesPageHandler)
+	e.GET("/candidato/:year/:state/:city/:sequencialCandidate", candidatePageHandler)
 	e.GET("/api/v1/cities", citiesOfState) // return the cities of a given state passed as a query param
 	port := os.Getenv("PORT")
 	if port == "" {

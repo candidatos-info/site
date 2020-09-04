@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>candidatos.info</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        .mainContainer {
+            margin: 0 auto;
+            width: 50%;
+        }
+
+        .candidateInfo {
+            display: flex;
+            margin-bottom: 25;
+            padding: 10px;
+        }
+
+        .mainContent img {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="mainContainer">
+        <div>
+            <h1>{{ .State }}</h1>
+            <h1>{{ .City }}</h1>
+            <h1>{{ .Role }}</h1>
+        </div>
+        <div class="candidateInfo">
+            <img src={{ .PhotoURL }} height="128" width="128">
+            <div>
+                <p>{{ .Name }}</p>
+                <p>{{ .BallotNumber }}</p>
+                <p>{{ .Party }}</p>
+                <p>@{{ .Twitter }}</p>
+            </div>
+        </div>
+        <div>
+            <h3>Propostas</h3>
+            <p>{{ .Description }}</p>
+        </div>
+    </section>
+</body>
+
+</html>
