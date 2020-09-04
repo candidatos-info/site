@@ -6,12 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/main.css">
-    <style>
-        .mainContainer {
-            margin: 0 auto;
-            width: 50%;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/profiles.css">
 </head>
 
 <body>
@@ -19,7 +14,7 @@
         <h1>{{ .State }}</h1>
         <h1>{{ .City }}</h1>
         <h1>{{ .Role }}</h1>
-        <div>
+        <div class="flex">
             {{ range .Candidatures }}
             <form
                 action="/candidato/{{ $.Year }}/{{ $.State }}/{{ $.City }}/{{ .SequencialCandidate }}?role={{ $.Role }}">

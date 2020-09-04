@@ -1,0 +1,16 @@
+.mainContainer {
+      margin: 0 auto;
+      width: 50%;
+}
+
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.flex>form {
+    flex: 1 1 200px;
+    margin: 10px 10px;
+}

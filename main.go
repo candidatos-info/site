@@ -98,9 +98,7 @@ func candidatePageHandler(c echo.Context) error {
 		candidate.Description,
 		candidate.BallotNumber,
 	}
-	e := c.Render(http.StatusOK, "candidate.html", templateData)
-	fmt.Println(e)
-	return e
+	return c.Render(http.StatusOK, "candidate.html", templateData)
 }
 
 func citiesOfState(c echo.Context) error {
