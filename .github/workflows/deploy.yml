@@ -1,0 +1,53 @@
+name: Deploy to production
+
+on:
+  push:
+    branches:
+      - master # runs on each push to master
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Test
+      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./... 
+
+    - name: Run codecov
+      run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Installing python 3.7
+      uses: actions/setup-python@v2
+      with: 
+        python-version: 3.7
+
+    - name: Config app engine environment variables
+      run: python3 set_env.py ${{ secrets.PROJECT_ID }}
+
+    - name: Initialize Google Cloud SDK
+      uses: zxyle/publish-gae-action@master
+      with:
+        service_account_email: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_EMAIL }}
+        service_account_key: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_KEY }}
+        project_id: ${{ secrets.PROJECT_ID }}
+    
+    - name: Installing add on for golang
+      run: sudo apt-get install google-cloud-sdk-app-engine-go
+
+    - name: Publish app to Google App Engine
+      run: |
+        gcloud auth activate-service-account ${{ secrets.GCLOUD_SERVICE_ACCOUNT_EMAIL }} --key-file=client-secret.json
+        gcloud config set project ${{ secrets.PROJECT_ID }}
+        gcloud -q app deploy app.yaml --promote
+        

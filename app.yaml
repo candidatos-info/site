@@ -1,0 +1,5 @@
+runtime: go113 
+
+env_variables:
+  PROJECT_ID: ##PROJECT_ID
+

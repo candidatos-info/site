@@ -194,19 +194,4 @@ func main() {
 		log.Fatal("missing PORT environment variable")
 	}
 	log.Fatal(e.Start(":" + port))
-
-	// client, err := datastore.NewClient(context.Background(), "candidatos-info-286219")
-	// if err != nil {
-	// 	log.Fatalf("falha ao criar cliente do Datastore, erro %q", err)
-	// }
-	// var entities []*votingCity
-	// q := datastore.NewQuery("candidatures").Filter("State=", "AL").Filter("City=", "ATALAIA")
-	// if _, err := client.GetAll(context.Background(), q, &entities); err != nil {
-	// 	log.Fatalf("failed to find all users from db on collection %s, error %q", "candidatures", err)
-	// }
-	// fmt.Println(entities[0])
-
-	// db := db.NewDataStoreClient("candidatos-info-286219")
-	// s, _ := db.GetCandidateBySequencialID(2016, "AL", "MACEIÓ", "20000006951")
-	// fmt.Println(s)
 }
