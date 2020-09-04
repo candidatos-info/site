@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"text/template"
 
 	"github.com/candidatos-info/site/db"
 	"github.com/labstack/echo"
@@ -149,6 +149,30 @@ func citiesOfState(c echo.Context) error {
 	return c.JSON(http.StatusOK, citesOfState)
 }
 
+type candidateForDB struct {
+	SequencialCandidate string `datastore:"sequencial_candidate,omitempty"` // Sequencial code of candidate on TSE system.
+	Site                string `datastore:"site,omitempty"`                 // Site of candidate.
+	Facebook            string `datastore:"facebook,omitempty"`             // Facebook of candidate.
+	Twitter             string `datastore:"twitter,omitempty"`              // Twitter of candidate.
+	Instagram           string `datastore:"instagram,omitempty"`            // Instagram of candidate.
+	Description         string `datastore:"description,omitempty"`          // Description of candidate.
+	Biography           string `datastore:"biography,omitempty"`            // Biography of candidate.
+	PhotoURL            string `datastore:"photo_url,omitempty"`            // Photo URL of candidate.
+	LegalCode           string `datastore:"legal_code,omitempty"`           // Brazilian Legal Code (CPF) of candidate.
+	Party               string `datastore:"party,omitempty"`                // Party of candidate.
+	Name                string `datastore:"name,omitempty"`                 // Natural name of candidate.
+	BallotName          string `datastore:"ballot_name,omitempty"`          // Ballot name of candidate.
+	BallotNumber        int    `datastore:"ballot_number,omitempty"`        // Ballot number of candidate.
+	Email               string `datastore:"email,omitempty"`                // Email of candidate.
+}
+
+// db schema
+type votingCity struct {
+	City       string
+	State      string
+	Candidates []*candidateForDB
+}
+
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -170,4 +194,19 @@ func main() {
 		log.Fatal("missing PORT environment variable")
 	}
 	log.Fatal(e.Start(":" + port))
+
+	// client, err := datastore.NewClient(context.Background(), "candidatos-info-286219")
+	// if err != nil {
+	// 	log.Fatalf("falha ao criar cliente do Datastore, erro %q", err)
+	// }
+	// var entities []*votingCity
+	// q := datastore.NewQuery("candidatures").Filter("State=", "AL").Filter("City=", "ATALAIA")
+	// if _, err := client.GetAll(context.Background(), q, &entities); err != nil {
+	// 	log.Fatalf("failed to find all users from db on collection %s, error %q", "candidatures", err)
+	// }
+	// fmt.Println(entities[0])
+
+	// db := db.NewDataStoreClient("candidatos-info-286219")
+	// s, _ := db.GetCandidateBySequencialID(2016, "AL", "MACEIÓ", "20000006951")
+	// fmt.Println(s)
 }

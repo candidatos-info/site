@@ -11,6 +11,7 @@ import (
 var (
 	candidateRolesCollection = "candidateRoles"
 	statesCollection         = "states"
+	candidaturesCollection   = "candidatures"
 )
 
 // CandidateForDB is a struct with a fields portion of descritor.Candidature. This is struct
@@ -80,85 +81,31 @@ func (c *DataStoreClient) GetStates() ([]string, error) {
 
 // GetCities returns the city of a given state
 func (c *DataStoreClient) GetCities(s string) ([]string, error) {
-	// var entities []*state
-	// q := datastore.NewQuery(statesCollection).Filter("State=", s)
-	// if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
-	// 	return nil, fmt.Errorf("failed to retrieve available cities of state %s from db on collection %s, erro %v", s, statesCollection, err)
-	// }
-	// return entities[0].Cities, nil
-	return []string{"Maceio", "Capela", "Penado", "Atalaia"}, nil
+	var entities []*state
+	q := datastore.NewQuery(statesCollection).Filter("State=", s)
+	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
+		return nil, fmt.Errorf("failed to retrieve available cities of state %s from db on collection %s, erro %v", s, statesCollection, err)
+	}
+	return entities[0].Cities, nil
 }
 
 // FindCandidatesWithParams queries candidates with some given params
 func (c *DataStoreClient) FindCandidatesWithParams(state, city, role string, year int) ([]*CandidateForDB, error) {
-	return []*CandidateForDB{
-		{
-			SequencialCandidate: "505",
-			Name:                "Aurelio",
-			BallotName:          "Lelinho da Saem",
-			BallotNumber:        505,
-			Twitter:             "abmf",
-			Party:               "PT",
-			PhotoURL:            "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		},
-		{
-			SequencialCandidate: "501",
-			Name:                "Aurelio",
-			BallotName:          "Lelinho da Saem",
-			BallotNumber:        505,
-			Twitter:             "abmf",
-			Party:               "PT",
-			PhotoURL:            "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		},
-		{
-			SequencialCandidate: "502",
-			Name:                "Aurelio",
-			BallotName:          "Lelinho da Saem",
-			BallotNumber:        505,
-			Twitter:             "abmf",
-			Party:               "PT",
-			PhotoURL:            "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		},
-		{
-			SequencialCandidate: "503",
-			Name:                "Aurelio",
-			BallotName:          "Lelinho da Saem",
-			BallotNumber:        505,
-			Twitter:             "abmf",
-			Party:               "PT",
-			PhotoURL:            "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		},
-		{
-			SequencialCandidate: "505",
-			Name:                "Aurelio",
-			BallotName:          "Lelinho da Saem",
-			BallotNumber:        505,
-			Twitter:             "abmf",
-			Party:               "PT",
-			PhotoURL:            "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		},
-		{
-			SequencialCandidate: "5090",
-			Name:                "Aurelio",
-			BallotName:          "Lelinho da Saem",
-			BallotNumber:        505,
-			Twitter:             "abmf",
-			Party:               "PT",
-			PhotoURL:            "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		},
-	}, nil
+	var entities []*votingCity
+	q := datastore.NewQuery(candidaturesCollection).Filter("State=", state).Filter("City=", city)
+	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
+		return nil, fmt.Errorf("failed to find candidates for state [%s] and city [%s] and year [%d], erro %v", state, city, year, err)
+	}
+	return entities[0].Candidates, nil
 }
 
 // GetCandidateBySequencialID searches for a candidate using its
 // sequencial ID and returns it.
 func (c *DataStoreClient) GetCandidateBySequencialID(year int, state, city, sequencialID string) (*CandidateForDB, error) {
-	return &CandidateForDB{SequencialCandidate: "505",
-		Name:         "Aurelio",
-		BallotName:   "Lelinho da Saem",
-		BallotNumber: 505,
-		Twitter:      "abmf",
-		Party:        "PT",
-		PhotoURL:     "https://upload.wikimedia.org/wikipedia/commons/7/7f/Daniel_Craig_-_Film_Premiere_%22Spectre%22_007_-_on_the_Red_Carpet_in_Berlin_%2822387409720%29_%28cropped%29.jpg",
-		Description:  "Um homem de bem e honesto",
-	}, nil
+	var entities []*votingCity
+	q := datastore.NewQuery(candidaturesCollection).Filter("State=", state).Filter("City=", city).Filter("Candidates.sequencial_candidate=", sequencialID)
+	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
+		return nil, fmt.Errorf("failed to find candidates for state [%s] and city [%s] and year [%d], erro %v", state, city, year, err)
+	}
+	return entities[0].Candidates[0], nil
 }
