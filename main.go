@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"text/template"
 
+	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
 	"github.com/labstack/echo"
 )
@@ -69,7 +70,7 @@ func profilesPageHandler(c echo.Context) error {
 		State        string
 		City         string
 		Role         string
-		Candidatures []*db.CandidateForDB
+		Candidatures []*descritor.CandidateForDB
 		Year         int
 	}{
 		state,
@@ -147,30 +148,6 @@ func citiesOfState(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("erro ao buscar cidades do estado [%s], erro %v", state, err))
 	}
 	return c.JSON(http.StatusOK, citesOfState)
-}
-
-type candidateForDB struct {
-	SequencialCandidate string `datastore:"sequencial_candidate,omitempty"` // Sequencial code of candidate on TSE system.
-	Site                string `datastore:"site,omitempty"`                 // Site of candidate.
-	Facebook            string `datastore:"facebook,omitempty"`             // Facebook of candidate.
-	Twitter             string `datastore:"twitter,omitempty"`              // Twitter of candidate.
-	Instagram           string `datastore:"instagram,omitempty"`            // Instagram of candidate.
-	Description         string `datastore:"description,omitempty"`          // Description of candidate.
-	Biography           string `datastore:"biography,omitempty"`            // Biography of candidate.
-	PhotoURL            string `datastore:"photo_url,omitempty"`            // Photo URL of candidate.
-	LegalCode           string `datastore:"legal_code,omitempty"`           // Brazilian Legal Code (CPF) of candidate.
-	Party               string `datastore:"party,omitempty"`                // Party of candidate.
-	Name                string `datastore:"name,omitempty"`                 // Natural name of candidate.
-	BallotName          string `datastore:"ballot_name,omitempty"`          // Ballot name of candidate.
-	BallotNumber        int    `datastore:"ballot_number,omitempty"`        // Ballot number of candidate.
-	Email               string `datastore:"email,omitempty"`                // Email of candidate.
-}
-
-// db schema
-type votingCity struct {
-	City       string
-	State      string
-	Candidates []*candidateForDB
 }
 
 func main() {
