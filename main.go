@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
+	"github.com/candidatos-info/site/exception"
 	"github.com/labstack/echo"
 )
 
@@ -150,6 +152,36 @@ func citiesOfState(c echo.Context) error {
 	return c.JSON(http.StatusOK, citesOfState)
 }
 
+func requestProfileAccess(c echo.Context) error {
+	request := struct {
+		Email string
+	}{}
+	if err := c.Bind(&request); err != nil {
+		log.Printf("failed to get request body, erro %v\n", err)
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("falha ao pegar corpo da requisição, erro %v", err))
+	}
+	givenEmail := request.Email
+	if givenEmail == "" {
+		return c.String(http.StatusBadRequest, "email inválido")
+	}
+	response := struct {
+		Message string
+	}{}
+	_, err := dbClient.GetCandidateByEmail(givenEmail)
+	if err != nil {
+		var e *exception.Exception
+		if errors.As(err, &e) {
+			fmt.Println(e)
+			response.Message = e.Message
+			return c.JSON(e.Code, response)
+		}
+		log.Printf("failed to find candidate by email, error %v", err)
+		return c.String(http.StatusInternalServerError, "erro de processamento")
+	}
+	response.Message = "Verifique seu email"
+	return c.JSON(http.StatusOK, response)
+}
+
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -166,6 +198,7 @@ func main() {
 	e.POST("/profiles/:year", profilesPageHandler)
 	e.GET("/candidato/:year/:state/:city/:role/:sequencialCandidate", candidatePageHandler)
 	e.GET("/api/v1/cities", citiesOfState) // return the cities of a given state passed as a query param
+	e.POST("/api/v1/profiles", requestProfileAccess)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")

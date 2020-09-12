@@ -43,6 +43,18 @@
             </div>
         </div>
     </form>
+    <div class="fab">
+        <button class="main">
+        </button>
+    </div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <label for="fname">Digite seu email cadastrado no TSE</label>
+            <input type="text" id="candidateEmail" name="candidateEmail">
+            <button id='testButton'>Test</button>
+        </div>
+    </div>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script>
@@ -77,6 +89,45 @@
             } else {
                 $("#selections").attr("action", "/profiles/" + electionYear + "?city=" + selectedCity + "&state=" + selectedState + "&role=" + selectedRole);
                 document.forms["mainForm"].submit();
+            }
+        });
+        var modal = document.getElementById("myModal");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        document.querySelector('.fab .main').addEventListener('click', function () {
+            modal.style.display = "block";
+        });
+
+        $('#testButton').on('click', function () {
+            const givenEmail = $("#candidateEmail").val();
+            if (givenEmail === "" || givenEmail === null || givenEmail === undefined) {
+                alert("Preencha o campo de email!");
+            } else {
+                $.post("/api/v1/profiles", { "email": givenEmail }, function (data, status) {
+                    alert(data.Message);
+                    modal.style.display = "none";
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    if (jqXHR.status == 404) {
+                        alert(JSON.parse(jqXHR.responseText).Message);
+                    } else {
+                        alert("Erro internto!");
+                        modal.style.display = "none";
+                    }
+                });;
             }
         });
     </script>
