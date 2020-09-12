@@ -51,6 +51,14 @@ github.com/candidatos-info/descritor v0.0.0-20200911131026-fa03d51e63fb h1:aOTR7
 github.com/candidatos-info/descritor v0.0.0-20200911131026-fa03d51e63fb/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
 github.com/candidatos-info/descritor v0.0.0-20200911222312-34ea00844311 h1:ZQoEmYP30DWPNqOw55veZAXke8GV/keAstuVRJqgCjA=
 github.com/candidatos-info/descritor v0.0.0-20200911222312-34ea00844311/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
+github.com/candidatos-info/descritor v0.0.0-20200911224559-000e417469ed h1:J/E25jlO0k1nHvGb8mfT0hQFsIa0SIRnO9Q8GGgz7Mg=
+github.com/candidatos-info/descritor v0.0.0-20200911224559-000e417469ed/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
+github.com/candidatos-info/descritor v0.0.0-20200912213322-ddfb1a5d4f77 h1:dnco0i5UAKxhadAUZg96Z7sotep7SespCS7FT4EYP4k=
+github.com/candidatos-info/descritor v0.0.0-20200912213322-ddfb1a5d4f77/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
+github.com/candidatos-info/descritor v0.0.0-20200912214957-fdf63cbdf39b h1:/Cg3PzhWiHBKudl27mjXAQPwlCh3hA5q72ADRcr/8rM=
+github.com/candidatos-info/descritor v0.0.0-20200912214957-fdf63cbdf39b/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
+github.com/candidatos-info/descritor v0.0.0-20200912222002-4e1ef28e969c h1:69+8iACcWCu1KLnHn6f0Ee/8UKge3nvPIDPkUjvz9NY=
+github.com/candidatos-info/descritor v0.0.0-20200912222002-4e1ef28e969c/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=

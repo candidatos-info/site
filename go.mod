@@ -7,9 +7,9 @@ require (
 	cloud.google.com/go/datastore v1.2.0
 	cloud.google.com/go/pubsub v1.6.1 // indirect
 	cloud.google.com/go/storage v1.11.0 // indirect
-	github.com/candidatos-info/descritor v0.0.0-20200911222312-34ea00844311
+	github.com/candidatos-info/descritor v0.0.0-20200912222002-4e1ef28e969c
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gocarina/gocsv v0.0.0-20200827134620-49f5c3fa2b3e // indirect
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
