@@ -2,4 +2,7 @@ runtime: go113
 
 env_variables:
   PROJECT_ID: ##PROJECT_ID
-
+  EMAIL: ##EMAIL
+  PASSWORD: ##PASSWORD
+  SITE_URL: ##SITE_URL
+  SECRET: ##SECRET
