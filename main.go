@@ -26,6 +26,7 @@ var (
 	tokenService   *token.Token
 	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
 	siteURL        string
+	suportEmails   = []string{"abuarquemf@gmail.com"}
 )
 
 type tmplt struct {
@@ -189,7 +190,7 @@ func requestProfileAccess(c echo.Context) error {
 		log.Printf("failed to get acess token, error %v\n", err)
 		return c.String(http.StatusInternalServerError, "falha ao gerar access token")
 	}
-	emailMessage := buildEmailMessage(foundCandidate, accessToken)
+	emailMessage := buildProfileAccessEmail(foundCandidate, accessToken)
 	err = func() error {
 		at := descritor.AccessToken{
 			Code:     accessToken,
@@ -216,11 +217,133 @@ func requestProfileAccess(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func buildEmailMessage(candidate *descritor.CandidateForDB, accessToken string) string {
-	var emailBodyBuilder strings.Builder
-	emailBodyBuilder.WriteString(fmt.Sprintf("Olá, %s!\n", candidate.Name))
-	emailBodyBuilder.WriteString(fmt.Sprintf("para acessar seu perfil click no link: %s/profile?access_token=%s\n", siteURL, accessToken))
-	return emailBodyBuilder.String()
+func profileHandle(c echo.Context) error {
+	accessToken := c.QueryParam("access_token")
+	if accessToken == "" {
+		return c.String(http.StatusBadRequest, "código de acesso inválido")
+	}
+	if !tokenService.IsValid(accessToken) {
+		return c.String(http.StatusUnauthorized, "código de acesso inváldio")
+	}
+	claims, err := token.GetClaims(accessToken)
+	if err != nil {
+		log.Printf("failed to extract email from token claims, erro %v\n", err)
+		return c.String(http.StatusInternalServerError, "falha ao validar token de acesso")
+	}
+	email := claims["email"]
+	foundCandidate, err := dbClient.GetCandidateByEmail(email)
+	if err != nil {
+		log.Printf("failed to find candidate using email from token claims, erro %v\n", err)
+		return c.String(http.StatusInternalServerError, "falha ao buscar informações de candidato")
+	}
+	templateData := struct {
+		Name          string
+		Authorization string
+		Site          string
+		Instagram     string
+		Twitter       string
+		Facebook      string
+		Biography     string
+		Description   string
+	}{
+		foundCandidate.Name,
+		accessToken,
+		foundCandidate.Site,
+		foundCandidate.Instagram,
+		foundCandidate.Twitter,
+		foundCandidate.Facebook,
+		foundCandidate.Biography,
+		foundCandidate.Description,
+	}
+	return c.Render(http.StatusOK, "profile.html", templateData)
+}
+
+func handleProfileUpdate(c echo.Context) error {
+	request := struct {
+		Authorization string `json:"authorization"`
+		Site          string `json:"site"`
+		Instagram     string `json:"instagram"`
+		Twitter       string `json:"twitter"`
+		Facebook      string `json:"facebook"`
+		Biography     string `json:"biography"`
+		Description   string `json:"description"`
+	}{}
+	if err := c.Bind(&request); err != nil {
+		log.Printf("failed to bind request body, erro %v\n", err)
+		return c.String(http.StatusBadRequest, "corpo de requisição inválido")
+	}
+	if !tokenService.IsValid(request.Authorization) {
+		return c.String(http.StatusUnauthorized, "credencial inválida")
+	}
+	tokenClaims, err := token.GetClaims(request.Authorization)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "falha ao processar requisição")
+	}
+	candidateEmail := tokenClaims["email"]
+	votingCity, err := dbClient.GetVotingCityByCandidateEmail(candidateEmail)
+	if err != nil {
+		log.Printf("failed to get voting city with email [%s], erro %v\n", candidateEmail, err)
+		return c.String(http.StatusInternalServerError, "falha ao buscar local de votação")
+	}
+	for _, candidate := range votingCity.Candidates { // TODO change candidatures from slice to map to make this query O(1)
+		if candidate.Email == candidateEmail {
+			if request.Site != "" || request.Site != candidate.Site {
+				candidate.Site = request.Site
+			}
+			if request.Instagram != "" || request.Instagram != candidate.Instagram {
+				candidate.Instagram = request.Instagram
+			}
+			if request.Twitter != "" || request.Twitter != candidate.Twitter {
+				candidate.Twitter = request.Twitter
+			}
+			if request.Facebook != "" || request.Facebook != candidate.Facebook {
+				candidate.Facebook = request.Facebook
+			}
+			if request.Biography != "" || request.Biography != candidate.Biography {
+				candidate.Biography = request.Biography
+			}
+			if request.Description != "" || request.Description != candidate.Description {
+				candidate.Description = request.Description
+			}
+		}
+	}
+	response := struct {
+		Message string `json:"message"`
+	}{}
+	if _, err := dbClient.UpdateVotingCity(votingCity); err != nil {
+		log.Printf("failed to update voting city, erro %v\n", err)
+		response.Message = "Falha ao atualizar dados"
+		return c.JSON(http.StatusOK, response)
+	}
+	response.Message = "Dados atualizados com sucesso!"
+	return c.JSON(http.StatusOK, request)
+}
+
+func handleReports(c echo.Context) error {
+	request := struct {
+		Report        string `json:"report"`
+		Authorization string `json:"authorization"`
+	}{}
+	if err := c.Bind(&request); err != nil {
+		return c.String(http.StatusBadRequest, "corpo de requisição inválida")
+	}
+	if !tokenService.IsValid(request.Authorization) {
+		return c.String(http.StatusUnauthorized, "credenciais inválida")
+	}
+	tokenClaims, err := token.GetClaims(request.Authorization)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "falha ao processar requisição")
+	}
+	candidateEmail := tokenClaims["email"]
+	foundCandidate, err := dbClient.GetCandidateByEmail(candidateEmail)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "falha ao buscar dados de candidato")
+	}
+	emailMessage := buildReportEmail(foundCandidate, request.Report)
+	if err := emailClient.Send(emailClient.Email, suportEmails, "Nova denúncia do Candidatos.info", emailMessage); err != nil {
+		log.Printf("failed to send report email to suport list, error %v\n", err)
+	}
+	return c.String(http.StatusOK, "Denúnicia enviada com sucesso!")
 }
 
 func main() {
@@ -256,8 +379,11 @@ func main() {
 	e.GET("/", homePageHandler)
 	e.POST("/profiles/:year", profilesPageHandler)
 	e.GET("/candidato/:year/:state/:city/:role/:sequencialCandidate", candidatePageHandler)
-	e.GET("/api/v1/cities", citiesOfState) // return the cities of a given state passed as a query param
+	e.GET("/profile", profileHandle)
+	e.GET("/api/v1/cities", citiesOfState)
 	e.POST("/api/v1/profiles", requestProfileAccess)
+	e.POST("/api/v1/profiles/update", handleProfileUpdate)
+	e.POST("/api/v1/reports", handleReports)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")

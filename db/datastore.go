@@ -51,6 +51,16 @@ func (c *DataStoreClient) DeleteAccessToken(code string) error {
 	return nil
 }
 
+// FindByAccessToken searches for an access token
+func (c *DataStoreClient) FindByAccessToken(code string) (*descritor.AccessToken, error) {
+	var entities []*descritor.AccessToken
+	q := datastore.NewQuery(descritor.LocationsCollection).Filter("code=", code)
+	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar access token com código %s, erro %v", code, err), nil)
+	}
+	return entities[0], nil
+}
+
 // GetStates returns a list with availables states
 func (c *DataStoreClient) GetStates() ([]string, error) {
 	var entities []*descritor.Location
@@ -122,4 +132,29 @@ func (c *DataStoreClient) GetCandidateByEmail(email string) (*descritor.Candidat
 		return nil, exception.New(exception.NotFound, "Email não cadastrado", nil)
 	}
 	return entities[0].Candidates[0], nil
+}
+
+// GetVotingCityByCandidateEmail searches for a voting city using a candidate email
+func (c *DataStoreClient) GetVotingCityByCandidateEmail(email string) (*descritor.VotingCity, error) {
+	var entities []*descritor.VotingCity
+	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("candidates.email=", email)
+	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar local de votação por email de candidato [%s], erro %v", email, err), nil)
+	}
+	if len(entities) == 0 {
+		return nil, exception.New(exception.NotFound, "Email não cadastrado", nil)
+	}
+	if len(entities[0].Candidates) == 0 {
+		return nil, exception.New(exception.NotFound, "Email não cadastrado", nil)
+	}
+	return entities[0], nil
+}
+
+// UpdateVotingCity updates a voting city
+func (c *DataStoreClient) UpdateVotingCity(votingCity *descritor.VotingCity) (*descritor.VotingCity, error) {
+	key := datastore.NameKey(descritor.CandidaturesCollection, fmt.Sprintf("%s_%s", votingCity.State, votingCity.City), nil)
+	if _, err := c.client.Put(context.Background(), key, votingCity); err != nil {
+		return nil, exception.New(exception.ProcessmentError, fmt.Sprintf("Falha ao atualizar voting city, erro %v", err), nil)
+	}
+	return votingCity, nil
 }
