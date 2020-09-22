@@ -33,34 +33,6 @@ func NewDataStoreClient(gcpProjectID string) *DataStoreClient {
 	}
 }
 
-// SaveAccessToken saves an access token
-func (c *DataStoreClient) SaveAccessToken(accessToken *descritor.AccessToken) (*descritor.AccessToken, error) {
-	key := datastore.NameKey(descritor.AccessTokenCollection, accessToken.Code, nil)
-	if _, err := c.client.Put(context.Background(), key, accessToken); err != nil {
-		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao salvar access token no banco, erro %v", err), nil)
-	}
-	return accessToken, nil
-}
-
-// DeleteAccessToken deletes an access token
-func (c *DataStoreClient) DeleteAccessToken(code string) error {
-	key := datastore.NameKey(descritor.AccessTokenCollection, code, nil)
-	if err := c.client.Delete(context.Background(), key); err != nil {
-		return exception.New(exception.ProcessmentError, "Falha ao deletar access token", err)
-	}
-	return nil
-}
-
-// FindByAccessToken searches for an access token
-func (c *DataStoreClient) FindByAccessToken(code string) (*descritor.AccessToken, error) {
-	var entities []*descritor.AccessToken
-	q := datastore.NewQuery(descritor.LocationsCollection).Filter("code=", code)
-	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
-		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar access token com código %s, erro %v", code, err), nil)
-	}
-	return entities[0], nil
-}
-
 // GetStates returns a list with availables states
 func (c *DataStoreClient) GetStates() ([]string, error) {
 	var entities []*descritor.Location

@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
@@ -191,27 +190,9 @@ func requestProfileAccess(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "falha ao gerar access token")
 	}
 	emailMessage := buildProfileAccessEmail(foundCandidate, accessToken)
-	err = func() error {
-		at := descritor.AccessToken{
-			Code:     accessToken,
-			IssuedAt: time.Now(),
-		}
-		if _, err := dbClient.SaveAccessToken(&at); err != nil {
-			log.Printf("failed to save access token on db, error %v\n", err)
-			return fmt.Errorf("Falha ao salvar access token no banco")
-		}
-		if err := emailClient.Send(emailClient.Email, []string{"abuarquemf@gmail.com"}, "Código para acessar candidatos.info", emailMessage); err != nil {
-			log.Printf("failed to send email to [%s], erro %v\n", givenEmail, err)
-			return fmt.Errorf("Falha ao enviar email ")
-		}
-		return nil
-	}()
-	if err != nil {
-		if err := dbClient.DeleteAccessToken(accessToken); err != nil {
-			log.Printf("failed to delete access token, erro %v\n", err)
-			return c.String(http.StatusInternalServerError, "erro interno")
-		}
-		return c.String(http.StatusInternalServerError, err.Error())
+	if err := emailClient.Send(emailClient.Email, []string{"abuarquemf@gmail.com"}, "Código para acessar candidatos.info", emailMessage); err != nil {
+		log.Printf("failed to send email to [%s], erro %v\n", givenEmail, err)
+		return fmt.Errorf("Falha ao enviar email ")
 	}
 	response.Message = "Verifique seu email"
 	return c.JSON(http.StatusOK, response)
@@ -219,9 +200,51 @@ func requestProfileAccess(c echo.Context) error {
 
 func profileHandle(c echo.Context) error {
 	accessToken := c.QueryParam("access_token")
-	if accessToken == "" {
-		return c.String(http.StatusBadRequest, "código de acesso inválido")
+	if accessToken != "" {
+		return resolveForAccessToken(accessToken, c)
 	}
+	return resolveForEmail(c)
+}
+
+func resolveForEmail(c echo.Context) error {
+	year := c.QueryParam("year")
+	if year == "" {
+		return c.String(http.StatusBadRequest, "ano inválido")
+	}
+	email := c.QueryParam("email")
+	if email == "" {
+		return c.String(http.StatusBadRequest, "email inválido")
+	}
+	candidate, err := dbClient.GetCandidateByEmail(email)
+	if err != nil {
+		log.Printf("failed to get candidate by email [%s], erro %v\n", email, err)
+		return c.String(http.StatusInternalServerError, "falha interna de processamento")
+	}
+	templateData := struct {
+		State        string
+		City         string
+		Role         string
+		PhotoURL     string
+		Name         string
+		Party        string
+		Twitter      string
+		Description  string
+		BallotNumber int
+	}{
+		candidate.State,
+		candidate.City,
+		candidate.Role,
+		candidate.PhotoURL,
+		candidate.BallotName,
+		candidate.Party,
+		candidate.Twitter,
+		candidate.Description,
+		candidate.BallotNumber,
+	}
+	return c.Render(http.StatusOK, "candidate.html", templateData)
+}
+
+func resolveForAccessToken(accessToken string, c echo.Context) error {
 	if !tokenService.IsValid(accessToken) {
 		return c.String(http.StatusUnauthorized, "código de acesso inváldio")
 	}
