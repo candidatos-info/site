@@ -19,15 +19,6 @@ import (
 	"github.com/labstack/echo"
 )
 
-var (
-	dbClient       *db.DataStoreClient
-	emailClient    *email.Client
-	tokenService   *token.Token
-	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
-	siteURL        string
-	suportEmails   = []string{"abuarquemf@gmail.com"}
-)
-
 type tmplt struct {
 	templates *template.Template
 }
@@ -35,6 +26,16 @@ type tmplt struct {
 func (t *tmplt) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
+
+var (
+	dbClient       *db.DataStoreClient
+	emailClient    *email.Client
+	tokenService   *token.Token
+	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
+	siteURL        string
+	suportEmails   = []string{"abuarquemf@gmail.com"}
+	currentParners = []*partner{}
+)
 
 func homePageHandler(c echo.Context) error {
 	states, err := dbClient.GetStates()
@@ -369,6 +370,15 @@ func handleReports(c echo.Context) error {
 	return c.String(http.StatusOK, "Denúnicia enviada com sucesso!")
 }
 
+func partnersHandler(c echo.Context) error {
+	response := struct {
+		Partners []*partner `json:"partners"`
+	}{
+		currentParners,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -394,6 +404,7 @@ func main() {
 		log.Fatal("missing SECRET environment variable")
 	}
 	tokenService = token.New(authSecret)
+	currentParners = getPartners()
 	e := echo.New()
 	e.Renderer = &tmplt{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
@@ -407,6 +418,7 @@ func main() {
 	e.POST("/api/v1/profiles", requestProfileAccess)
 	e.POST("/api/v1/profiles/update", handleProfileUpdate)
 	e.POST("/api/v1/reports", handleReports)
+	e.GET("/api/v2/partners", partnersHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
