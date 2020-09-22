@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -34,6 +35,8 @@ var (
 	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
 	siteURL        string
 	suportEmails   = []string{"abuarquemf@gmail.com"}
+	currentYear    int
+	emailRegex     = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
 type defaultResponse struct {
@@ -179,7 +182,7 @@ func requestProfileAccess(c echo.Context) error {
 	response := struct {
 		Message string
 	}{}
-	foundCandidate, err := dbClient.GetCandidateByEmail(strings.ToUpper(givenEmail))
+	foundCandidate, err := dbClient.GetCandidateByEmail(strings.ToUpper(givenEmail), currentYear)
 	if err != nil {
 		log.Printf("failed to find candidate by email, error %v", err)
 		var e *exception.Exception
@@ -220,7 +223,7 @@ func resolveForEmail(c echo.Context) error {
 	if email == "" {
 		return c.String(http.StatusBadRequest, "email inválido")
 	}
-	candidate, err := dbClient.GetCandidateByEmail(email)
+	candidate, err := dbClient.GetCandidateByEmail(email, currentYear)
 	if err != nil {
 		log.Printf("failed to get candidate by email [%s], erro %v\n", email, err)
 		return c.String(http.StatusInternalServerError, "falha interna de processamento")
@@ -259,7 +262,7 @@ func resolveForAccessToken(accessToken string, c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "falha ao validar token de acesso")
 	}
 	email := claims["email"]
-	foundCandidate, err := dbClient.GetCandidateByEmail(email)
+	foundCandidate, err := dbClient.GetCandidateByEmail(email, currentYear)
 	if err != nil {
 		log.Printf("failed to find candidate using email from token claims, erro %v\n", err)
 		return c.String(http.StatusInternalServerError, "falha ao buscar informações de candidato")
@@ -363,7 +366,7 @@ func handleReports(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "falha ao processar requisição")
 	}
 	candidateEmail := tokenClaims["email"]
-	foundCandidate, err := dbClient.GetCandidateByEmail(candidateEmail)
+	foundCandidate, err := dbClient.GetCandidateByEmail(candidateEmail, currentYear)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "falha ao buscar dados de candidato")
 	}
@@ -392,6 +395,39 @@ func contactHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, defaultResponse{Message: "Obrigado pelo contato. Sua mensagem foi enviada com sucesso!", Code: http.StatusOK})
 }
 
+func loginHandler(c echo.Context) error {
+	request := struct {
+		Email string `json:"email"`
+	}{}
+	if err := c.Bind(&request); err != nil {
+		log.Printf("failed to read request body, error %v", err)
+		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "corpo de requisição inválido", Code: http.StatusBadRequest})
+	}
+	if !emailRegex.MatchString(request.Email) {
+		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Email fornecido é inválido.", Code: http.StatusBadRequest})
+	}
+	foundCandidate, err := dbClient.GetCandidateByEmail(strings.ToUpper(request.Email), currentYear)
+	if err != nil {
+		log.Printf("failed to find candidate by email, error %v\n", err)
+		var e *exception.Exception
+		if errors.As(err, &e) {
+			return c.JSON(e.Code, defaultResponse{Message: e.Message, Code: e.Code})
+		}
+		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
+	}
+	accessToken, err := tokenService.GetToken(request.Email)
+	if err != nil {
+		log.Printf("failed to get acess token, error %v\n", err)
+		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao gerar código de acesso ao sisteme. Tente novamente mais tarde.", Code: http.StatusInternalServerError})
+	}
+	emailMessage := buildProfileAccessEmail(foundCandidate, accessToken)
+	if err := emailClient.Send(emailClient.Email, []string{"abuarquemf@gmail.com"}, "Código para acessar candidatos.info", emailMessage); err != nil {
+		log.Printf("failed to send email to [%s], erro %v\n", request.Email, err)
+		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao enviar email com código de acesso. Por favor tente novamente mais tarde.", Code: http.StatusInternalServerError})
+	}
+	return c.JSON(http.StatusOK, defaultResponse{Message: "Email com código de acesso enviado. Verifique sua caixa de spam caso não encontre.", Code: http.StatusOK})
+}
+
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -417,6 +453,15 @@ func main() {
 		log.Fatal("missing SECRET environment variable")
 	}
 	tokenService = token.New(authSecret)
+	ey := os.Getenv("ELECTION_YEAR")
+	if ey == "" {
+		log.Fatal("missing ELECTION_YEAR environment variable")
+	}
+	electionYearAsInt, err := strconv.Atoi(ey)
+	if err != nil {
+		log.Fatalf("failed to parse environment variable ELECTION_YEAR with value [%s] to  int, error %v", ey, err)
+	}
+	currentYear = electionYearAsInt
 	e := echo.New()
 	e.Renderer = &tmplt{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
@@ -431,6 +476,7 @@ func main() {
 	e.POST("/api/v1/profiles/update", handleProfileUpdate)
 	e.POST("/api/v1/reports", handleReports)
 	e.POST("/api/v2/contact_us", contactHandler)
+	e.POST("/api/v2/candidates/login", loginHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")

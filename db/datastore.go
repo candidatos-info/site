@@ -91,9 +91,9 @@ func (c *DataStoreClient) GetCandidateBySequencialID(year int, state, city, sequ
 }
 
 // GetCandidateByEmail searches for a candidate using email
-func (c *DataStoreClient) GetCandidateByEmail(email string) (*descritor.CandidateForDB, error) {
+func (c *DataStoreClient) GetCandidateByEmail(email string, year int) (*descritor.CandidateForDB, error) {
 	var entities []*descritor.VotingCity
-	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("candidates.email=", email)
+	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("candidates.email=", email).Filter("year=", year)
 	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidato por email [%s], erro %v", email, err), nil)
 	}
