@@ -36,6 +36,11 @@ var (
 	suportEmails   = []string{"abuarquemf@gmail.com"}
 )
 
+type defaultResponse struct {
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+}
+
 func homePageHandler(c echo.Context) error {
 	states, err := dbClient.GetStates()
 	if err != nil {
@@ -369,6 +374,24 @@ func handleReports(c echo.Context) error {
 	return c.String(http.StatusOK, "Denúnicia enviada com sucesso!")
 }
 
+func contactHandler(c echo.Context) error {
+	request := struct {
+		Type    string `json:"type"`
+		Subject string `json:"subject"`
+		Body    string `json:"body"`
+	}{}
+	if err := c.Bind(&request); err != nil {
+		log.Printf("failed to read request body, error %v", err)
+		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "corpo de requisição inválido", Code: http.StatusBadRequest})
+	}
+	emailMessage := buildContactMessage(request.Type, request.Body)
+	if err := emailClient.Send(emailClient.Email, suportEmails, request.Subject, emailMessage); err != nil {
+		log.Printf("failed to send contact email to suport list, error %v\n", err)
+		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao enviar email para nosso suporte. Tente novamente", Code: http.StatusInternalServerError})
+	}
+	return c.JSON(http.StatusOK, defaultResponse{Message: "Obrigado pelo contato. Sua mensagem foi enviada com sucesso!", Code: http.StatusOK})
+}
+
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -407,6 +430,7 @@ func main() {
 	e.POST("/api/v1/profiles", requestProfileAccess)
 	e.POST("/api/v1/profiles/update", handleProfileUpdate)
 	e.POST("/api/v1/reports", handleReports)
+	e.POST("/api/v2/contact_us", contactHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
