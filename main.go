@@ -34,8 +34,6 @@ var (
 	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
 	siteURL        string
 	suportEmails   = []string{"abuarquemf@gmail.com"}
-	currentParners = []*partner{}
-	aboutText      string
 )
 
 func homePageHandler(c echo.Context) error {
@@ -371,24 +369,6 @@ func handleReports(c echo.Context) error {
 	return c.String(http.StatusOK, "Denúnicia enviada com sucesso!")
 }
 
-func partnersHandler(c echo.Context) error {
-	response := struct {
-		Partners []*partner `json:"partners"`
-	}{
-		currentParners,
-	}
-	return c.JSON(http.StatusOK, response)
-}
-
-func aboutHandler(c echo.Context) error {
-	response := struct {
-		About string `json:"about"`
-	}{
-		aboutText,
-	}
-	return c.JSON(http.StatusOK, response)
-}
-
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -414,8 +394,6 @@ func main() {
 		log.Fatal("missing SECRET environment variable")
 	}
 	tokenService = token.New(authSecret)
-	currentParners = getPartners()
-	aboutText = getAboutText()
 	e := echo.New()
 	e.Renderer = &tmplt{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
@@ -429,8 +407,6 @@ func main() {
 	e.POST("/api/v1/profiles", requestProfileAccess)
 	e.POST("/api/v1/profiles/update", handleProfileUpdate)
 	e.POST("/api/v1/reports", handleReports)
-	e.GET("/api/v2/partners", partnersHandler)
-	e.GET("/api/v2/about", aboutHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
