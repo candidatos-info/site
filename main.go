@@ -35,6 +35,7 @@ var (
 	siteURL        string
 	suportEmails   = []string{"abuarquemf@gmail.com"}
 	currentParners = []*partner{}
+	aboutText      string
 )
 
 func homePageHandler(c echo.Context) error {
@@ -379,6 +380,15 @@ func partnersHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func aboutHandler(c echo.Context) error {
+	response := struct {
+		About string `json:"about"`
+	}{
+		aboutText,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -405,6 +415,7 @@ func main() {
 	}
 	tokenService = token.New(authSecret)
 	currentParners = getPartners()
+	aboutText = getAboutText()
 	e := echo.New()
 	e.Renderer = &tmplt{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
@@ -419,6 +430,7 @@ func main() {
 	e.POST("/api/v1/profiles/update", handleProfileUpdate)
 	e.POST("/api/v1/reports", handleReports)
 	e.GET("/api/v2/partners", partnersHandler)
+	e.GET("/api/v2/about", aboutHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
