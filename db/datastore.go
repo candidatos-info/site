@@ -90,6 +90,23 @@ func (c *DataStoreClient) GetCandidateBySequencialID(year int, state, city, sequ
 	return entities[0].Candidates[0], nil
 }
 
+// FindCandidateBySequencialIDAndYear searches for a candidate using its
+// sequencial ID and returns it.
+func (c *DataStoreClient) FindCandidateBySequencialIDAndYear(year int, sequencialID string) (*descritor.CandidateForDB, error) {
+	var entities []*descritor.VotingCity
+	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("year=", year).Filter("candidates.sequencial_candidate=", sequencialID)
+	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidato por ano [%d] e sequencial id [%s], erro %v", year, sequencialID, err), nil)
+	}
+	if len(entities) == 0 {
+		return nil, exception.New(exception.NotFound, "Falha ao buscar candidato usando código sequencial", nil)
+	}
+	if len(entities[0].Candidates) == 0 {
+		return nil, exception.New(exception.NotFound, "Falha ao buscar candidato usando código sequencial", nil)
+	}
+	return entities[0].Candidates[0], nil
+}
+
 // GetCandidateByEmail searches for a candidate using email
 func (c *DataStoreClient) GetCandidateByEmail(email string, year int) (*descritor.CandidateForDB, error) {
 	var entities []*descritor.VotingCity
