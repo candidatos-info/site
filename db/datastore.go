@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 
 	"cloud.google.com/go/datastore"
 	"github.com/candidatos-info/descritor"
@@ -58,19 +59,45 @@ func (c *DataStoreClient) GetCities(s string) ([]string, error) {
 }
 
 // FindCandidatesWithParams queries candidates with some given params
-func (c *DataStoreClient) FindCandidatesWithParams(state, city, role string, year int) ([]*descritor.CandidateForDB, error) {
+func (c *DataStoreClient) FindCandidatesWithParams(state, city, role string, year int, gender string, tags []string, name string) ([]*descritor.CandidateForDB, error) {
 	var entities []*descritor.VotingCity
-	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("year=", year).Filter("state=", state).Filter("city=", city).Filter("candidates.role=", rolesMap[role])
-	if role == "prefeito" {
-		q.Filter("candidates.role=", "VEM") // if prefeito is select this filter also selects for the vice
+	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("candidates.year=", year).Filter("candidates.state=", state)
+	if role != "" {
+		q.Filter("candidates.role=", rolesMap[role])
+		if role == "prefeito" {
+			q.Filter("candidates.role=", "VEM") // if prefeito is select this filter also selects for the vice
+		}
 	}
+	if gender != "" {
+		q.Filter("candidates.gender=", gender)
+	}
+	if len(tags) > 0 {
+		for _, tag := range tags {
+			q.Filter("candidates.tags=", tag)
+		}
+	}
+	q.Order("candidates.transparency")
 	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidato por estado [%s] e cidade [%s] e ano [%d], erro %v", state, city, year, err), nil)
 	}
 	if len(entities) == 0 {
 		return []*descritor.CandidateForDB{}, nil
 	}
-	return entities[0].Candidates, nil
+	var toReturn []*descritor.CandidateForDB
+	for _, e := range entities {
+		toReturn = append(toReturn, e.Candidates...)
+	}
+	sort.Slice(toReturn, func(i, j int) bool {
+		return toReturn[i].Transparence > toReturn[j].Transparence
+	})
+	if city != "" {
+		for _, c := range entities {
+			if c.City == city {
+				return c.Candidates, nil
+			}
+		}
+	}
+	return toReturn, nil
 }
 
 // GetCandidateBySequencialID searches for a candidate using its

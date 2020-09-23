@@ -32,6 +32,16 @@ func (t *Token) GetToken(email string) (string, error) {
 	return token.SignedString([]byte(t.secret))
 }
 
+// GetTokenForLastSearch returns a new token with prev state and city searched on it
+func (t *Token) GetTokenForLastSearch(state, city string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"state": state,
+		"city":  city,
+		"exp":   time.Now().Add(time.Hour * expirationTimeToken).Unix(),
+	})
+	return token.SignedString([]byte(t.secret))
+}
+
 // IsValid checks if token is valid
 func (t *Token) IsValid(auhtorization string) bool {
 	token, err := jwt.Parse(auhtorization, func(token *jwt.Token) (interface{}, error) {

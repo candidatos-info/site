@@ -307,6 +307,20 @@ func updateProfileHandler(c echo.Context) error {
 			candidate.Description = request.Description
 			candidate.Tags = request.Tags
 			candidate.Contact = resolveContact(request.Conctact.Link, request.Conctact.SocialNetWork)
+			counter := 0.0
+			if candidate.Biography != "" {
+				counter++
+			}
+			if candidate.Description != "" {
+				counter++
+			}
+			if len(candidate.Tags) > 0 {
+				counter++
+			}
+			if candidate.Contact != nil {
+				counter++
+			}
+			candidate.Transparence = counter / 4.0
 		}
 	}
 	if _, err := dbClient.UpdateVotingCity(votingCity); err != nil {
@@ -335,8 +349,88 @@ func resolveContact(link, socialNetWork string) *descritor.Contact {
 	return &c
 }
 
+type candidateCard struct {
+	Transparence float64  `json:"transparence"`
+	Picture      string   `json:"picture_url"`
+	Name         string   `json:"name"`
+	City         string   `json:"city"`
+	State        string   `json:"state"`
+	Role         string   `json:"role"`
+	Party        string   `json:"party"`
+	Number       int      `json:"number"`
+	Tags         []string `json:"tags"`
+	SequencialID string   `json:"sequencial_id"`
+}
+
 func candidatesHandler(c echo.Context) error {
-	return c.JSON(200, "")
+	cacheToken := c.Request().Header.Get("search-cache-token")
+	response := struct {
+		Candidates []*candidateCard `json:"candidates"`
+	}{}
+	var candidatesFromDB []*descritor.CandidateForDB
+	var err error
+	if cacheToken != "" {
+		candidatesFromDB, err = getLastCandidatesOfPreviousQuery(cacheToken)
+	} else {
+		candidatesFromDB, err = getCandidatesByParams(c)
+	}
+	if err != nil {
+		var e *exception.Exception
+		if errors.As(err, &e) {
+			return c.JSON(e.Code, defaultResponse{Message: e.Message, Code: e.Code})
+		}
+		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
+	}
+	for _, c := range candidatesFromDB {
+		response.Candidates = append(response.Candidates, &candidateCard{
+			c.Transparence,
+			c.PhotoURL,
+			c.BallotName,
+			c.City,
+			c.State,
+			rolesMap[c.Role],
+			c.Party,
+			c.BallotNumber,
+			c.Tags,
+			c.SequencialCandidate,
+		})
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func findCandidatesByParams(year int, state, city, role, gender string, tags []string, name string) ([]*descritor.CandidateForDB, error) {
+	r, err := dbClient.FindCandidatesWithParams(state, city, role, year, gender, tags, name)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, error) {
+	state := c.QueryParam("state")
+	if state == "" {
+		return nil, &exception.Exception{Message: "O estado deve ser fornecido.", Code: exception.InvalidParameters}
+	}
+	year := c.QueryParam("year")
+	if year == "" {
+		return nil, &exception.Exception{Message: "O ano deve ser fornecido.", Code: exception.InvalidParameters}
+	}
+	y, err := strconv.Atoi(year)
+	if err != nil {
+		log.Printf("failed to parse year [%s] to int, got error %v\n", year, err)
+		return nil, &exception.Exception{Message: "Ano fornecido é inválido", Code: exception.ProcessmentError}
+	}
+	city := c.QueryParam("city")
+	gender := c.QueryParam("gender")
+	tags := c.QueryParam("tags")
+	name := c.QueryParam("name")
+	role := c.QueryParam("role")
+	t := strings.Split(tags, ",")
+	return findCandidatesByParams(y, state, city, role, gender, t, name)
+}
+
+func getLastCandidatesOfPreviousQuery(cacheToken string) ([]*descritor.CandidateForDB, error) {
+	return nil, nil
 }
 
 func main() {
