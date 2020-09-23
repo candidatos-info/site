@@ -3,14 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
-	"text/template"
 
 	b64 "encoding/base64"
 
@@ -21,14 +19,6 @@ import (
 	"github.com/candidatos-info/site/token"
 	"github.com/labstack/echo"
 )
-
-type tmplt struct {
-	templates *template.Template
-}
-
-func (t *tmplt) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
-}
 
 const (
 	maxBiographyTextSize   = 500
@@ -345,6 +335,10 @@ func resolveContact(link, socialNetWork string) *descritor.Contact {
 	return &c
 }
 
+func candidatesHandler(c echo.Context) error {
+	return c.JSON(200, "")
+}
+
 func main() {
 	projectID := os.Getenv("PROJECT_ID")
 	if projectID == "" {
@@ -389,16 +383,13 @@ func main() {
 	}
 	allowedToUpdateProfile = r == 1
 	e := echo.New()
-	e.Renderer = &tmplt{
-		templates: template.Must(template.ParseGlob("templates/*.html")),
-	}
-	e.Static("/static", "templates/")
 	e.GET("/api/v2/configs", configsHandler)
 	e.POST("/api/v2/contact_us", contactHandler)
 	e.POST("/api/v2/candidates/login", loginHandler)
-	e.GET("/api/v2/candidates", requestAccessHandler)
+	e.GET("/api/v2/candidates/login", requestAccessHandler)
 	e.GET("/api/v2/candidates/:year/:sequencialID", profileHandler)
 	e.PUT("/api/v2/candidates", updateProfileHandler)
+	e.GET("/api/v2/candidates", candidatesHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
