@@ -124,9 +124,9 @@ func (c *DataStoreClient) GetCandidateByEmail(email string, year int) (*descrito
 }
 
 // GetVotingCityByCandidateEmail searches for a voting city using a candidate email
-func (c *DataStoreClient) GetVotingCityByCandidateEmail(email string) (*descritor.VotingCity, error) {
+func (c *DataStoreClient) GetVotingCityByCandidateEmail(email string, year int) (*descritor.VotingCity, error) {
 	var entities []*descritor.VotingCity
-	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("candidates.email=", email)
+	q := datastore.NewQuery(descritor.CandidaturesCollection).Filter("candidates.email=", email).Filter("year=", year)
 	if _, err := c.client.GetAll(context.Background(), q, &entities); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar local de votação por email de candidato [%s], erro %v", email, err), nil)
 	}
