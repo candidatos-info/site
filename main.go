@@ -413,10 +413,13 @@ func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, error) 
 	}
 	city := c.QueryParam("city")
 	gender := c.QueryParam("gender")
-	tags := c.QueryParam("tags")
 	name := c.QueryParam("name")
 	role := c.QueryParam("role")
-	t := strings.Split(tags, ",")
+	tags := c.QueryParam("tags")
+	var t []string
+	if tags != "" {
+		t = strings.Split(tags, ",")
+	}
 	return dbClient.FindCandidatesWithParams(y, state, city, role, gender, t, name)
 }
 

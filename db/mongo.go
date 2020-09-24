@@ -78,7 +78,7 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 }
 
 // FindCandidatesWithParams searches for a list of candidates with given params
-func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender string, t []string, name string) ([]*descritor.CandidateForDB, error) {
+func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender string, tags []string, name string) ([]*descritor.CandidateForDB, error) {
 	var candidates []*descritor.CandidateForDB
 	queryMap := make(map[string]interface{})
 	queryMap["year"] = year
@@ -95,6 +95,9 @@ func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender st
 	if name != "" {
 		queryMap["name"] = name
 	}
+	if len(tags) != 0 {
+		queryMap["tags"] = tags
+	}
 	sortBy := []string{"-transparency"}
 	if err := c.client.C(descritor.CandidaturesCollection).Find(resolveQuery(queryMap)).Sort(strings.Join(sortBy, ",")).All(&candidates); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
@@ -105,12 +108,14 @@ func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender st
 func resolveQuery(query map[string]interface{}) bson.M {
 	result := make(bson.M, len(query))
 	for k, v := range query {
-		if k != "name" {
-			result[k] = v
-		} else {
+		switch k {
+		case "name":
 			result["ballot_name"] = bson.M{"$regex": bson.RegEx{Pattern: fmt.Sprintf(".*%s.*", query["name"]), Options: "i"}}
+		case "tags":
+			result["tags"] = bson.M{"$in": query["tags"]}
+		default:
+			result[k] = v
 		}
 	}
-	fmt.Println(result)
 	return result
 }
