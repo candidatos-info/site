@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/exception"
@@ -47,4 +48,62 @@ func (c *Client) GetCities(state string) ([]string, error) {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
 	}
 	return location.Cities, nil
+}
+
+// GetCandidateByEmail searches for a candidate using email
+func (c *Client) GetCandidateByEmail(email string, year int) (*descritor.CandidateForDB, error) {
+	var candidate descritor.CandidateForDB
+	if err := c.client.C(descritor.CandidaturesCollection).Find(bson.M{"email": email, "year": year}).One(&candidate); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
+	}
+	return &candidate, nil
+}
+
+// FindCandidateBySequencialIDAndYear searches for a candidate using its
+// sequencial ID and returns it.
+func (c *Client) FindCandidateBySequencialIDAndYear(year int, sequencialID string) (*descritor.CandidateForDB, error) {
+	var candidate descritor.CandidateForDB
+	if err := c.client.C(descritor.CandidaturesCollection).Find(bson.M{"sequencial_candidate": sequencialID, "year": year}).One(&candidate); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
+	}
+	return &candidate, nil
+}
+
+// UpdateCandidateProfile updates the profile of a cndidate
+func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*descritor.CandidateForDB, error) {
+	if err := c.client.C(descritor.CandidaturesCollection).Update(bson.M{"email": candidate.Email, "year": candidate.Year}, bson.M{"$set": bson.M{"biography": candidate.Biography, "transparency": candidate.Transparence, "description": candidate.Description, "tags": candidate.Tags, "contact": candidate.Contact}}); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao atualizar perfil de candidato, erro %v", err), nil)
+	}
+	return candidate, nil
+}
+
+// FindCandidatesWithParams searches for a list of candidates with given params
+func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender string, t []string, name string) ([]*descritor.CandidateForDB, error) {
+	var candidates []*descritor.CandidateForDB
+	queryMap := make(map[string]interface{})
+	queryMap["year"] = year
+	queryMap["state"] = state
+	if city != "" {
+		queryMap["city"] = city
+	}
+	if role != "" {
+		queryMap["role"] = role
+	}
+	if gender != "" {
+		queryMap["gender"] = gender
+	}
+	sortBy := []string{"-transparency"}
+	if err := c.client.C(descritor.CandidaturesCollection).Find(resolveQuery(queryMap)).Sort(strings.Join(sortBy, ",")).All(&candidates); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
+	}
+	return candidates, nil
+}
+
+func resolveQuery(query map[string]interface{}) bson.M {
+	result := make(bson.M, len(query))
+	for k, v := range query {
+		result[k] = v
+	}
+	fmt.Println(result)
+	return result
 }
