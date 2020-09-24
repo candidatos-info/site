@@ -67,6 +67,8 @@ github.com/candidatos-info/descritor v0.0.0-20200916233221-06efa326a5dc h1:T6Tqn
 github.com/candidatos-info/descritor v0.0.0-20200916233221-06efa326a5dc/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
 github.com/candidatos-info/descritor v0.0.0-20200923112806-2aeede04ddf1 h1:+xmcsczsdq+PzbBfTEpDndodMRFa4AyT/LcgutGSmDw=
 github.com/candidatos-info/descritor v0.0.0-20200923112806-2aeede04ddf1/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
+github.com/candidatos-info/descritor v0.0.0-20200924122102-5bb12ef849a4 h1:cC+++s3XMlBgodMOAhBhf0nAKj3OALR7YYI8rAyGsdk=
+github.com/candidatos-info/descritor v0.0.0-20200924122102-5bb12ef849a4/go.mod h1:bINo8SlUue0BcU8WrlgyTVJMi9r9Awbo5I+cuZn1niI=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
@@ -517,6 +519,8 @@ gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b h1:QRR6H1YWRnHb4Y/HeNFCTJLFVxaq6wH4YuVdsUOr75U=
 gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
+gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 h1:VpOs+IwYnYBaFnrNAeB8UUWtL3vEUnzSCL1nVjPhqrw=
+gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22/go.mod h1:yeKp02qBN3iKW1OzL3MGk2IdtZzaj7SFntXj72NppTA=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.3.0/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
