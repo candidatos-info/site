@@ -39,3 +39,12 @@ func (c *Client) GetStates() ([]string, error) {
 	}
 	return states, nil
 }
+
+// GetCities returns the city of a given state
+func (c *Client) GetCities(state string) ([]string, error) {
+	var location descritor.Location
+	if err := c.client.C(descritor.LocationsCollection).Find(bson.M{"state": state}).One(&location); err != nil {
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
+	}
+	return location.Cities, nil
+}

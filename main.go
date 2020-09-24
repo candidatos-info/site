@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/candidatos-info/site/db"
 	"github.com/candidatos-info/site/email"
+	"github.com/candidatos-info/site/exception"
 	"github.com/candidatos-info/site/token"
 	"github.com/labstack/echo"
 )
@@ -440,6 +442,28 @@ func statesHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func citiesHandler(c echo.Context) error {
+	state := c.QueryParam("state")
+	if state == "" {
+		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Informe do estado", Code: http.StatusBadRequest})
+	}
+	cities, err := dbClient.GetCities(state)
+	log.Printf("failed to get cities of state [%s], error %v\n", state, err)
+	if err != nil {
+		var e *exception.Exception
+		if errors.As(err, &e) {
+			return c.JSON(e.Code, defaultResponse{Message: e.Message, Code: e.Code})
+		}
+		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
+	}
+	response := struct {
+		Cities []string `json:"cities"`
+	}{
+		cities,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
 func main() {
 	urlConnection := os.Getenv("DB_URL")
 	if urlConnection == "" {
@@ -493,6 +517,7 @@ func main() {
 	allowedToUpdateProfile = r == 1
 	e := echo.New()
 	e.GET("/api/v2/states", statesHandler)
+	e.GET("/api/v2/cities", citiesHandler)
 	// e.GET("/api/v2/configs", configsHandler)
 	// e.POST("/api/v2/contact_us", contactHandler)
 	// e.POST("/api/v2/candidates/login", loginHandler)
