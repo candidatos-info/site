@@ -107,11 +107,9 @@ func resolveQuery(query map[string]interface{}) bson.M {
 	for k, v := range query {
 		if k != "name" {
 			result[k] = v
+		} else {
+			result["ballot_name"] = bson.M{"$regex": bson.RegEx{Pattern: fmt.Sprintf(".*%s.*", query["name"]), Options: "i"}}
 		}
-	}
-	if name, ok := query["name"]; ok {
-		fmt.Println("HEHEHHE")
-		result["ballot_name"] = bson.M{"$regex": bson.RegEx{Pattern: fmt.Sprintf(".*%s.*", name), Options: "i"}}
 	}
 	fmt.Println(result)
 	return result
