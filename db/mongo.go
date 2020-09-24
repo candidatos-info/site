@@ -92,6 +92,9 @@ func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender st
 	if gender != "" {
 		queryMap["gender"] = gender
 	}
+	if name != "" {
+		queryMap["name"] = name
+	}
 	sortBy := []string{"-transparency"}
 	if err := c.client.C(descritor.CandidaturesCollection).Find(resolveQuery(queryMap)).Sort(strings.Join(sortBy, ",")).All(&candidates); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
@@ -102,7 +105,13 @@ func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender st
 func resolveQuery(query map[string]interface{}) bson.M {
 	result := make(bson.M, len(query))
 	for k, v := range query {
-		result[k] = v
+		if k != "name" {
+			result[k] = v
+		}
+	}
+	if name, ok := query["name"]; ok {
+		fmt.Println("HEHEHHE")
+		result["ballot_name"] = bson.M{"$regex": bson.RegEx{Pattern: fmt.Sprintf(".*%s.*", name), Options: "i"}}
 	}
 	fmt.Println(result)
 	return result
