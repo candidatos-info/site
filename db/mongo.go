@@ -153,6 +153,5 @@ func resolveQuery(query map[string]interface{}) bson.M {
 			result[k] = v
 		}
 	}
-	fmt.Println(result)
 	return result
 }
