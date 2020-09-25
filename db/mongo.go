@@ -7,6 +7,7 @@ import (
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/exception"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
@@ -126,7 +127,7 @@ func (c *Client) FindCandidatesWithParams(year int, state, city, role, gender st
 		queryMap["tags"] = tags
 	}
 	findOptions := options.Find()
-	findOptions.SetSort(map[string]int{"transparency": -1}) // reverse order by `when`
+	findOptions.SetSort(map[string]int{"transparency": -1})
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
 	var candidatures []*descritor.CandidateForDB
@@ -145,7 +146,7 @@ func resolveQuery(query map[string]interface{}) bson.M {
 	for k, v := range query {
 		switch k {
 		case "name":
-			result["ballot_name"] = bson.M{"$regex": bson.RegEx{Pattern: fmt.Sprintf(".*%s.*", query["name"]), Options: "i"}}
+			result["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", query["name"]), Options: "i"}}
 		case "tags":
 			result["tags"] = bson.M{"$in": query["tags"]}
 		default:
