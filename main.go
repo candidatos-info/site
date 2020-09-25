@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	b64 "encoding/base64"
 
@@ -29,6 +30,8 @@ const (
 	twitterLogoURL         = "https://help.twitter.com/content/dam/help-twitter/brand/logo.png"
 	websiteLogoURL         = "https://i.pinimg.com/originals/4e/d3/5b/4ed35b1c1bb4a3ddef205a3bbbe7fc17.jpg"
 	whatsAppLogoURL        = "https://i0.wp.com/cantinhodabrantes.com.br/wp-content/uploads/2017/08/whatsapp-logo-PNG-Transparent.png?fit=1000%2C1000&ssl=1"
+	searchCookieExpiration = 360 //in hours
+	searchCacheCookie      = "searchCookie"
 )
 
 var (
@@ -360,17 +363,10 @@ type candidateCard struct {
 }
 
 func candidatesHandler(c echo.Context) error {
-	cacheToken := c.Request().Header.Get("search-cache-token")
 	response := struct {
 		Candidates []*candidateCard `json:"candidates"`
 	}{}
-	var candidatesFromDB []*descritor.CandidateForDB
-	var err error
-	if cacheToken != "" {
-		candidatesFromDB, err = getLastCandidatesOfPreviousQuery(cacheToken)
-	} else {
-		candidatesFromDB, err = getCandidatesByParams(c)
-	}
+	candidatesFromDB, cacheCookie, err := getCandidatesByParams(c)
 	if err != nil {
 		var e *exception.Exception
 		if errors.As(err, &e) {
@@ -393,23 +389,27 @@ func candidatesHandler(c echo.Context) error {
 			c.Gender,
 		})
 	}
-	// TODO send cache token on headers
+	c.SetCookie(cacheCookie)
 	return c.JSON(http.StatusOK, response)
 }
 
-func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, error) {
+func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.Cookie, error) {
+	cacheCookie, err := c.Cookie(searchCacheCookie)
+	if cacheCookie != nil {
+		return resolveQueryUsingCacheCookie(cacheCookie)
+	}
 	state := c.QueryParam("state")
 	if state == "" {
-		return nil, &exception.Exception{Message: "O estado deve ser fornecido.", Code: exception.InvalidParameters}
+		return nil, nil, &exception.Exception{Message: "O estado deve ser fornecido.", Code: exception.InvalidParameters}
 	}
 	year := c.QueryParam("year")
 	if year == "" {
-		return nil, &exception.Exception{Message: "O ano deve ser fornecido.", Code: exception.InvalidParameters}
+		return nil, nil, &exception.Exception{Message: "O ano deve ser fornecido.", Code: exception.InvalidParameters}
 	}
 	y, err := strconv.Atoi(year)
 	if err != nil {
 		log.Printf("failed to parse year [%s] to int, got error %v\n", year, err)
-		return nil, &exception.Exception{Message: "Ano fornecido é inválido", Code: exception.ProcessmentError}
+		return nil, nil, &exception.Exception{Message: "Ano fornecido é inválido", Code: exception.ProcessmentError}
 	}
 	city := c.QueryParam("city")
 	gender := c.QueryParam("gender")
@@ -420,11 +420,32 @@ func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, error) 
 	if tags != "" {
 		t = strings.Split(tags, ",")
 	}
-	return dbClient.FindCandidatesWithParams(y, state, city, role, gender, t, name)
+	candidatures, err := dbClient.FindCandidatesWithParams(y, state, city, role, gender, t, name)
+	return candidatures, getSearchCookie(year, state), err
 }
 
-func getLastCandidatesOfPreviousQuery(cacheToken string) ([]*descritor.CandidateForDB, error) {
-	return nil, nil
+func resolveQueryUsingCacheCookie(cacheCookie *http.Cookie) ([]*descritor.CandidateForDB, *http.Cookie, error) {
+	if !time.Now().After(cacheCookie.Expires) {
+		log.Printf("search cache cookie is expired")
+		return nil, nil, exception.New(exception.InvalidParameters, "Cookie de busca expirado!", nil)
+	}
+	cookieValues := strings.Split(cacheCookie.Value, ",")
+	state := cookieValues[1]
+	year, err := strconv.Atoi(cookieValues[0])
+	if err != nil {
+		log.Printf("failed to parse year gotten from cache cookie [%s] to int, error %v\n", cookieValues[0], err)
+		return nil, nil, exception.New(exception.ProcessmentError, "Problema ao extrair valor de cookies.", nil)
+	}
+	candidatures, err := dbClient.FindCandidatesWithParams(year, state, "", "", "", nil, "")
+	return candidatures, getSearchCookie(cookieValues[0], state), err
+}
+
+func getSearchCookie(year, state string) *http.Cookie {
+	return &http.Cookie{
+		Name:    searchCacheCookie,
+		Value:   fmt.Sprintf("%s,%s", year, state),
+		Expires: time.Now().Add(time.Hour * searchCookieExpiration),
+	}
 }
 
 func statesHandler(c echo.Context) error {
@@ -447,8 +468,8 @@ func citiesHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Informe do estado", Code: http.StatusBadRequest})
 	}
 	cities, err := dbClient.GetCities(state)
-	log.Printf("failed to get cities of state [%s], error %v\n", state, err)
 	if err != nil {
+		log.Printf("failed to get cities of state [%s], error %v\n", state, err)
 		var e *exception.Exception
 		if errors.As(err, &e) {
 			return c.JSON(e.Code, defaultResponse{Message: e.Message, Code: e.Code})
