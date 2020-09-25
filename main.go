@@ -147,7 +147,7 @@ func requestAccessHandler(c echo.Context) error {
 		Tags          []string `json:"tags"`
 		AvailableTags []string `json:"available_tags"`
 	}{
-		foundCandidate.Transparence,
+		foundCandidate.Transparency,
 		strings.ToLower(foundCandidate.Email),
 		foundCandidate.BallotName,
 		foundCandidate.BallotNumber,
@@ -226,7 +226,7 @@ func profileHandler(c echo.Context) error {
 		City        string   `json:"city"`
 		State       string   `json:"state"`
 	}{
-		foundCandidate.Transparence,
+		foundCandidate.Transparency,
 		strings.ToLower(foundCandidate.Email),
 		foundCandidate.BallotName,
 		foundCandidate.BallotNumber,
@@ -321,7 +321,7 @@ func updateProfileHandler(c echo.Context) error {
 	if candidate.Contact != nil {
 		counter++
 	}
-	candidate.Transparence = counter / 4.0
+	candidate.Transparency = counter / 4.0
 	if _, err := dbClient.UpdateCandidateProfile(candidate); err != nil {
 		log.Printf("failed to update candidates profile, erro %v\n", err)
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao atualizar dados de candidato. Tente novamente mais tarde.", Code: http.StatusInternalServerError})
@@ -376,7 +376,7 @@ func candidatesHandler(c echo.Context) error {
 	}
 	for _, c := range candidatesFromDB {
 		response.Candidates = append(response.Candidates, &candidateCard{
-			c.Transparence,
+			c.Transparency,
 			c.PhotoURL,
 			c.BallotName,
 			c.City,
@@ -394,10 +394,6 @@ func candidatesHandler(c echo.Context) error {
 }
 
 func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.Cookie, error) {
-	cacheCookie, err := c.Cookie(searchCacheCookie)
-	if cacheCookie != nil {
-		return resolveQueryUsingCacheCookie(cacheCookie)
-	}
 	state := c.QueryParam("state")
 	if state == "" {
 		return nil, nil, &exception.Exception{Message: "O estado deve ser fornecido.", Code: exception.InvalidParameters}
@@ -420,6 +416,12 @@ func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.C
 	if tags != "" {
 		t = strings.Split(tags, ",")
 	}
+	cacheCookie, err := c.Cookie(searchCacheCookie)
+	if cacheCookie != nil && city == "" && gender == "" && name == "" && role == "" && tags == "" {
+		log.Println("has cache")
+		return resolveQueryUsingCacheCookie(cacheCookie)
+	}
+	log.Println("sem cache")
 	candidatures, err := dbClient.FindCandidatesWithParams(y, state, city, role, gender, t, name)
 	return candidatures, getSearchCookie(year, state), err
 }

@@ -88,7 +88,7 @@ func (c *DataStoreClient) FindCandidatesWithParams(state, city, role string, yea
 		toReturn = append(toReturn, e.Candidates...)
 	}
 	sort.Slice(toReturn, func(i, j int) bool {
-		return toReturn[i].Transparence > toReturn[j].Transparence
+		return toReturn[i].Transparency > toReturn[j].Transparency
 	})
 	if city != "" {
 		for _, c := range entities {

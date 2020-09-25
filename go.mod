@@ -8,8 +8,7 @@ require (
 	cloud.google.com/go/datastore v1.3.0
 	cloud.google.com/go/pubsub v1.6.1 // indirect
 	cloud.google.com/go/storage v1.11.0 // indirect
-	github.com/candidatos-info/descritor v0.0.0-20200924122102-5bb12ef849a4
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/candidatos-info/descritor v0.0.0-20200925213454-c5e25c950b09
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gocarina/gocsv v0.0.0-20200827134620-49f5c3fa2b3e
 	github.com/kr/pretty v0.2.1 // indirect
@@ -21,6 +20,7 @@ require (
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
+	go.mongodb.org/mongo-driver v1.4.1
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/sys v0.0.0-20200922070232-aee5d888a860 // indirect
 	golang.org/x/text v0.3.3
