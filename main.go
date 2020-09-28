@@ -18,6 +18,7 @@ import (
 	"github.com/candidatos-info/site/email"
 	"github.com/candidatos-info/site/exception"
 	"github.com/candidatos-info/site/token"
+	pagination "github.com/gobeam/mongo-go-pagination"
 	"github.com/labstack/echo"
 )
 
@@ -118,9 +119,9 @@ func requestAccessHandler(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
 	}
-	// if !tokenService.IsValid(string(accessTokenBytes)) {
-	// 	return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
-	// }
+	if !tokenService.IsValid(string(accessTokenBytes)) {
+		return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
+	}
 	claims, err := token.GetClaims(string(accessTokenBytes))
 	if err != nil {
 		log.Printf("failed to extract email from token claims, erro %v\n", err)
@@ -269,9 +270,9 @@ func updateProfileHandler(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
 	}
-	// if !tokenService.IsValid(string(accessTokenBytes)) {
-	// 	return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
-	// }
+	if !tokenService.IsValid(string(accessTokenBytes)) {
+		return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
+	}
 	claims, err := token.GetClaims(string(accessTokenBytes))
 	if err != nil {
 		log.Printf("failed to extract email from token claims, erro %v\n", err)
@@ -364,9 +365,11 @@ type candidateCard struct {
 
 func candidatesHandler(c echo.Context) error {
 	response := struct {
-		Candidates []*candidateCard `json:"candidates"`
+		Candidates []*candidateCard           `json:"candidates"`
+		Pagination *pagination.PaginationData `json:"pagination"`
 	}{}
-	candidatesFromDB, cacheCookie, err := getCandidatesByParams(c)
+	candidatesFromDB, cacheCookie, pagination, err := getCandidatesByParams(c)
+	response.Pagination = pagination
 	if err != nil {
 		var e *exception.Exception
 		if errors.As(err, &e) {
@@ -393,61 +396,95 @@ func candidatesHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.Cookie, error) {
-	state := c.QueryParam("state")
-	if state == "" {
-		return nil, nil, &exception.Exception{Message: "O estado deve ser fornecido.", Code: exception.InvalidParameters}
-	}
-	year := c.QueryParam("year")
-	if year == "" {
-		return nil, nil, &exception.Exception{Message: "O ano deve ser fornecido.", Code: exception.InvalidParameters}
-	}
-	y, err := strconv.Atoi(year)
+func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.Cookie, *pagination.PaginationData, error) {
+	queryMap, cookie, err := getQueryFilters(c)
+	log.Println(queryMap)
 	if err != nil {
-		log.Printf("failed to parse year [%s] to int, got error %v\n", year, err)
-		return nil, nil, &exception.Exception{Message: "Ano fornecido é inválido", Code: exception.ProcessmentError}
+		log.Printf("failed to get filters, error %v\n", err)
+		return nil, nil, nil, err
 	}
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil {
+		log.Printf("failed to parse page size from string [%s] to int, error %v\n", c.QueryParam("page_size"), err)
+		return nil, nil, nil, &exception.Exception{Message: "Tamanho de página inválido!", Code: exception.InvalidParameters}
+	}
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		log.Printf("failed to parse page from string [%s] to int, error %v\n", c.QueryParam("page"), err)
+		return nil, nil, nil, &exception.Exception{Message: "Número de página inválido!", Code: exception.InvalidParameters}
+	}
+	log.Printf("pagesize: %d, page: %d\n", pageSize, page)
+	candidatures, pagination, err := dbClient.FindCandidatesWithParams(queryMap, pageSize, page)
+	return candidatures, cookie, pagination, err
+}
+
+func getQueryFilters(c echo.Context) (map[string]interface{}, *http.Cookie, error) {
+	year := c.QueryParam("year")
+	state := c.QueryParam("state")
 	city := c.QueryParam("city")
 	gender := c.QueryParam("gender")
 	name := c.QueryParam("name")
 	role := c.QueryParam("role")
 	tags := c.QueryParam("tags")
-	var t []string
+	queryMap := make(map[string]interface{})
+	cacheCookie, _ := c.Cookie(searchCacheCookie)
+	if cacheCookie != nil {
+		log.Println("found cache cookie")
+		cookieValues := strings.Split(cacheCookie.Value, ",")
+		queryMap["state"] = cookieValues[1]
+		y, err := strconv.Atoi(cookieValues[0])
+		if err != nil {
+			log.Printf("failed to parse year from cache cookie [%s] to int, error %v\n", cookieValues[0], err)
+			return nil, nil, exception.New(exception.ProcessmentError, "Ano fornecido é inválido.", nil)
+		}
+		queryMap["year"] = y
+	}
+	if city != "" {
+		queryMap["city"] = city
+	}
+	if gender != "" {
+		queryMap["gender"] = gender
+	}
+	if role != "" {
+		queryMap["role"] = role
+	}
 	if tags != "" {
-		t = strings.Split(tags, ",")
+		queryMap["tags"] = strings.Split(tags, ",")
 	}
-	cacheCookie, err := c.Cookie(searchCacheCookie)
-	if cacheCookie != nil && city == "" && gender == "" && name == "" && role == "" && tags == "" {
-		log.Println("has cache")
-		return resolveQueryUsingCacheCookie(cacheCookie)
+	if name != "" {
+		queryMap["name"] = name
 	}
-	log.Println("sem cache")
-	candidatures, err := dbClient.FindCandidatesWithParams(y, state, city, role, gender, t, name)
-	return candidatures, getSearchCookie(year, state), err
+	if state != "" {
+		queryMap["state"] = state
+	}
+	if year != "" {
+		y, err := strconv.Atoi(year)
+		if err != nil {
+			log.Printf("failed to parse year from string [%s] to int, error %v\n", year, err)
+			return nil, nil, exception.New(exception.ProcessmentError, "Ano fornecido é inválido.", nil)
+		}
+		queryMap["year"] = y
+	}
+	return queryMap, getSearchCookie(queryMap), nil
 }
 
-func resolveQueryUsingCacheCookie(cacheCookie *http.Cookie) ([]*descritor.CandidateForDB, *http.Cookie, error) {
-	if !time.Now().After(cacheCookie.Expires) {
-		log.Printf("search cache cookie is expired")
-		return nil, nil, exception.New(exception.InvalidParameters, "Cookie de busca expirado!", nil)
+func getSearchCookie(queryMap map[string]interface{}) *http.Cookie {
+	year := ""
+	if queryMap["year"] != nil {
+		year = fmt.Sprintf("%d", queryMap["year"].(int))
 	}
-	cookieValues := strings.Split(cacheCookie.Value, ",")
-	state := cookieValues[1]
-	year, err := strconv.Atoi(cookieValues[0])
-	if err != nil {
-		log.Printf("failed to parse year gotten from cache cookie [%s] to int, error %v\n", cookieValues[0], err)
-		return nil, nil, exception.New(exception.ProcessmentError, "Problema ao extrair valor de cookies.", nil)
+	state := ""
+	if queryMap["state"] != nil {
+		state = queryMap["state"].(string)
 	}
-	candidatures, err := dbClient.FindCandidatesWithParams(year, state, "", "", "", nil, "")
-	return candidatures, getSearchCookie(cookieValues[0], state), err
-}
-
-func getSearchCookie(year, state string) *http.Cookie {
-	return &http.Cookie{
-		Name:    searchCacheCookie,
-		Value:   fmt.Sprintf("%s,%s", year, state),
-		Expires: time.Now().Add(time.Hour * searchCookieExpiration),
+	if year != "" && state != "" {
+		return &http.Cookie{
+			Name:    searchCacheCookie,
+			Value:   fmt.Sprintf("%s,%s", year, state),
+			Expires: time.Now().Add(time.Hour * searchCookieExpiration),
+		}
 	}
+	return nil
 }
 
 func statesHandler(c echo.Context) error {

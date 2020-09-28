@@ -8,9 +8,13 @@ require (
 	cloud.google.com/go/datastore v1.3.0
 	cloud.google.com/go/pubsub v1.6.1 // indirect
 	cloud.google.com/go/storage v1.11.0 // indirect
+	github.com/aws/aws-sdk-go v1.34.32
 	github.com/candidatos-info/descritor v0.0.0-20200925213454-c5e25c950b09
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/gobeam/mongo-go-pagination v0.0.2
 	github.com/gocarina/gocsv v0.0.0-20200827134620-49f5c3fa2b3e
+	github.com/golang/snappy v0.0.2 // indirect
+	github.com/klauspost/compress v1.11.0 // indirect
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo v3.3.10+incompatible
