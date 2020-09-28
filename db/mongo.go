@@ -109,33 +109,7 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 
 // FindCandidatesWithParams searches for a list of candidates with given params
 func (c *Client) FindCandidatesWithParams(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
-	// queryMap := make(map[string]interface{})
-	// queryMap["year"] = year
-	// queryMap["state"] = state
-	// if city != "" {
-	// 	queryMap["city"] = city
-	// }
-	// if role != "" {
-	// 	queryMap["role"] = role
-	// }
-	// if gender != "" {
-	// 	queryMap["gender"] = gender
-	// }
-	// if name != "" {
-	// 	queryMap["name"] = name
-	// }
-	// if len(tags) != 0 {
-	// 	queryMap["tags"] = tags
-	// }
 	var candidatures []*descritor.CandidateForDB
-	// cursor, err := c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection).Find(ctx, resolveQuery(queryMap), findOptions)
-	// if err != nil {
-	// 	return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidatos na collection [%s], erro %v", descritor.CandidaturesCollection, err), nil)
-	// }
-	// if err = cursor.All(ctx, &candidatures); err != nil {
-	// 	return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidatos na collection [%s], erro %v", descritor.CandidaturesCollection, err), nil)
-	// }
-	// return candidatures, nil
 	paginatedData, err := pagination.New(c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection)).Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(resolveQuery(queryMap)).Find()
 	if err != nil {
 		return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar por lista candidatos, erro %v", err), nil)
