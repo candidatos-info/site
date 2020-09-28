@@ -13,7 +13,8 @@ type Token struct {
 }
 
 const (
-	expirationTimeToken = 1
+	accessTokenExpirationTime = 25
+	searchTokenExpiration     = 360
 )
 
 // New returns a new token service
@@ -27,17 +28,7 @@ func New(secret string) *Token {
 func (t *Token) GetToken(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": email,
-		"exp":   time.Now().Add(time.Hour * expirationTimeToken).Unix(),
-	})
-	return token.SignedString([]byte(t.secret))
-}
-
-// GetTokenForLastSearch returns a new token with prev state and city searched on it
-func (t *Token) GetTokenForLastSearch(state, city string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"state": state,
-		"city":  city,
-		"exp":   time.Now().Add(time.Hour * expirationTimeToken).Unix(),
+		"exp":   time.Now().Add(time.Hour * accessTokenExpirationTime).Unix(),
 	})
 	return token.SignedString([]byte(t.secret))
 }
@@ -62,9 +53,12 @@ func GetClaims(auhtorization string) (map[string]string, error) {
 		return []byte(""), nil
 	})
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		email := claims["email"].(string)
 		claimsMap := make(map[string]string)
-		claimsMap["email"] = email
+		for key, value := range claims {
+			if key != "exp" {
+				claimsMap[key] = value.(string)
+			}
+		}
 		return claimsMap, nil
 	}
 	return nil, fmt.Errorf("could not get claims")
