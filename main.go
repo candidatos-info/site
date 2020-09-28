@@ -180,9 +180,13 @@ func requestAccessHandler(c echo.Context) error {
 
 func configsHandler(c echo.Context) error {
 	response := struct {
-		AllowChangeProfile bool `json:"allow_change_profile"`
+		AllowChangeProfile bool     `json:"allow_change_profile"`
+		Currentyear        int      `json:"current_year"`
+		Tags               []string `json:"tags"`
 	}{
 		allowedToUpdateProfile,
+		currentYear,
+		tags,
 	}
 	return c.JSON(http.StatusOK, response)
 }
