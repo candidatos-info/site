@@ -1,0 +1,20 @@
+:root {
+    --color-flux-candidate: #E6F5FF;
+    --color-flux-visitor: #F7FAFC;
+    --color-primary-button: #0795FB;
+    --color-secondary-button: #4975A9;
+    --color-disabled-button: #97AECA;
+    --color-border-button: #83CAFD;
+    --color-disabled-field: #E5E5E5;
+    --color-green-100: #21B290;
+    --color-green-50: #8ACD8F;
+    --color-yellow-50: #FFEB39;
+    --color-text: #0A446B;
+    --color-red: #EB1111;
+    --color-orange-25: #EE7C50;
+    --color-white: #fff;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
