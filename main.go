@@ -20,6 +20,7 @@ import (
 	"github.com/candidatos-info/site/token"
 	pagination "github.com/gobeam/mongo-go-pagination"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 const (
@@ -579,6 +580,12 @@ func main() {
 	}
 	allowedToUpdateProfile = r == 1
 	e := echo.New()
+	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Root:   "frontend/dist/",
+		Browse: true,
+		HTML5:  true,
+		Index:  "index.html",
+	}))
 	e.GET("/api/v2/states", statesHandler)
 	e.GET("/api/v2/cities", citiesHandler)
 	e.GET("/api/v2/configs", configsHandler)
