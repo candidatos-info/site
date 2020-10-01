@@ -11,8 +11,7 @@ export default new Vuex.Store({
                 profile_image: '/img/team/ana.jpeg',
                 position: 'Pitaqueira',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
-                    {provider: 'github', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'github', link: 'https://twitter.com/anapaulagomes' },
                 ]
             },
             {
@@ -20,7 +19,9 @@ export default new Vuex.Store({
                 profile_image: '/img/team/aurelio.jpeg',
                 position: 'Desenvolvedor',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'github', link: 'https://github.com/ABuarque' },
+                    { provider: 'twitter', link: 'https://twitter.com/abuarquemf' },
+                    { provider: 'instagram', link: 'https://www.instagram.com/abuarquemf/' },
                 ]
             },
             {
@@ -28,7 +29,7 @@ export default new Vuex.Store({
                 profile_image: '/img/team/bruno.jpeg',
                 position: 'Palpiteiro jurídico',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'github', link: 'https://github.com/jedibruno' },
                 ]
             },
             {
@@ -36,7 +37,8 @@ export default new Vuex.Store({
                 profile_image: '/img/team/daniel.jpeg',
                 position: 'Coordenador',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'twitter', link: 'https://twitter.com/daniellfireman' },
+                    { provider: 'github', link: 'https://github.com/danielfireman' }
                 ]
             },
             {
@@ -44,7 +46,8 @@ export default new Vuex.Store({
                 profile_image: '/img/team/eduardo.jpeg',
                 position: 'Palpiteiro',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'twitter', link: 'https://twitter.com/cuducos' },
+                    { provider: 'github', link: 'https://github.com/cuducos' },
                 ]
             },
             {
@@ -52,7 +55,7 @@ export default new Vuex.Store({
                 profile_image: '/img/team/evelyn.jpeg',
                 position: 'Articuladora',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'instagram', link: 'https://www.instagram.com/evygomes' },
                 ]
             },
             {
@@ -60,7 +63,7 @@ export default new Vuex.Store({
                 profile_image: '/img/team/laura.jpeg',
                 position: 'Advogada',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'instagram', link: 'https://www.instagram.com/lauracavalcante/' },
                 ]
             },
             {
@@ -68,7 +71,7 @@ export default new Vuex.Store({
                 profile_image: '/img/team/mariana.jpeg',
                 position: 'Designer',
                 socials: [
-                    {provider: 'twitter', link: 'https://twitter.com/anapaulagomes'},
+                    { provider: 'instagram', link: 'https://www.instagram.com/soutoam/' },
                 ]
             },
         ],
