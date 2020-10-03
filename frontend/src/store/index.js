@@ -21,7 +21,7 @@ export default new Vuex.Store({
                 socials: [
                     { provider: 'github', link: 'https://github.com/ABuarque' },
                     { provider: 'twitter', link: 'https://twitter.com/abuarquemf' },
-                    { provider: 'instagram', link: 'https://www.instagram.com/abuarquemf/' },
+                    { provider: 'linkedin', link: 'https://www.linkedin.com/in/aurelio-buarque/' },
                 ]
             },
             {
@@ -71,7 +71,9 @@ export default new Vuex.Store({
                 profile_image: '/img/team/mariana.jpeg',
                 position: 'Designer',
                 socials: [
+                    { provider: 'github', link: 'https://github.com/soutoam' },
                     { provider: 'instagram', link: 'https://www.instagram.com/soutoam/' },
+                    { provider: 'linkedin', link: 'https://www.linkedin.com/in/soutomariana/' },
                 ]
             },
         ],
