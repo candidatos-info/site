@@ -59,6 +59,20 @@ type defaultResponse struct {
 	Code    int    `json:"code"`
 }
 
+// this struct is used olny as DTO on requests
+// and responses about contact.
+type contact struct {
+	SocialNetwork string `json:"social_network,omitempty"`
+	Value         string `json:"value,omitempty"`
+}
+
+// this struct is used olny as DTO on requests
+// and responses about proposal.
+type proposal struct {
+	Topic       string `json:"topic,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
 func contactHandler(c echo.Context) error {
 	request := struct {
 		Type    string `json:"type"`
@@ -193,28 +207,28 @@ func profileHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
 	}
 	response := struct {
-		Transparency float64               `json:"transparency"`
-		Email        string                `json:"email"`
-		Name         string                `json:"name"`
-		BallotNumber int                   `json:"ballot_number"`
-		Party        string                `json:"party"`
-		Contacts     []*descritor.Contact  `json:"contacts"`
-		Biography    string                `json:"biography"`
-		Proposals    []*descritor.Proposal `json:"proposals"`
-		Sex          string                `json:"sex"`
-		Role         string                `json:"role"`
-		Picture      string                `json:"picture_url"`
-		City         string                `json:"city"`
-		State        string                `json:"state"`
+		Transparency float64     `json:"transparency"`
+		Email        string      `json:"email"`
+		Name         string      `json:"name"`
+		BallotNumber int         `json:"ballot_number"`
+		Party        string      `json:"party"`
+		Contacts     []*contact  `json:"contacts"`
+		Biography    string      `json:"biography"`
+		Proposals    []*proposal `json:"proposals"`
+		Sex          string      `json:"sex"`
+		Role         string      `json:"role"`
+		Picture      string      `json:"picture_url"`
+		City         string      `json:"city"`
+		State        string      `json:"state"`
 	}{
 		foundCandidate.Transparency,
 		strings.ToLower(foundCandidate.Email),
 		foundCandidate.BallotName,
 		foundCandidate.BallotNumber,
 		foundCandidate.Party,
-		foundCandidate.Contacts,
-		foundCandidate.BallotName,
-		foundCandidate.Proposals,
+		parseDescritorContactsToDTO(foundCandidate.Contacts),
+		foundCandidate.Biography,
+		paseDescritorProposalsToDTO(foundCandidate.Proposals),
 		foundCandidate.Gender,
 		foundCandidate.Role,
 		foundCandidate.PhotoURL,
@@ -223,6 +237,51 @@ func profileHandler(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, response)
 }
+
+func parseDescritorContactsToDTO(contacts []*descritor.Contact) []*contact {
+	var c []*contact
+	for _, dc := range contacts {
+		c = append(c, &contact{
+			SocialNetwork: dc.SocialNetwork,
+			Value:         dc.Value,
+		})
+	}
+	return c
+}
+
+func paseDescritorProposalsToDTO(proposals []*descritor.Proposal) []*proposal {
+	var p []*proposal
+	for _, dp := range proposals {
+		p = append(p, &proposal{
+			Topic:       dp.Topic,
+			Description: dp.Description,
+		})
+	}
+	return p
+}
+
+/*
+func parseProposals(proposals []*proposal) []*descritor.Proposal {
+	var p []*descritor.Proposal
+	for _, proposal := range proposals {
+		p = append(p, &descritor.Proposal{
+			Topic:       proposal.Topic,
+			Description: proposal.Description,
+		})
+	}
+	return p
+}
+
+func parseContacts(contacts []*contact) []*descritor.Contact {
+	var c []*descritor.Contact
+	for _, contact := range contacts {
+		c = append(c, &descritor.Contact{
+			SocialNetwork: contact.SocialNetwork,
+			Value:         contact.Value,
+		})
+	}
+	return c
+}*/
 
 func updateProfileHandler(c echo.Context) error {
 	encodedAccessToken := c.QueryParam("access_token")
@@ -243,9 +302,9 @@ func updateProfileHandler(c echo.Context) error {
 	}
 	email := claims["email"]
 	request := struct {
-		Biography string                `json:"biography"`
-		Conctacts []*descritor.Contact  `json:"contacts"`
-		Proposals []*descritor.Proposal `json:"proposals"`
+		Biography string      `json:"biography"`
+		Conctacts []*contact  `json:"contacts"`
+		Proposals []*proposal `json:"proposals"`
 	}{}
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Corpo de requisição inválido", Code: http.StatusBadRequest})
@@ -266,8 +325,8 @@ func updateProfileHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
 	}
 	candidate.Biography = request.Biography
-	candidate.Proposals = request.Proposals
-	candidate.Contacts = request.Conctacts
+	candidate.Proposals = parseProposals(request.Proposals)
+	candidate.Contacts = parseContacts(request.Conctacts)
 	counter := 0.0
 	if candidate.Biography != "" {
 		counter++
@@ -284,6 +343,28 @@ func updateProfileHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao atualizar dados de candidato. Tente novamente mais tarde.", Code: http.StatusInternalServerError})
 	}
 	return c.JSON(http.StatusOK, defaultResponse{Message: "Seus dados foram atualizados com sucesso!", Code: http.StatusOK})
+}
+
+func parseProposals(proposals []*proposal) []*descritor.Proposal {
+	var p []*descritor.Proposal
+	for _, proposal := range proposals {
+		p = append(p, &descritor.Proposal{
+			Topic:       proposal.Topic,
+			Description: proposal.Description,
+		})
+	}
+	return p
+}
+
+func parseContacts(contacts []*contact) []*descritor.Contact {
+	var c []*descritor.Contact
+	for _, contact := range contacts {
+		c = append(c, &descritor.Contact{
+			SocialNetwork: contact.SocialNetwork,
+			Value:         contact.Value,
+		})
+	}
+	return c
 }
 
 type candidateCard struct {
