@@ -285,13 +285,12 @@ func updateProfileHandler(c echo.Context) error {
 	}
 	email := claims["email"]
 	request := struct {
-		Conctact struct {
-			Link          string `json:"link"`
-			SocialNetWork string `json:"social_network"`
+		Biography string `json:"biography"`
+		Conctact  []struct {
+			value         string `json:"link"`
+			SocialNetwork string `json:"social_network"`
 		} `json:"contact"`
-		Biography   string   `json:"biography"`
-		Description string   `json:"description"`
-		Tags        []string `json:"tags"`
+		Tags []string `json:"tags"`
 	}{}
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Corpo de requisição inválido", Code: http.StatusBadRequest})
@@ -335,24 +334,24 @@ func updateProfileHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, defaultResponse{Message: "Seus dados foram atualizados com sucesso!", Code: http.StatusOK})
 }
 
-func resolveContact(link, socialNetWork string) *descritor.Contact {
-	c := descritor.Contact{
-		Link: link,
-	}
-	switch socialNetWork {
-	case "instagram":
-		c.IconURL = instagramLogoURL
-	case "twitter":
-		c.IconURL = twitterLogoURL
-	case "facebook":
-		c.IconURL = facebookLogoURL
-	case "website":
-		c.IconURL = websiteLogoURL
-	case "phone":
-		c.IconURL = whatsAppLogoURL
-	}
-	return &c
-}
+// func resolveContact(link, socialNetWork string) *descritor.Contact {
+// 	c := descritor.Contact{
+// 		Link: link,
+// 	}
+// 	switch socialNetWork {
+// 	case "instagram":
+// 		c.IconURL = instagramLogoURL
+// 	case "twitter":
+// 		c.IconURL = twitterLogoURL
+// 	case "facebook":
+// 		c.IconURL = facebookLogoURL
+// 	case "website":
+// 		c.IconURL = websiteLogoURL
+// 	case "phone":
+// 		c.IconURL = whatsAppLogoURL
+// 	}
+// 	return &c
+// }
 
 type candidateCard struct {
 	Transparency float64  `json:"transparency"`
@@ -392,7 +391,7 @@ func candidatesHandler(c echo.Context) error {
 			c.Role,
 			c.Party,
 			c.BallotNumber,
-			c.Tags,
+			[]string{}, //c.Tags,
 			c.SequencialCandidate,
 			c.Gender,
 		})
