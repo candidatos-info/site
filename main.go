@@ -135,46 +135,25 @@ func requestAccessHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
 	}
 	response := struct {
-		Transparence float64 `json:"transparence"`
-		Email        string  `json:"email"`
-		Name         string  `json:"name"`
-		BallotNumber int     `json:"ballot_number"`
-		Party        string  `json:"party"`
-		Contact      struct {
-			Icon string `json:"icon"`
-			Link string `json:"link"`
-		} `json:"contact"`
-		Biography     string   `json:"biography"`
-		Description   string   `json:"description"`
-		Tags          []string `json:"tags"`
-		AvailableTags []string `json:"available_tags"`
+		Transparence  float64               `json:"transparence"`   // Current candidate transparency (gotten from database).
+		Email         string                `json:"email"`          // Candidate email.
+		Name          string                `json:"name"`           // Candidate name.
+		BallotNumber  int                   `json:"ballot_number"`  // Candidate ballot number.
+		Party         string                `json:"party"`          // Candidate party.
+		Biography     string                `json:"biography"`      // Candidate biography.
+		AvailableTags []string              `json:"available_tags"` // Available tags on system.
+		Contacts      []*descritor.Contact  `json:"contacts"`       // Candidate's contacts.
+		Proposals     []*descritor.Proposal `json:"proposals"`      // Candidate's proposals.
 	}{
-		foundCandidate.Transparency,
-		strings.ToLower(foundCandidate.Email),
-		foundCandidate.BallotName,
-		foundCandidate.BallotNumber,
-		foundCandidate.Party,
-		struct {
-			Icon string "json:\"icon\""
-			Link string "json:\"link\""
-		}{
-			func() string {
-				if foundCandidate.Contact != nil {
-					return foundCandidate.Contact.IconURL
-				}
-				return ""
-			}(),
-			func() string {
-				if foundCandidate.Contact != nil {
-					return foundCandidate.Contact.Link
-				}
-				return ""
-			}(),
-		},
-		foundCandidate.BallotName,
-		foundCandidate.Description,
-		foundCandidate.Tags,
-		tags,
+		Transparence:  foundCandidate.Transparency,
+		Email:         strings.ToLower(foundCandidate.Email),
+		Name:          foundCandidate.Name,
+		BallotNumber:  foundCandidate.BallotNumber,
+		Party:         foundCandidate.Party,
+		Biography:     foundCandidate.Biography,
+		AvailableTags: tags,
+		Contacts:      foundCandidate.Contacts,
+		Proposals:     foundCandidate.Proposals,
 	}
 	return c.JSON(http.StatusOK, response)
 }
@@ -214,49 +193,28 @@ func profileHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
 	}
 	response := struct {
-		Transparency float64 `json:"transparency"`
-		Email        string  `json:"email"`
-		Name         string  `json:"name"`
-		BallotNumber int     `json:"ballot_number"`
-		Party        string  `json:"party"`
-		Contact      struct {
-			Icon string `json:"icon"`
-			Link string `json:"link"`
-		} `json:"contact"`
-		Biography   string   `json:"biography"`
-		Description string   `json:"description"`
-		Tags        []string `json:"tags"`
-		Sex         string   `json:"sex"`
-		Role        string   `json:"role"`
-		Picture     string   `json:"picture_url"`
-		City        string   `json:"city"`
-		State       string   `json:"state"`
+		Transparency float64               `json:"transparency"`
+		Email        string                `json:"email"`
+		Name         string                `json:"name"`
+		BallotNumber int                   `json:"ballot_number"`
+		Party        string                `json:"party"`
+		Contacts     []*descritor.Contact  `json:"contacts"`
+		Biography    string                `json:"biography"`
+		Proposals    []*descritor.Proposal `json:"proposals"`
+		Sex          string                `json:"sex"`
+		Role         string                `json:"role"`
+		Picture      string                `json:"picture_url"`
+		City         string                `json:"city"`
+		State        string                `json:"state"`
 	}{
 		foundCandidate.Transparency,
 		strings.ToLower(foundCandidate.Email),
 		foundCandidate.BallotName,
 		foundCandidate.BallotNumber,
 		foundCandidate.Party,
-		struct {
-			Icon string "json:\"icon\""
-			Link string "json:\"link\""
-		}{
-			func() string {
-				if foundCandidate.Contact != nil {
-					return foundCandidate.Contact.IconURL
-				}
-				return ""
-			}(),
-			func() string {
-				if foundCandidate.Contact != nil {
-					return foundCandidate.Contact.Link
-				}
-				return ""
-			}(),
-		},
+		foundCandidate.Contacts,
 		foundCandidate.BallotName,
-		foundCandidate.Description,
-		foundCandidate.Tags,
+		foundCandidate.Proposals,
 		foundCandidate.Gender,
 		foundCandidate.Role,
 		foundCandidate.PhotoURL,
@@ -285,12 +243,9 @@ func updateProfileHandler(c echo.Context) error {
 	}
 	email := claims["email"]
 	request := struct {
-		Biography string `json:"biography"`
-		Conctact  []struct {
-			value         string `json:"link"`
-			SocialNetwork string `json:"social_network"`
-		} `json:"contact"`
-		Tags []string `json:"tags"`
+		Biography string                `json:"biography"`
+		Conctacts []*descritor.Contact  `json:"contacts"`
+		Proposals []*descritor.Proposal `json:"proposals"`
 	}{}
 	if err := c.Bind(&request); err != nil {
 		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Corpo de requisição inválido", Code: http.StatusBadRequest})
@@ -298,11 +253,12 @@ func updateProfileHandler(c echo.Context) error {
 	if len(request.Biography) > maxBiographyTextSize {
 		return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres.", maxBiographyTextSize), Code: http.StatusBadRequest})
 	}
-	if len(request.Description) > maxDescriptionTextSize {
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres.", maxDescriptionTextSize), Code: http.StatusBadRequest})
-	}
-	if len(request.Tags) > maxTagsSize {
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Número máximo de tags é %d", maxTagsSize), Code: http.StatusBadRequest})
+	if request.Proposals != nil {
+		for _, proposal := range request.Proposals {
+			if len(proposal.Description) > maxDescriptionTextSize {
+				return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres. Tamanho das descrição do tópico %s é de %d caracteres", maxDescriptionTextSize, proposal.Topic, len(proposal.Description)), Code: http.StatusBadRequest})
+			}
+		}
 	}
 	candidate, err := dbClient.GetCandidateByEmail(email, currentYear)
 	if err != nil {
@@ -310,48 +266,25 @@ func updateProfileHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
 	}
 	candidate.Biography = request.Biography
-	candidate.Description = request.Description
-	candidate.Tags = request.Tags
-	candidate.Contact = resolveContact(request.Conctact.Link, request.Conctact.SocialNetWork)
+	candidate.Proposals = request.Proposals
+	candidate.Contacts = request.Conctacts
 	counter := 0.0
 	if candidate.Biography != "" {
 		counter++
 	}
-	if candidate.Description != "" {
+	if candidate.Proposals != nil && len(candidate.Proposals) > 0 {
 		counter++
 	}
-	if len(candidate.Tags) > 0 {
+	if candidate.Contacts != nil && len(candidate.Contacts) > 0 {
 		counter++
 	}
-	if candidate.Contact != nil {
-		counter++
-	}
-	candidate.Transparency = counter / 4.0
+	candidate.Transparency = counter / 3.0
 	if _, err := dbClient.UpdateCandidateProfile(candidate); err != nil {
 		log.Printf("failed to update candidates profile, erro %v\n", err)
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao atualizar dados de candidato. Tente novamente mais tarde.", Code: http.StatusInternalServerError})
 	}
 	return c.JSON(http.StatusOK, defaultResponse{Message: "Seus dados foram atualizados com sucesso!", Code: http.StatusOK})
 }
-
-// func resolveContact(link, socialNetWork string) *descritor.Contact {
-// 	c := descritor.Contact{
-// 		Link: link,
-// 	}
-// 	switch socialNetWork {
-// 	case "instagram":
-// 		c.IconURL = instagramLogoURL
-// 	case "twitter":
-// 		c.IconURL = twitterLogoURL
-// 	case "facebook":
-// 		c.IconURL = facebookLogoURL
-// 	case "website":
-// 		c.IconURL = websiteLogoURL
-// 	case "phone":
-// 		c.IconURL = whatsAppLogoURL
-// 	}
-// 	return &c
-// }
 
 type candidateCard struct {
 	Transparency float64  `json:"transparency"`
@@ -382,6 +315,10 @@ func candidatesHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
 	}
 	for _, c := range candidatesFromDB {
+		var candidateTags []string
+		for _, proposal := range c.Proposals {
+			candidateTags = append(candidateTags, proposal.Topic)
+		}
 		response.Candidates = append(response.Candidates, &candidateCard{
 			c.Transparency,
 			c.PhotoURL,
@@ -391,7 +328,7 @@ func candidatesHandler(c echo.Context) error {
 			c.Role,
 			c.Party,
 			c.BallotNumber,
-			[]string{}, //c.Tags,
+			candidateTags,
 			c.SequencialCandidate,
 			c.Gender,
 		})
