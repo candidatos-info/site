@@ -77,7 +77,7 @@ func (c *Client) GetCandidateByEmail(email string, year int) (*descritor.Candida
 	var candidate descritor.CandidateForDB
 	filter := bson.M{"email": email, "year": year}
 	if err := c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection).FindOne(ctx, filter).Decode(&candidate); err != nil {
-		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidato pelo ano [%d] e pelo email [%s] no banco na collection [%s], erro %v", year, email, descritor.LocationsCollection, err), nil)
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidato pelo ano [%d] e pelo email [%s] no banco na collection [%s], erro %v", year, email, descritor.CandidaturesCollection, err), nil)
 	}
 	return &candidate, nil
 }
