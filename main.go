@@ -24,16 +24,17 @@ import (
 )
 
 const (
-	maxBiographyTextSize   = 500
-	maxDescriptionTextSize = 500
-	maxTagsSize            = 4
-	instagramLogoURL       = "https://logodownload.org/wp-content/uploads/2017/04/instagram-logo-9.png"
-	facebookLogoURL        = "https://logodownload.org/wp-content/uploads/2014/09/facebook-logo-11.png"
-	twitterLogoURL         = "https://help.twitter.com/content/dam/help-twitter/brand/logo.png"
-	websiteLogoURL         = "https://i.pinimg.com/originals/4e/d3/5b/4ed35b1c1bb4a3ddef205a3bbbe7fc17.jpg"
-	whatsAppLogoURL        = "https://i0.wp.com/cantinhodabrantes.com.br/wp-content/uploads/2017/08/whatsapp-logo-PNG-Transparent.png?fit=1000%2C1000&ssl=1"
-	searchCookieExpiration = 360 //in hours
-	searchCacheCookie      = "searchCookie"
+	maxBiographyTextSize     = 500
+	maxDescriptionTextSize   = 100
+	maxProposalsPerCandidate = 5
+	maxTagsSize              = 4
+	instagramLogoURL         = "https://logodownload.org/wp-content/uploads/2017/04/instagram-logo-9.png"
+	facebookLogoURL          = "https://logodownload.org/wp-content/uploads/2014/09/facebook-logo-11.png"
+	twitterLogoURL           = "https://help.twitter.com/content/dam/help-twitter/brand/logo.png"
+	websiteLogoURL           = "https://i.pinimg.com/originals/4e/d3/5b/4ed35b1c1bb4a3ddef205a3bbbe7fc17.jpg"
+	whatsAppLogoURL          = "https://i0.wp.com/cantinhodabrantes.com.br/wp-content/uploads/2017/08/whatsapp-logo-PNG-Transparent.png?fit=1000%2C1000&ssl=1"
+	searchCookieExpiration   = 360 //in hours
+	searchCacheCookie        = "searchCookie"
 )
 
 var (
@@ -290,6 +291,9 @@ func updateProfileHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres.", maxBiographyTextSize), Code: http.StatusBadRequest})
 	}
 	if request.Proposals != nil {
+		if len(request.Proposals) > maxProposalsPerCandidate {
+			return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de tópicos de candidatos é %d, foram enviados %d", maxProposalsPerCandidate, len(request.Proposals)), Code: http.StatusBadRequest})
+		}
 		for _, proposal := range request.Proposals {
 			if len(proposal.Description) > maxDescriptionTextSize {
 				return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres. Tamanho das descrição do tópico %s é de %d caracteres", maxDescriptionTextSize, proposal.Topic, len(proposal.Description)), Code: http.StatusBadRequest})
