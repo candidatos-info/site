@@ -118,7 +118,7 @@ func loginHandler(c echo.Context) error {
 	}
 	encodedAccessToken := b64.StdEncoding.EncodeToString([]byte(accessToken))
 	emailMessage := buildProfileAccessEmail(foundCandidate, encodedAccessToken)
-	if err := emailClient.Send(emailClient.Email, []string{"abuarquemf@gmail.com"}, "Código para acessar candidatos.info", emailMessage); err != nil {
+	if err := emailClient.Send(emailClient.Email, []string{foundCandidate.Email}, "Código para acessar candidatos.info", emailMessage); err != nil {
 		log.Printf("failed to send email to [%s], erro %v\n", request.Email, err)
 		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao enviar email com código de acesso. Por favor tente novamente mais tarde.", Code: http.StatusInternalServerError})
 	}
