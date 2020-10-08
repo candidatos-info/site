@@ -141,7 +141,7 @@ func resolveQuery(query map[string]interface{}) bson.M {
 		case "name":
 			result["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", query["name"]), Options: "i"}}
 		case "tags":
-			result["proposals.topic"] = bson.M{"$in": query["tags"]} // TODO check if it is woking
+			result["proposals.topic"] = bson.M{"$in": query["tags"]}
 		default:
 			result[k] = v
 		}

@@ -51,7 +51,7 @@ var (
 		"VEM": "vice-prefeito",
 	}
 	allowedToUpdateProfile bool
-	tags                   = []string{"Urbanismo", "LBTQ+", "Meio ambiente", "Esporte", "Educação", "Ecossocialismo", "Transformação digital", "Cultura", "Economia"}
+	tags                   = []string{"Urbanismo", "LGBTQ", "Meio ambiente", "Esporte", "Educação", "Ecossocialismo", "Transformação digital", "Cultura", "Economia"}
 )
 
 type defaultResponse struct {
@@ -260,29 +260,6 @@ func paseDescritorProposalsToDTO(proposals []*descritor.Proposal) []*proposal {
 	return p
 }
 
-/*
-func parseProposals(proposals []*proposal) []*descritor.Proposal {
-	var p []*descritor.Proposal
-	for _, proposal := range proposals {
-		p = append(p, &descritor.Proposal{
-			Topic:       proposal.Topic,
-			Description: proposal.Description,
-		})
-	}
-	return p
-}
-
-func parseContacts(contacts []*contact) []*descritor.Contact {
-	var c []*descritor.Contact
-	for _, contact := range contacts {
-		c = append(c, &descritor.Contact{
-			SocialNetwork: contact.SocialNetwork,
-			Value:         contact.Value,
-		})
-	}
-	return c
-}*/
-
 func updateProfileHandler(c echo.Context) error {
 	encodedAccessToken := c.QueryParam("access_token")
 	if encodedAccessToken == "" {
@@ -420,7 +397,6 @@ func candidatesHandler(c echo.Context) error {
 
 func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.Cookie, *pagination.PaginationData, error) {
 	queryMap, cookie, err := getQueryFilters(c)
-	log.Println(queryMap)
 	if err != nil {
 		log.Printf("failed to get filters, error %v\n", err)
 		return nil, nil, nil, err
@@ -435,7 +411,6 @@ func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.C
 		log.Printf("failed to parse page from string [%s] to int, error %v\n", c.QueryParam("page"), err)
 		return nil, nil, nil, &exception.Exception{Message: "Número de página inválido!", Code: exception.InvalidParameters}
 	}
-	log.Printf("pagesize: %d, page: %d\n", pageSize, page)
 	candidatures, pagination, err := dbClient.FindCandidatesWithParams(queryMap, pageSize, page)
 	return candidatures, cookie, pagination, err
 }
@@ -451,7 +426,6 @@ func getQueryFilters(c echo.Context) (map[string]interface{}, *http.Cookie, erro
 	queryMap := make(map[string]interface{})
 	cacheCookie, _ := c.Cookie(searchCacheCookie)
 	if cacheCookie != nil {
-		log.Println("found cache cookie")
 		cookieValues := strings.Split(cacheCookie.Value, ",")
 		queryMap["state"] = cookieValues[1]
 		y, err := strconv.Atoi(cookieValues[0])
