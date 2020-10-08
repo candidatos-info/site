@@ -8,10 +8,10 @@ import (
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/exception"
 	pagination "github.com/gobeam/mongo-go-pagination"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -99,8 +99,18 @@ func (c *Client) FindCandidateBySequencialIDAndYear(year int, sequencialID strin
 func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*descritor.CandidateForDB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
-	filter := bson.M{"email": candidate.Email, "year": candidate.Year}
-	update := bson.M{"$set": bson.M{"biography": candidate.Biography, "transparency": candidate.Transparency, "description": candidate.Description, "tags": candidate.Tags, "contact": candidate.Contact}}
+	filter := bson.M{
+		"email": candidate.Email,
+		"year":  candidate.Year,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"biography":    candidate.Biography,
+			"transparency": candidate.Transparency,
+			"proposals":    candidate.Proposals,
+			"contacts":     candidate.Contacts,
+		},
+	}
 	if _, err := c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection).UpdateOne(ctx, filter, update); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao atualizar perfil de candidato, erro %v", err), nil)
 	}
@@ -131,7 +141,7 @@ func resolveQuery(query map[string]interface{}) bson.M {
 		case "name":
 			result["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", query["name"]), Options: "i"}}
 		case "tags":
-			result["tags"] = bson.M{"$in": query["tags"]}
+			result["proposals.topic"] = bson.M{"$in": query["tags"]}
 		default:
 			result[k] = v
 		}
