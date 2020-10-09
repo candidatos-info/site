@@ -5,52 +5,53 @@
         method="get"
         onchange="this.submit()"
     >
-        <div>
-            <div>
+        <div class="form-row">
+            <div class="form-group col-8">
                 <select
+                    class="form-control"
                     name="state"
                 >
                     <option value="">Escolha um estado</option>
                     {{range $i, $val := .AllStates}}
-                    <option
-                        value="{{$val}}"
-                        {{ if eq $.Filters.State $val }} selected {{end}}
-                    >
-                        {{$val}}
-                    </option>
+                        <option
+                            value="{{$val}}"
+                            {{ if eq $.Filters.State $val }} selected {{end}}
+                        >
+                            {{$val}}
+                        </option>
                     {{end}}
                 </select>
             </div>
-            <div>
-                <input type="year" name="year" value="{{.Filters.Year}}" />
+            <div class="form-group col-4">
+                <input class="form-control" type="year" name="year" value="{{.Filters.Year}}" placeholder="Ano" />
             </div>
         </div>
 
         {{if .Filters.State}}
-        <div>
-            <div>
-                <select name="city">
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select name="city" class="form-control">
                     <option value="">Escolha uma Cidade</option>
                     {{range $i, $v := .CitiesOfState}}
-                    <option
-                        value="{{$v}}"
-                        {{if eq $v $.Filters.City}}selected{{end}}
-                    >
-                        {{$v}}
-                    </option>
+                        <option
+                            value="{{$v}}"
+                            {{if eq $v $.Filters.City}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
                     {{end}}
                 </select>
             </div>
-            <div>
-                <select name="position">
+            <div class="form-group col-4">
+                <select name="position" class="form-control">
                     <option value="">Cargo</option>
                     {{range $i, $v := .AllPositions}}
-                    <option
+                        <option
                             value="{{$v}}"
                             {{if eq $v $.Filters.Position}}selected{{end}}
-                    >
-                        {{$v}}
-                    </option>
+                        >
+                            {{$v}}
+                        </option>
                     {{end}}
                 </select>
             </div>
@@ -59,37 +60,90 @@
     </form>
 {{end}}
 
-{{define "candidatoCard"}}
-    <div>
-        <h3>{{.Name}}</h3>
-        <p>{{.City}}</p>
-        <p>{{.Position}}</p>
-        <p>{{.CandidatureNumber}}</p>
+{{define "candidateTransparency"}}
+<span class="d-flex justify-content-center align-items-center">
+    <span
+        class="
+            rounded-circle d-flex align-items-center justify-content-center
+            {{if lt .TransparencyPercentage 25}} bg-danger {{end}}
+            {{if and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50)}} bg-secondary {{end}}
+            {{if and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75)}} bg-warning {{end}}
+            {{if and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100)}} bg-info {{end}}
+            {{if ge .TransparencyPercentage 100}} bg-success {{end}}
+        "
+        style="height: 15px; width: 15px;"
+    >
+        <svg style="height: 11px; width: auto;" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 6.00018L6.50012 11.0001L5.00009 6.00009L8 6.00018Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M11 6L6.5 11L7.99981 6.00018L11 6Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M10.9998 6.00021L10 3.00006L8 3.00006L8 6.00021L10.9998 6.00021Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M5 6L5 3L3 3L2 6L5 6Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M8 6.00012L8 3.00012L5 3.00012L5 6.00012L8 6.00012Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M2 6.00006L6.5 11.0001L5 6.00006L2 6.00006Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+        </svg>
+    </span>
+    <span
+        class="text-center"
+        style="font-size: 8px;"
+    >
+        Perfil {{.TransparencyPercentage}}% transparente.
+    </span>
+</span>
+{{end}}
 
-        <ul>
-            {{range .Descriptions}}
-                <li>{{.Tag}}</li>
-            {{end}}
-        </ul>
+{{define "candidatoCard"}}
+<div class="card" style="border-top-width: 5px; border-top-color: #2f855a;">
+    <div class="mt-2">
+        {{template "candidateTransparency" .}}
     </div>
+    <img
+        class="card-img-top rounded-circle mx-auto p-3"
+        src="https://via.placeholder.com/128"
+        alt="Card image cap"
+        style="width: 90%;"
+    />
+    <div class="card-body">
+        <h5 class="card-title">{{.Name}}</h5>
+        <p class="card-text">{{.City}}</p>
+        <p class="card-text">{{.Position}}</p>
+        <p class="card-text">{{.CandidatureNumber}}</p>
+        <div >
+        {{range .Descriptions}}
+            <span class="badge badge-pill badge-secondary">{{.Tag}}</span>
+        {{end}}
+        </div>
+    </div>
+</div>
 {{end}}
 
 {{define "candidatos"}}
-    {{range .Candidates}}
-        {{template "candidatoCard" .}}
-    {{end}}
+    <div>
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4" style="margin-left: -8px; margin-right: -8px">
+            {{range .Candidates}}
+            <div class="col" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
+                {{template "candidatoCard" .}}
+            </div>
+            {{end}}
+        </div>
+    </div>
 {{end}}
 
 {{define "emptyCandidatos"}}
-    Escolha os filtros acima pra achar candidatos.
+<div class="jumbotron">
+    <p class="lead">Busque por candidaturas com propostas que você mais acredita!</p>
+</div>
 {{end}}
 
 {{define "content"}}
-    {{template "filters" .}}
+    <div class="container">
+        {{template "filters" .}}
 
-    {{ if gt (len .Candidates) 0 }}
-        {{template "candidatos" .}}
-    {{else}}
-        {{template "emptyCandidatos" .}}
-    {{end}}
+        <div class="mt-2">
+            {{ if gt (len .Candidates) 0 }}
+                {{template "candidatos" .}}
+            {{else}}
+                {{template "emptyCandidatos" .}}
+            {{end}}
+        </div>
+    </div>
 {{end}}

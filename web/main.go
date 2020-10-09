@@ -81,6 +81,13 @@ func getCandidatos(filters *HomeFilters) *[]Candidate {
     return &[]Candidate{
         newCandidate(),
         newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
     }
 }
 
