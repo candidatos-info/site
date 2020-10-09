@@ -92,11 +92,11 @@ func getCandidatos(filters *HomeFilters) *[]Candidate {
 }
 
 func homeHandler(c echo.Context) error {
-    year := c.QueryParam("year")
+    year := c.QueryParam("ano")
     if year == "" {
         year = strconv.Itoa(time.Now().Year())
     }
-    state := c.QueryParam("state")
+    state := c.QueryParam("estado")
     citiesByState := map[string]interface{}{
         "Alagoas": [2]string{"Maceió", "Arapiraca"},
         "Bahia": [1]string{"Salvador"},
@@ -106,7 +106,7 @@ func homeHandler(c echo.Context) error {
         cities = []string{}
     }
 
-    filters := newHomeFilters(state, year, c.QueryParam("city"), c.QueryParam("position"))
+    filters := newHomeFilters(state, year, c.QueryParam("cidade"), c.QueryParam("cargo"))
     candidatos := getCandidatos(filters)
 
     return c.Render(http.StatusOK, "index.html", map[string]interface{}{
