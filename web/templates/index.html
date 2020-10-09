@@ -87,7 +87,7 @@
 {{define "content"}}
     {{template "filters" .}}
 
-{{ if gt (len .Candidates) 0 }}
+    {{ if gt (len .Candidates) 0 }}
         {{template "candidatos" .}}
     {{else}}
         {{template "emptyCandidatos" .}}
