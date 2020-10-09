@@ -1,0 +1,95 @@
+{{define "filters"}}
+    <form
+        name="filters"
+        id="filters"
+        method="get"
+        onchange="this.submit()"
+    >
+        <div>
+            <div>
+                <select
+                    name="state"
+                >
+                    <option value="">Escolha um estado</option>
+                    {{range $i, $val := .AllStates}}
+                    <option
+                        value="{{$val}}"
+                        {{ if eq $.Filters.State $val }} selected {{end}}
+                    >
+                        {{$val}}
+                    </option>
+                    {{end}}
+                </select>
+            </div>
+            <div>
+                <input type="year" name="year" value="{{.Filters.Year}}" />
+            </div>
+        </div>
+
+        {{if .Filters.State}}
+        <div>
+            <div>
+                <select name="city">
+                    <option value="">Escolha uma Cidade</option>
+                    {{range $i, $v := .CitiesOfState}}
+                    <option
+                        value="{{$v}}"
+                        {{if eq $v $.Filters.City}}selected{{end}}
+                    >
+                        {{$v}}
+                    </option>
+                    {{end}}
+                </select>
+            </div>
+            <div>
+                <select name="position">
+                    <option value="">Cargo</option>
+                    {{range $i, $v := .AllPositions}}
+                    <option
+                            value="{{$v}}"
+                            {{if eq $v $.Filters.Position}}selected{{end}}
+                    >
+                        {{$v}}
+                    </option>
+                    {{end}}
+                </select>
+            </div>
+        </div>
+        {{end}}
+    </form>
+{{end}}
+
+{{define "candidatoCard"}}
+    <div>
+        <h3>{{.Name}}</h3>
+        <p>{{.City}}</p>
+        <p>{{.Position}}</p>
+        <p>{{.CandidatureNumber}}</p>
+
+        <ul>
+            {{range .Descriptions}}
+                <li>{{.Tag}}</li>
+            {{end}}
+        </ul>
+    </div>
+{{end}}
+
+{{define "candidatos"}}
+    {{range .Candidates}}
+        {{template "candidatoCard" .}}
+    {{end}}
+{{end}}
+
+{{define "emptyCandidatos"}}
+    Escolha os filtros acima pra achar candidatos.
+{{end}}
+
+{{define "content"}}
+    {{template "filters" .}}
+
+{{ if gt (len .Candidates) 0 }}
+        {{template "candidatos" .}}
+    {{else}}
+        {{template "emptyCandidatos" .}}
+    {{end}}
+{{end}}
