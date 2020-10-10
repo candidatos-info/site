@@ -11,7 +11,8 @@ export default new Vuex.Store({
                 profile_image: '/img/team/ana.jpeg',
                 position: 'Pitaqueira',
                 socials: [
-                    { provider: 'github', link: 'https://twitter.com/anapaulagomes' },
+                    { provider: 'github', link: 'https://github.com/anapaulagomes' },
+                    { provider: 'twitter', link: 'https://twitter.com/anapaulagomess' },
                 ]
             },
             {
