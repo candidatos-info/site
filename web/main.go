@@ -131,7 +131,7 @@ func main() {
     e.Renderer = &TemplateRegistry{
         templates: templates,
     }
-
+    e.Static("/", "public")
 	e.GET("/", homeHandler)
 	e.GET("/sobre", sobreHandler)
 

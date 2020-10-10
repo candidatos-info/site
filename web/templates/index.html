@@ -117,9 +117,12 @@
 
 {{define "candidatos"}}
     <div>
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4" style="margin-left: -8px; margin-right: -8px">
+        <div
+            class="row"
+            style="margin-left: -8px; margin-right: -8px;"
+        >
             {{range .Candidates}}
-            <div class="col" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
+            <div class="col-6 col-md-4 col-lg-2" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
                 {{template "candidatoCard" .}}
             </div>
             {{end}}
