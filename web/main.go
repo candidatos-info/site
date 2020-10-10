@@ -2,8 +2,11 @@ package main
 
 import (
     "net/http"
+    "strings"
+    "fmt"
     "errors"
     "strconv"
+    "math/rand"
     "io"
     "time"
     "html/template"
@@ -48,8 +51,8 @@ func newCandidate() Candidate {
         CandidatureNumber: "55555",
         Position: "Vereador",
         City: "Maceió - AL",
-        ImageURL: "",
-        TransparencyPercentage: 55,
+        ImageURL: "/img/candidata.png",
+        TransparencyPercentage: rand.Intn(100),
         Biography: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci aliquam dignissimos in magnam nihil nostrum optio sint totam unde? Beatae ea illo iusto, laboriosam laudantium libero molestias necessitatibus quos vitae?",
         Descriptions: &[]CandidateTag{
             CandidateTag{Tag: "Urbanismo", Description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit."},
@@ -73,12 +76,13 @@ func (t *TemplateRegistry) Render(w io.Writer, name string, data interface{}, c 
   return tmpl.ExecuteTemplate(w, "layout.html", data)
 }
 
-func getCandidatos(filters *HomeFilters) *[]Candidate {
+func getCandidatos(filters *HomeFilters, _offset int) *[]Candidate {
     if filters.State == "" || filters.City == "" {
         return &[]Candidate{}
     }
 
     return &[]Candidate{
+        newCandidate(),
         newCandidate(),
         newCandidate(),
         newCandidate(),
@@ -107,7 +111,8 @@ func homeHandler(c echo.Context) error {
     }
 
     filters := newHomeFilters(state, year, c.QueryParam("cidade"), c.QueryParam("cargo"))
-    candidatos := getCandidatos(filters)
+    offset, _ := strconv.Atoi(c.QueryParam("offset"))
+    candidatos := getCandidatos(filters, offset)
 
     return c.Render(http.StatusOK, "index.html", map[string]interface{}{
         "AllStates": [2]string{"Alagoas", "Bahia"},
@@ -115,7 +120,24 @@ func homeHandler(c echo.Context) error {
         "CitiesOfState": cities,
         "Filters": filters,
         "Candidates": candidatos,
+        "LoadMoreUrl": buildLoadMoreUrl(len(*candidatos) + offset, filters),
     })
+}
+
+func buildLoadMoreUrl(offset int, filters *HomeFilters) string {
+    query := map[string]string{
+        "estado": filters.State,
+        "ano": filters.Year,
+        "cidade": filters.City,
+        "cargo": filters.Position,
+    }
+
+    var url string
+    for key, val := range query {
+        url = url + "&" + fmt.Sprintf("%s=%s", key, val)
+    }
+
+    return "?" + strings.Trim(url, "&") + "&offset=" + strconv.Itoa(offset)
 }
 
 func sobreHandler(c echo.Context) error {

@@ -64,13 +64,19 @@
     <span
         class="
             rounded-circle d-flex align-items-center justify-content-center
-            {{if lt .TransparencyPercentage 25}} bg-danger {{end}}
-            {{if and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50)}} bg-secondary {{end}}
-            {{if and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75)}} bg-warning {{end}}
-            {{if and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100)}} bg-info {{end}}
-            {{if ge .TransparencyPercentage 100}} bg-success {{end}}
+            {{if (lt .TransparencyPercentage 25) }}
+                bg-danger
+            {{else if (and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50))}}
+                bg-orange
+            {{else if (and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75))}}
+                bg-warning
+            {{else if (and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100))}}
+                bg-teal
+            {{else}}
+                bg-success
+            {{end}}
         "
-        style="height: 15px; width: 15px;"
+        style="height: 14px; width: 14px; margin-right: 5px;"
     >
         <svg style="height: 11px; width: auto;" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 6.00018L6.50012 11.0001L5.00009 6.00009L8 6.00018Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
@@ -81,34 +87,55 @@
             <path d="M2 6.00006L6.5 11.0001L5 6.00006L2 6.00006Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
         </svg>
     </span>
+
     <span
         class="text-center"
-        style="font-size: 8px;"
+        style="font-size: 9px;"
     >
-        Perfil {{.TransparencyPercentage}}% transparente.
+        {{if (lt .TransparencyPercentage 25)}}
+            Perfil pouco transparente.
+        {{else}}
+            Perfil {{.TransparencyPercentage}}% transparente.
+        {{end}}
     </span>
 </span>
 {{end}}
 
 {{define "candidatoCard"}}
-<div class="card" style="border-top-width: 5px; border-top-color: #2f855a;">
+<div
+    class="
+        card card-shadow
+        {{if lt .TransparencyPercentage 25}}
+            border-danger
+        {{else if and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50)}}
+            border-orange
+        {{else if and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75)}}
+            border-warning
+        {{else if and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100)}}
+            border-teal
+        {{else}}
+            border-success
+        {{end}}
+    "
+    style="border-width: 5px 0 0;"
+>
     <div class="mt-2">
         {{template "candidateTransparency" .}}
     </div>
     <img
-        class="card-img-top rounded-circle mx-auto p-3"
-        src="https://via.placeholder.com/128"
+        class="rounded-circle cover mx-auto p-3"
+        src="{{.ImageURL}}"
         alt="Card image cap"
-        style="width: 90%;"
+        style="width: 128px; height: 128px;"
     />
     <div class="card-body">
-        <h5 class="card-title">{{.Name}}</h5>
-        <p class="card-text">{{.City}}</p>
-        <p class="card-text">{{.Position}}</p>
-        <p class="card-text">{{.CandidatureNumber}}</p>
+        <h5 class="card-title text-dark mb-0">{{.Name}}</h5>
+        <small class="card-text text-dark" style="font-size: 10px;">{{.City}}</small>
+        <p class="card-text text-text mb-0">{{.Position}}</p>
+        <p class="card-text text-text">{{.CandidatureNumber}}</p>
         <div >
         {{range .Descriptions}}
-            <span class="badge badge-pill badge-secondary">{{.Tag}}</span>
+            <span class="badge badge-pill bg-button">{{.Tag}}</span>
         {{end}}
         </div>
     </div>
@@ -120,6 +147,7 @@
         <div
             class="row"
             style="margin-left: -8px; margin-right: -8px;"
+            id="candidatesList"
         >
             {{range .Candidates}}
             <div class="col-6 col-md-4 col-lg-2" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
@@ -127,17 +155,21 @@
             </div>
             {{end}}
         </div>
+
+        <div class="load-more-btn text-center">
+            <a href="{{.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+        </div>
     </div>
 {{end}}
 
 {{define "emptyCandidatos"}}
-<div class="jumbotron">
+<div class="jumbotron mt-4" style="padding: 0;">
     <p class="lead">Busque por candidaturas com propostas que você mais acredita!</p>
 </div>
 {{end}}
 
 {{define "content"}}
-    <div class="container" id="home">
+    <div class="container mt-2" id="home">
         {{template "filters" .}}
 
         <div class="mt-2" id="candidates">
@@ -155,9 +187,20 @@
     $(function () {
         var $home = $('#home');
 
-        $home.on('change', '#filtros', function (e) {
-            var $filtersForm = $(this);
+        $home.on('click', '.load-more-btn', function (e) {
             e.preventDefault();
+            $.ajax({
+                method: 'get',
+                url: e.target.href,
+                success : function( data ) {
+                    appendCandidates(data);
+                }
+            });
+        });
+
+        $home.on('change', '#filtros', function (e) {
+            e.preventDefault();
+            var $filtersForm = $(this);
             var replaceFilters = false;
             var currentFieldName = e.target.name;
 
@@ -205,6 +248,12 @@
                     console.log('Ocorreu um erro.');
                 }
             });
+        }
+
+        function appendCandidates(data) {
+            $html = $(data);
+            $home.find('#candidatesList').append($html.find('#candidatesList').html());
+            $home.find('.load-more-btn').replaceWith($(data).find('.load-more-btn'));
         }
     });
 </script>
