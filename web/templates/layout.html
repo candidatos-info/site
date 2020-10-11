@@ -80,6 +80,9 @@
         .text-fluxo-candidato {
             color: #E5F5FF;
         }
+        .bg-fluxo-candidato {
+            background-color: #E5F5FF;
+        }
 
         .page-title {
             font-size: 19px;
@@ -116,7 +119,7 @@ candidatos.info
 {{define "pageStyles"}}
 {{end}}
 {{define "nav"}}
-<nav class="navbar navbar-expand-lg navbar-light bg-indigo position-relative">
+<nav class="navbar navbar-expand-lg navbar-light bg-fluxo-candidato position-relative">
     <div class="container-md">
         <a class="navbar-brand mx-auto" href="/">{{template "appLogo"}}</a>
         <button class="navbar-toggler position-absolute" style="right: 15px; top: 15px;" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">

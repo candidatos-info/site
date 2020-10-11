@@ -36,6 +36,34 @@ type Candidate struct {
     Descriptions *[]CandidateTag
 }
 
+type SocialLink struct {
+    Provider string
+    Link string
+}
+
+type TeamMember struct {
+    Name string
+    Title string
+    ImageURL string
+    SocialLinks []SocialLink
+}
+
+func newSocialLink(provider string, link string) SocialLink {
+    return SocialLink{
+        Provider: provider,
+        Link: link,
+    }
+}
+
+func newTeamMember(name string, title string, imageUrl string, socialLinks []SocialLink) TeamMember {
+    return TeamMember{
+        Name: name,
+        Title: title,
+        ImageURL: imageUrl,
+        SocialLinks: socialLinks,
+    }
+}
+
 func newHomeFilters(state string, year string, city string, position string) *HomeFilters {
     return &HomeFilters{
         State: state,
@@ -95,6 +123,46 @@ func getCandidatos(filters *HomeFilters, _offset int) *[]Candidate {
     }
 }
 
+func getTeamMembers() []TeamMember {
+    return []TeamMember{
+        newTeamMember("Ana Paula Gomes", "Pitaqueira", "/img/team/ana.jpeg", []SocialLink{
+            newSocialLink("linkedin", "#"),
+        }),
+        newTeamMember("Aurélio Buarque", "Desenvolvedor", "/img/team/aurelio.jpeg", []SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("github", "#"),
+        }),
+        newTeamMember("Bruno Morassutti", "Palpiteiro jurídico", "/img/team/bruno.jpeg", []SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("linkedin", "#"),
+        }),
+        newTeamMember("Daniel Fireman", "Coordenador", "/img/team/daniel.jpeg", []SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("github", "#"),
+            newSocialLink("linkedin", "#"),
+            newSocialLink("instagram", "#"),
+        }),
+        newTeamMember("Eduardo Cuducos", "Palpiteiro", "/img/team/eduardo.jpeg", []SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("github", "#"),
+        }),
+        newTeamMember("Evelyn Gomes", "Articuladora ", "/img/team/evelyn.jpeg", []SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("linkedin", "#"),
+            newSocialLink("github", "#"),
+        }),
+        newTeamMember("Laura Cavalcante", "Advogada ", "/img/team/laura.jpeg", []SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("linkedin", "#"),
+        }),
+        newTeamMember("Mariana Souto", "Designer ", "/img/team/mariana.jpeg", []SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("instagram", "#"),
+            newSocialLink("linkedin", "#"),
+        }),
+    }
+}
+
 func homeHandler(c echo.Context) error {
     year := c.QueryParam("ano")
     if year == "" {
@@ -141,7 +209,9 @@ func buildLoadMoreUrl(offset int, filters *HomeFilters) string {
 }
 
 func sobreHandler(c echo.Context) error {
-    return c.Render(http.StatusOK, "sobre.html", map[string]interface{}{});
+    return c.Render(http.StatusOK, "sobre.html", map[string]interface{}{
+        "Team": getTeamMembers(),
+    });
 }
 
 func main() {
