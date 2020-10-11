@@ -60,11 +60,35 @@
         .text-dark {
             color: #0A446B;
         }
+        .bg-text-dark {
+            background-color: #0A446B;
+        }
+
+        .bg-secondary-button {
+            background-color: #4975A9;
+        }
+        .text-secondary-button {
+            color: #4975A9;
+        }
 
         .text-text {
             color: #97AECA !important;
         }
+        .bg-text {
+            background-color: #97AECA;
+        }
+        .text-fluxo-candidato {
+            color: #E5F5FF;
+        }
+
+        .page-title {
+            font-size: 19px;
+            font-weight: bold;
+            margin-top: 60px;
+            margin-bottom: 60px;
+        }
     </style>
+    {{template "pageStyles" .}}
 </head>
 <body>
 {{template "nav" .}}
@@ -88,6 +112,8 @@
 candidatos.info
 {{end}}
 {{define "content"}}
+{{end}}
+{{define "pageStyles"}}
 {{end}}
 {{define "nav"}}
 <nav class="navbar navbar-expand-lg navbar-light bg-indigo position-relative">
