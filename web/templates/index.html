@@ -123,7 +123,7 @@
         {{template "candidateTransparency" .}}
     </div>
     <img
-        class="rounded-circle cover mx-auto p-3"
+        class="rounded-circle cover mx-auto p-1"
         src="{{.ImageURL}}"
         alt="Card image cap"
         style="width: 128px; height: 128px;"
@@ -135,7 +135,7 @@
         <p class="card-text text-text">{{.CandidatureNumber}}</p>
         <div >
         {{range .Descriptions}}
-            <span class="badge badge-pill bg-button">{{.Tag}}</span>
+            <span class="badge badge-pill bg-button" style="font-size: 9px">{{.Tag}}</span>
         {{end}}
         </div>
     </div>
