@@ -214,10 +214,24 @@ func sobreHandler(c echo.Context) error {
     });
 }
 
+func souCandidatoHandler(c echo.Context) error {
+    return c.Render(http.StatusOK, "sou-candidato.html", map[string]interface{}{})
+}
+
+func souCandidatoFormHandler(c echo.Context) error {
+    email := c.FormValue("email")
+    // @TODO: enviar email com token para o candidato
+    return c.Render(http.StatusOK, "sou-candidato-success.html", map[string]interface{}{
+        "Email": email,
+    })
+}
+
 func main() {
     templates := make(map[string]*template.Template)
     templates["index.html"] = template.Must(template.ParseFiles("templates/index.html", "templates/layout.html"))
     templates["sobre.html"] = template.Must(template.ParseFiles("templates/sobre.html", "templates/layout.html"))
+    templates["sou-candidato.html"] = template.Must(template.ParseFiles("templates/sou-candidato.html", "templates/layout.html"))
+    templates["sou-candidato-success.html"] = template.Must(template.ParseFiles("templates/sou-candidato-success.html", "templates/layout.html"))
 
     e := echo.New()
     e.Renderer = &TemplateRegistry{
@@ -226,6 +240,8 @@ func main() {
     e.Static("/", "public")
 	e.GET("/", homeHandler)
 	e.GET("/sobre", sobreHandler)
+	e.GET("/sou-candidato", souCandidatoHandler)
+	e.POST("/sou-candidato", souCandidatoFormHandler)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
