@@ -36,8 +36,8 @@ type Candidate struct {
 	ImageURL               string
 	TransparencyPercentage int
 	Biography              string
-	SocialLinks            *[]SocialLink
-	Descriptions           *[]CandidateTag
+	SocialLinks            []SocialLink
+	Descriptions           []CandidateTag
 }
 
 type SocialLink struct {
@@ -68,8 +68,8 @@ func newTeamMember(name string, title string, imageUrl string, socialLinks []Soc
 	}
 }
 
-func newHomeFilters(state string, year string, city string, position string) *HomeFilters {
-	return &HomeFilters{
+func newHomeFilters(state string, year string, city string, position string) HomeFilters {
+	return HomeFilters{
 		State:    state,
 		Year:     year,
 		City:     city,
@@ -77,8 +77,8 @@ func newHomeFilters(state string, year string, city string, position string) *Ho
 	}
 }
 
-func newCandidate() Candidate {
-	return Candidate{
+func newCandidate() *Candidate {
+	return &Candidate{
 		Name:                   "Fulado de Tal",
 		Email:                  "fulano@example.com",
 		CandidatureNumber:      "55555",
@@ -89,12 +89,12 @@ func newCandidate() Candidate {
 		ImageURL:               "/img/candidata.png",
 		TransparencyPercentage: rand.Intn(100),
 		Biography:              "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci aliquam dignissimos in magnam nihil nostrum optio sint totam unde? Beatae ea illo iusto, laboriosam laudantium libero molestias necessitatibus quos vitae?",
-		SocialLinks: &[]SocialLink{
+		SocialLinks: []SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("instagram", "#"),
 			newSocialLink("linkedin", "#"),
 		},
-		Descriptions: &[]CandidateTag{
+		Descriptions: []CandidateTag{
 			CandidateTag{Tag: "Urbanismo", Description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit."},
 			CandidateTag{Tag: "Veganismo", Description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cum earum iusto nesciunt nobis quaerat quisquam reprehenderit repudiandae temporibus voluptate voluptates. Dolore doloribus expedita, iste laudantium magni nulla pariatur quia totam."},
 		},
@@ -110,18 +110,18 @@ type TemplateRegistry struct {
 func (t *TemplateRegistry) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
 	tmpl, ok := t.templates[name]
 	if !ok {
-		err := errors.New("Template not found -> " + name)
+		err := errors.New("template not found -> " + name)
 		return err
 	}
 	return tmpl.ExecuteTemplate(w, "layout.html", data)
 }
 
-func getCandidatos(filters *HomeFilters, _offset int) *[]Candidate {
+func getCandidatos(filters HomeFilters, _offset int) []*Candidate {
 	if filters.State == "" || filters.City == "" {
-		return &[]Candidate{}
+		return []*Candidate{}
 	}
 
-	return &[]Candidate{
+	return []*Candidate{
 		newCandidate(),
 		newCandidate(),
 		newCandidate(),
@@ -175,7 +175,7 @@ func getTeamMembers() []TeamMember {
 	}
 }
 
-func findCandidate(_token string) Candidate {
+func findCandidate(_token string) *Candidate {
 	return newCandidate()
 }
 
@@ -207,11 +207,11 @@ func homeHandler(c echo.Context) error {
 		"CitiesOfState": cities,
 		"Filters":       filters,
 		"Candidates":    candidatos,
-		"LoadMoreUrl":   buildLoadMoreUrl(len(*candidatos)+offset, filters),
+		"LoadMoreUrl":   buildLoadMoreUrl(len(candidatos)+offset, filters),
 	})
 }
 
-func buildLoadMoreUrl(offset int, filters *HomeFilters) string {
+func buildLoadMoreUrl(offset int, filters HomeFilters) string {
 	query := map[string]string{
 		"estado": filters.State,
 		"ano":    filters.Year,
@@ -235,8 +235,8 @@ func getAllTags() []string {
 	}
 }
 
-func getRelatedCandidate(_candidate *Candidate) *[]Candidate {
-	return &[]Candidate{
+func getRelatedCandidate(_candidate *Candidate) []*Candidate {
+	return []*Candidate{
 		newCandidate(),
 		newCandidate(),
 		newCandidate(),
@@ -250,7 +250,7 @@ func getRelatedCandidate(_candidate *Candidate) *[]Candidate {
 	}
 }
 
-func findCandidateById(_id string) Candidate {
+func findCandidateById(_id string) *Candidate {
 	return newCandidate()
 }
 
@@ -313,7 +313,7 @@ func candidateHandler(c echo.Context) error {
 
 	return c.Render(http.StatusOK, "candidato.html", map[string]interface{}{
 		"Candidato":         candidate,
-		"RelatedCandidates": getRelatedCandidate(&candidate),
+		"RelatedCandidates": getRelatedCandidate(candidate),
 	})
 }
 
