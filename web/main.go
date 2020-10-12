@@ -195,7 +195,10 @@ func homeHandler(c echo.Context) error {
 	}
 
 	filters := newHomeFilters(state, year, c.QueryParam("cidade"), c.QueryParam("cargo"))
-	offset, _ := strconv.Atoi(c.QueryParam("offset"))
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+	     return fmt.Error("failed to parse offset string [%s] to int, error %v", c.QueryParam("offset"), err)
+	}
 	candidatos := getCandidatos(filters, offset)
 
 	return c.Render(http.StatusOK, "index.html", map[string]interface{}{
