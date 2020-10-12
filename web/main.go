@@ -330,15 +330,15 @@ func main() {
         templates: templates,
     }
     e.Static("/", "public")
-	e.GET("/", homeHandler)
-	e.GET("/candidatos/:id", candidateHandler)
-	e.GET("/sobre", sobreHandler)
-	e.GET("/sou-candidato", souCandidatoHandler)
-	e.POST("/sou-candidato", souCandidatoFormHandler)
-	e.GET("/atualizar-candidato", atualizarCandidatoHandler)
-	e.POST("/atualizar-candidato", atualizarCandidatoFormHandler)
-	e.GET("/aceitar-termo", aceitarTermoHandler)
-	e.POST("/aceitar-termo", aceitarTermoFormHandler)
+    e.GET("/", homeHandler)
+    e.GET("/candidatos/:id", candidateHandler)
+    e.GET("/sobre", sobreHandler)
+    e.GET("/sou-candidato", souCandidatoHandler)
+    e.POST("/sou-candidato", souCandidatoFormHandler)
+    e.GET("/atualizar-candidato", atualizarCandidatoHandler)
+    e.POST("/atualizar-candidato", atualizarCandidatoFormHandler)
+    e.GET("/aceitar-termo", aceitarTermoHandler)
+    e.POST("/aceitar-termo", aceitarTermoFormHandler)
 
-	e.Logger.Fatal(e.Start(":1323"))
+    e.Logger.Fatal(e.Start(":1323"))
 }
