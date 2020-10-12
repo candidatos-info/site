@@ -27,6 +27,9 @@ type CandidateTag struct {
 
 type Candidate struct {
     Name string
+    Email string
+    Party string
+    NumberOfTerms int
     CandidatureNumber string
     Position string
     City string
@@ -76,8 +79,11 @@ func newHomeFilters(state string, year string, city string, position string) *Ho
 func newCandidate() Candidate {
     return Candidate{
         Name: "Fulado de Tal",
+        Email: "fulano@example.com",
         CandidatureNumber: "55555",
         Position: "Vereador",
+        Party: "PSOL",
+        NumberOfTerms: 3,
         City: "Maceió - AL",
         ImageURL: "/img/candidata.png",
         TransparencyPercentage: rand.Intn(100),
@@ -163,6 +169,10 @@ func getTeamMembers() []TeamMember {
     }
 }
 
+func findCandidate(_token string) Candidate {
+    return newCandidate()
+}
+
 func homeHandler(c echo.Context) error {
     year := c.QueryParam("ano")
     if year == "" {
@@ -208,6 +218,14 @@ func buildLoadMoreUrl(offset int, filters *HomeFilters) string {
     return "?" + strings.Trim(url, "&") + "&offset=" + strconv.Itoa(offset)
 }
 
+func getAllTags() []string {
+    return []string{
+        "Veganismo",
+        "Urbanismo",
+        "Educação",
+    }
+}
+
 func sobreHandler(c echo.Context) error {
     return c.Render(http.StatusOK, "sobre.html", map[string]interface{}{
         "Team": getTeamMembers(),
@@ -226,12 +244,49 @@ func souCandidatoFormHandler(c echo.Context) error {
     })
 }
 
+func atualizarCandidatoHandler(c echo.Context) error {
+    token := c.QueryParam("token")
+    // @TODO: validar token
+    // @TODO: só mostrar a tela de aceitar-termo caso o candidato ainda não tenha aceitado
+    return c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{
+        "Token": token,
+        "AllTags": getAllTags(),
+        "Candidato": findCandidate(token),
+    })
+}
+
+func atualizarCandidatoFormHandler(c echo.Context) error {
+    // @TODO: processar form.
+    return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{})
+}
+
+func aceitarTermoHandler(c echo.Context) error {
+    token := c.QueryParam("token")
+    // @TODO: validar token
+    // @TODO: verificar se
+    return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{
+        "Token": token,
+        "TextoTermo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat.",
+    })
+}
+
+func aceitarTermoFormHandler(c echo.Context) error {
+    token := c.FormValue("token")
+
+    // @TODO: validar termo
+    // @TODO: marcar termo como aceito
+    return c.Redirect(http.StatusSeeOther, "/atualizar-candidato?token=" + token)
+}
+
 func main() {
     templates := make(map[string]*template.Template)
     templates["index.html"] = template.Must(template.ParseFiles("templates/index.html", "templates/layout.html"))
     templates["sobre.html"] = template.Must(template.ParseFiles("templates/sobre.html", "templates/layout.html"))
     templates["sou-candidato.html"] = template.Must(template.ParseFiles("templates/sou-candidato.html", "templates/layout.html"))
     templates["sou-candidato-success.html"] = template.Must(template.ParseFiles("templates/sou-candidato-success.html", "templates/layout.html"))
+    templates["aceitar-termo.html"] = template.Must(template.ParseFiles("templates/aceitar-termo.html", "templates/layout.html"))
+    templates["atualizar-candidato.html"] = template.Must(template.ParseFiles("templates/atualizar-candidato.html", "templates/layout.html"))
+    templates["atualizar-candidato-success.html"] = template.Must(template.ParseFiles("templates/atualizar-candidato-success.html", "templates/layout.html"))
 
     e := echo.New()
     e.Renderer = &TemplateRegistry{
@@ -242,6 +297,10 @@ func main() {
 	e.GET("/sobre", sobreHandler)
 	e.GET("/sou-candidato", souCandidatoHandler)
 	e.POST("/sou-candidato", souCandidatoFormHandler)
+	e.GET("/atualizar-candidato", atualizarCandidatoHandler)
+	e.POST("/atualizar-candidato", atualizarCandidatoFormHandler)
+	e.GET("/aceitar-termo", aceitarTermoHandler)
+	e.POST("/aceitar-termo", aceitarTermoFormHandler)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

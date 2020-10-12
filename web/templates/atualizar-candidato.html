@@ -1,0 +1,141 @@
+{{define "content"}}
+<div class="flex-grow-1">
+    <div class="container" style="padding-bottom: 60px;">
+        <h1 class="page-title text-center text-dark">
+            Perfil do candidato
+        </h1>
+
+        <p>
+            Bem-vindo candidato <strong>{{.Candidato.Email}}</strong> a sua página no candidatos.info. Seu link expira em 24 horas, toda vez que quiser realizar edição de conteúdo, denúncia ou replicar um denúncia, digite seu email na seção ”sou um candidato.”
+        </p>
+
+        <p><strong>Para ter um perfil completo no candidatos.info, adicione ou edite suas informações:</strong></p>
+
+        <form action="/atualizar-candidato" method="post">
+            <input type="hidden" name="token" value="{{.Token}}" />
+
+            <div class="form-group">
+                <label for="nome" class="form-label">NOME*:</label>
+                <input type="text" id="nome" disabled class="form-control text-center" value="{{.Candidato.Name}}" />
+            </div>
+
+            <div class="form-group">
+                <label for="numero" class="form-label">NÚMERO*:</label>
+                <input type="text" id="numero" disabled class="form-control text-center" value="{{.Candidato.CandidatureNumber}}" />
+            </div>
+
+            <div class="form-group">
+                <label for="partido" class="form-label">PARTIDO*:</label>
+                <input type="text" id="partido" disabled class="form-control text-center" value="{{.Candidato.Party}}" />
+            </div>
+
+            <div class="form-group">
+                <label for="numberOfTerms" class="form-label">NÚMERO DE MANDATOS*:</label>
+                <input type="text" id="numberOfTerms" disabled class="form-control text-center" value="{{.Candidato.NumberOfTerms}}" />
+            </div>
+
+            <div class="form-group">
+                <label for="biography">BIOGRAFIA (MÁX 500 CARACTERES)*:</label>
+                <textarea maxlength="500" class="form-control" id="biography" rows="5">{{.Candidato.Biography}}</textarea>
+            </div>
+
+            <div
+                x-data="subjectsComponent()"
+            >
+                <div class="form-group">
+                    <label for="pautas">PAUTAS:</label>
+                    <input
+                        type="text"
+                        list="tagsList"
+                        id="pautas"
+                        class="form-control"
+                        ref="tagList"
+                        @input="selectSubject"
+                    />
+                    <small class="form-text" x-show="subjects.length >= maxSubjects">você atingiu o número máximo de pautas.</small>
+                    <datalist id="tagsList">
+                        <template x-for="tag in remainingTags" :key="tag">
+                            <option :value="tag">
+                        </template>
+                    </datalist>
+                    <template x-for="subject in subjects" :key="subject.tag">
+                        <span class="badge badge-pill badge-primary">
+                            <span x-text="subject.tag"></span>
+                            <span style="cursor: pointer;" @click.prevent="removeSubject(subject)">
+                                <svg height="12" width="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </span>
+                        </span>
+                    </template>
+                </div>
+
+                <template x-for="(subject, index) in subjects" :key="subject.tag">
+                    <div class="form-group">
+                        <input type="hidden" :name="`descriptions[${index}][tag]`" :value="subject.tag" />
+                        <label :for="`tags${subject.tag}`"><span x-text="subject.tag"></span> (Escreva sua proposta para esta causa (MÁX 100 CARACTERES)</label>
+                        <textarea class="form-control" :name="`descriptions[${index}][description]`" :id="`tags${subject.tag}`" maxlength="100" rows="3" x-text="subject.description"></textarea>
+                    </div>
+                </template>
+            </div>
+
+            <button class="btn btn-block btn-lg bg-primary text-white">Salvar perfil</button>
+        </form>
+    </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+    function subjectsComponent() {
+        return {
+            maxSubjects: 2,
+            allSubjects: [
+                {{range .AllTags}}"{{.}}",{{end}}
+            ],
+            subjects: [
+                {{range .Candidato.Descriptions}}
+                    {
+                        tag: "{{.Tag}}",
+                        description: "{{.Description}}",
+                    },
+                {{end}}
+            ],
+
+            get selectedTags() {
+                return this.subjects.map(function (item) {
+                    return item.tag;
+                });
+            },
+            get remainingTags() {
+                var _selectedTags = this.selectedTags || [];
+
+                return this.allSubjects.filter(function (item) {
+                    return ! _selectedTags.includes(item);
+                });
+            },
+
+            removeSubject(subject) {
+                this.subjects = this.subjects.filter(function (item) {
+                    return item.tag !== subject.tag;
+                });
+            },
+            selectSubject(e) {
+                if (! this.remainingTags.includes(e.target.value)) {
+                    return;
+                }
+
+                if (this.subjects.length >= this.maxSubjects) {
+                    return false;
+                }
+
+                this.subjects.push({
+                    tag: e.target.value,
+                    description: '',
+                });
+
+                e.target.value = '';
+            }
+        };
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.7.0/dist/alpine.min.js" defer></script>
+{{end}}
