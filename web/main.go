@@ -36,8 +36,8 @@ type Candidate struct {
 	ImageURL               string
 	TransparencyPercentage int
 	Biography              string
-	SocialLinks            []SocialLink
-	Descriptions           []CandidateTag
+	SocialLinks            []*SocialLink
+	Descriptions           []*CandidateTag
 }
 
 type SocialLink struct {
@@ -49,18 +49,18 @@ type TeamMember struct {
 	Name        string
 	Title       string
 	ImageURL    string
-	SocialLinks []SocialLink
+	SocialLinks []*SocialLink
 }
 
-func newSocialLink(provider string, link string) SocialLink {
-	return SocialLink{
+func newSocialLink(provider string, link string) *SocialLink {
+	return &SocialLink{
 		Provider: provider,
 		Link:     link,
 	}
 }
 
-func newTeamMember(name string, title string, imageUrl string, socialLinks []SocialLink) TeamMember {
-	return TeamMember{
+func newTeamMember(name string, title string, imageUrl string, socialLinks []*SocialLink) *TeamMember {
+	return &TeamMember{
 		Name:        name,
 		Title:       title,
 		ImageURL:    imageUrl,
@@ -68,12 +68,19 @@ func newTeamMember(name string, title string, imageUrl string, socialLinks []Soc
 	}
 }
 
-func newHomeFilters(state string, year string, city string, position string) HomeFilters {
-	return HomeFilters{
+func newHomeFilters(state string, year string, city string, position string) *HomeFilters {
+	return &HomeFilters{
 		State:    state,
 		Year:     year,
 		City:     city,
 		Position: position,
+	}
+}
+
+func newCandidateTag(tag string, description string) *CandidateTag {
+	return &CandidateTag{
+		Tag:         tag,
+		Description: description,
 	}
 }
 
@@ -89,14 +96,14 @@ func newCandidate() *Candidate {
 		ImageURL:               "/img/candidata.png",
 		TransparencyPercentage: rand.Intn(100),
 		Biography:              "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci aliquam dignissimos in magnam nihil nostrum optio sint totam unde? Beatae ea illo iusto, laboriosam laudantium libero molestias necessitatibus quos vitae?",
-		SocialLinks: []SocialLink{
+		SocialLinks: []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("instagram", "#"),
 			newSocialLink("linkedin", "#"),
 		},
-		Descriptions: []CandidateTag{
-			CandidateTag{Tag: "Urbanismo", Description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit."},
-			CandidateTag{Tag: "Veganismo", Description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cum earum iusto nesciunt nobis quaerat quisquam reprehenderit repudiandae temporibus voluptate voluptates. Dolore doloribus expedita, iste laudantium magni nulla pariatur quia totam."},
+		Descriptions: []*CandidateTag{
+			newCandidateTag("Urbanismo", "Lorem ipsum dolor sit amet, consectetur adipisicing elit."),
+			newCandidateTag("Veganismo", "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cum earum iusto nesciunt nobis quaerat quisquam reprehenderit repudiandae temporibus voluptate voluptates. Dolore doloribus expedita, iste laudantium magni nulla pariatur quia totam."),
 		},
 	}
 }
@@ -116,7 +123,7 @@ func (t *TemplateRegistry) Render(w io.Writer, name string, data interface{}, c 
 	return tmpl.ExecuteTemplate(w, "layout.html", data)
 }
 
-func getCandidatos(filters HomeFilters, _offset int) []*Candidate {
+func getCandidatos(filters *HomeFilters, _offset int) []*Candidate {
 	if filters.State == "" || filters.City == "" {
 		return []*Candidate{}
 	}
@@ -135,39 +142,39 @@ func getCandidatos(filters HomeFilters, _offset int) []*Candidate {
 	}
 }
 
-func getTeamMembers() []TeamMember {
-	return []TeamMember{
-		newTeamMember("Ana Paula Gomes", "Pitaqueira", "/img/team/ana.jpeg", []SocialLink{
+func getTeamMembers() []*TeamMember {
+	return []*TeamMember{
+		newTeamMember("Ana Paula Gomes", "Pitaqueira", "/img/team/ana.jpeg", []*SocialLink{
 			newSocialLink("linkedin", "#"),
 		}),
-		newTeamMember("Aurélio Buarque", "Desenvolvedor", "/img/team/aurelio.jpeg", []SocialLink{
+		newTeamMember("Aurélio Buarque", "Desenvolvedor", "/img/team/aurelio.jpeg", []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("github", "#"),
 		}),
-		newTeamMember("Bruno Morassutti", "Palpiteiro jurídico", "/img/team/bruno.jpeg", []SocialLink{
+		newTeamMember("Bruno Morassutti", "Palpiteiro jurídico", "/img/team/bruno.jpeg", []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("linkedin", "#"),
 		}),
-		newTeamMember("Daniel Fireman", "Coordenador", "/img/team/daniel.jpeg", []SocialLink{
+		newTeamMember("Daniel Fireman", "Coordenador", "/img/team/daniel.jpeg", []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("github", "#"),
 			newSocialLink("linkedin", "#"),
 			newSocialLink("instagram", "#"),
 		}),
-		newTeamMember("Eduardo Cuducos", "Palpiteiro", "/img/team/eduardo.jpeg", []SocialLink{
+		newTeamMember("Eduardo Cuducos", "Palpiteiro", "/img/team/eduardo.jpeg", []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("github", "#"),
 		}),
-		newTeamMember("Evelyn Gomes", "Articuladora ", "/img/team/evelyn.jpeg", []SocialLink{
+		newTeamMember("Evelyn Gomes", "Articuladora ", "/img/team/evelyn.jpeg", []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("linkedin", "#"),
 			newSocialLink("github", "#"),
 		}),
-		newTeamMember("Laura Cavalcante", "Advogada ", "/img/team/laura.jpeg", []SocialLink{
+		newTeamMember("Laura Cavalcante", "Advogada ", "/img/team/laura.jpeg", []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("linkedin", "#"),
 		}),
-		newTeamMember("Mariana Souto", "Designer ", "/img/team/mariana.jpeg", []SocialLink{
+		newTeamMember("Mariana Souto", "Designer ", "/img/team/mariana.jpeg", []*SocialLink{
 			newSocialLink("twitter", "#"),
 			newSocialLink("instagram", "#"),
 			newSocialLink("linkedin", "#"),
@@ -211,7 +218,7 @@ func homeHandler(c echo.Context) error {
 	})
 }
 
-func buildLoadMoreUrl(offset int, filters HomeFilters) string {
+func buildLoadMoreUrl(offset int, filters *HomeFilters) string {
 	query := map[string]string{
 		"estado": filters.State,
 		"ano":    filters.Year,
