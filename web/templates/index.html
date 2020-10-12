@@ -11,10 +11,10 @@
                     name="estado"
                 >
                     <option value="">Escolha um estado</option>
-                    {{range $i, $val := .AllStates}}
+                    {{range $id, $val := .AllStates}}
                         <option
-                            value="{{$val}}"
-                            {{ if eq $.Filters.State $val }} selected {{end}}
+                            value="{{$id}}"
+                            {{ if eq $.Filters.State $id }} selected {{end}}
                         >
                             {{$val}}
                         </option>
@@ -44,10 +44,10 @@
             <div class="form-group col-4">
                 <select name="cargo" class="custom-select">
                     <option value="">Cargo</option>
-                    {{range $i, $v := .AllPositions}}
+                    {{range $i, $v := .AllRoles}}
                         <option
                             value="{{$v}}"
-                            {{if eq $v $.Filters.Position}}selected{{end}}
+                            {{if eq $v $.Filters.Role}}selected{{end}}
                         >
                             {{$v}}
                         </option>

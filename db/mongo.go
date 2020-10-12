@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	timeout = 10 // in seconds
+	timeout = 15 // in seconds
 )
 
 //Client manages all iteractions with mongodb
@@ -65,7 +65,8 @@ func (c *Client) GetCities(state string) ([]string, error) {
 	var location descritor.Location
 	filter := bson.M{"state": state}
 	if err := c.client.Database(c.dbName).Collection(descritor.LocationsCollection).FindOne(ctx, filter).Decode(&location); err != nil {
-		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
+
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %q", descritor.LocationsCollection, err), nil)
 	}
 	return location.Cities, nil
 }

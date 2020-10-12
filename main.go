@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +22,6 @@ import (
 	"github.com/candidatos-info/site/token"
 	pagination "github.com/gobeam/mongo-go-pagination"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
 )
 
 const (
@@ -35,6 +36,7 @@ const (
 	whatsAppLogoURL          = "https://i0.wp.com/cantinhodabrantes.com.br/wp-content/uploads/2017/08/whatsapp-logo-PNG-Transparent.png?fit=1000%2C1000&ssl=1"
 	searchCookieExpiration   = 360 //in hours
 	searchCacheCookie        = "searchCookie"
+	defaultPageSize          = 10
 )
 
 var (
@@ -362,26 +364,18 @@ type candidateCard struct {
 	Gender       string   `json:"gender"`
 }
 
-func candidatesHandler(c echo.Context) error {
-	response := struct {
-		Candidates []*candidateCard           `json:"candidates"`
-		Pagination *pagination.PaginationData `json:"pagination"`
-	}{}
+func filterCandidates(c echo.Context) ([]*candidateCard, int, error) {
 	candidatesFromDB, cacheCookie, pagination, err := getCandidatesByParams(c)
-	response.Pagination = pagination
 	if err != nil {
-		var e *exception.Exception
-		if errors.As(err, &e) {
-			return c.JSON(e.Code, defaultResponse{Message: e.Message, Code: e.Code})
-		}
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
+		return nil, 0, err
 	}
+	var ret []*candidateCard
 	for _, c := range candidatesFromDB {
 		var candidateTags []string
 		for _, proposal := range c.Proposals {
 			candidateTags = append(candidateTags, proposal.Topic)
 		}
-		response.Candidates = append(response.Candidates, &candidateCard{
+		ret = append(ret, &candidateCard{
 			c.Transparency,
 			c.PhotoURL,
 			c.BallotName,
@@ -396,7 +390,7 @@ func candidatesHandler(c echo.Context) error {
 		})
 	}
 	c.SetCookie(cacheCookie)
-	return c.JSON(http.StatusOK, response)
+	return ret, int(pagination.Next), nil
 }
 
 func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.Cookie, *pagination.PaginationData, error) {
@@ -407,13 +401,11 @@ func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.C
 	}
 	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
 	if err != nil {
-		log.Printf("failed to parse page size from string [%s] to int, error %v\n", c.QueryParam("page_size"), err)
-		return nil, nil, nil, &exception.Exception{Message: "Tamanho de página inválido!", Code: exception.InvalidParameters}
+		pageSize = defaultPageSize
 	}
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil {
-		log.Printf("failed to parse page from string [%s] to int, error %v\n", c.QueryParam("page"), err)
-		return nil, nil, nil, &exception.Exception{Message: "Número de página inválido!", Code: exception.InvalidParameters}
+		page = 1
 	}
 	candidatures, pagination, err := dbClient.FindCandidatesWithParams(queryMap, pageSize, page)
 	return candidatures, cookie, pagination, err
@@ -523,6 +515,19 @@ func citiesHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+type templateRegistry struct {
+	templates map[string]*template.Template
+}
+
+func (t *templateRegistry) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	tmpl, ok := t.templates[name]
+	if !ok {
+		err := errors.New("template not found -> " + name)
+		return err
+	}
+	return tmpl.ExecuteTemplate(w, "layout.html", data)
+}
+
 func main() {
 	urlConnection := os.Getenv("DB_URL")
 	if urlConnection == "" {
@@ -532,12 +537,11 @@ func main() {
 	if dbName == "" {
 		log.Fatal("missing DN_NAME environment variable")
 	}
-	c, err := db.NewMongoClient(urlConnection, dbName)
+	dbClient, err := db.NewMongoClient(urlConnection, dbName)
 	if err != nil {
 		log.Fatalf("failed to connect to database at URL [%s], error %v\n", urlConnection, err)
 	}
 	log.Println("connected to database")
-	dbClient = c
 	emailAccount := os.Getenv("EMAIL")
 	if emailAccount == "" {
 		log.Fatal("missing EMAIL environment variable")
@@ -574,22 +578,36 @@ func main() {
 		log.Fatalf("failed to parte environment variable UPDATE_PROFILE with value [%s] to int, error %v", updateProfile, err)
 	}
 	allowedToUpdateProfile = r == 1
+
+	templates := make(map[string]*template.Template)
+	templates["index.html"] = template.Must(template.ParseFiles("web/templates/index.html", "web/templates/layout.html"))
+	templates["sobre.html"] = template.Must(template.ParseFiles("web/templates/sobre.html", "web/templates/layout.html"))
+	templates["candidato.html"] = template.Must(template.ParseFiles("web/templates/candidato.html", "web/templates/layout.html"))
+	templates["sou-candidato.html"] = template.Must(template.ParseFiles("web/templates/sou-candidato.html", "web/templates/layout.html"))
+	templates["sou-candidato-success.html"] = template.Must(template.ParseFiles("web/templates/sou-candidato-success.html", "web/templates/layout.html"))
+	templates["aceitar-termo.html"] = template.Must(template.ParseFiles("web/templates/aceitar-termo.html", "web/templates/layout.html"))
+	templates["atualizar-candidato.html"] = template.Must(template.ParseFiles("web/templates/atualizar-candidato.html", "web/templates/layout.html"))
+	templates["atualizar-candidato-success.html"] = template.Must(template.ParseFiles("web/templates/atualizar-candidato-success.html", "web/templates/layout.html"))
+
 	e := echo.New()
-	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Root:   "frontend/dist/",
-		Browse: true,
-		HTML5:  true,
-		Index:  "index.html",
-	}))
-	e.GET("/api/v2/states", statesHandler)
-	e.GET("/api/v2/cities", citiesHandler)
-	e.GET("/api/v2/configs", configsHandler)
-	e.POST("/api/v2/contact_us", contactHandler)
-	e.POST("/api/v2/candidates/login", loginHandler)
-	e.GET("/api/v2/candidates/login", requestAccessHandler)
-	e.GET("/api/v2/candidates/:year/:sequencialID", profileHandler)
-	e.PUT("/api/v2/candidates", updateProfileHandler)
-	e.GET("/api/v2/candidates", candidatesHandler)
+	e.Renderer = &templateRegistry{
+		templates: templates,
+	}
+	e.Static("/", "web/public")
+
+	// Frontend
+	e.GET("/", newHomeHandler(dbClient))
+
+	// API endpoints
+	// e.GET("/api/v2/states", statesHandler)
+	// e.GET("/api/v2/cities", citiesHandler)
+	// e.GET("/api/v2/configs", configsHandler)
+	// e.POST("/api/v2/contact_us", contactHandler)
+	// e.POST("/api/v2/candidates/login", loginHandler)
+	// e.GET("/api/v2/candidates/login", requestAccessHandler)
+	// e.GET("/api/v2/candidates/:year/:sequencialID", profileHandler)
+	// e.PUT("/api/v2/candidates", updateProfileHandler)
+	// e.GET("/api/v2/candidates", candidatesHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
