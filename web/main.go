@@ -36,6 +36,7 @@ type Candidate struct {
     ImageURL string
     TransparencyPercentage int
     Biography string
+    SocialLinks *[]SocialLink
     Descriptions *[]CandidateTag
 }
 
@@ -88,6 +89,11 @@ func newCandidate() Candidate {
         ImageURL: "/img/candidata.png",
         TransparencyPercentage: rand.Intn(100),
         Biography: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci aliquam dignissimos in magnam nihil nostrum optio sint totam unde? Beatae ea illo iusto, laboriosam laudantium libero molestias necessitatibus quos vitae?",
+        SocialLinks: &[]SocialLink{
+            newSocialLink("twitter", "#"),
+            newSocialLink("instagram", "#"),
+            newSocialLink("linkedin", "#"),
+        },
         Descriptions: &[]CandidateTag{
             CandidateTag{Tag: "Urbanismo", Description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit."},
             CandidateTag{Tag: "Veganismo", Description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cum earum iusto nesciunt nobis quaerat quisquam reprehenderit repudiandae temporibus voluptate voluptates. Dolore doloribus expedita, iste laudantium magni nulla pariatur quia totam."},
@@ -325,7 +331,7 @@ func main() {
     }
     e.Static("/", "public")
 	e.GET("/", homeHandler)
-	e.GET("/candidato/:id", candidateHandler)
+	e.GET("/candidatos/:id", candidateHandler)
 	e.GET("/sobre", sobreHandler)
 	e.GET("/sou-candidato", souCandidatoHandler)
 	e.POST("/sou-candidato", souCandidatoFormHandler)
