@@ -1,0 +1,179 @@
+{{define "filters"}}
+    <form
+        name="filtros"
+        id="filtros"
+        method="get"
+    >
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select
+                    class="custom-select"
+                    name="estado"
+                >
+                    <option value="">Escolha um estado</option>
+                    {{range $i, $val := .AllStates}}
+                        <option
+                            value="{{$val}}"
+                            {{ if eq $.Filters.State $val }} selected {{end}}
+                        >
+                            {{$val}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+            <div class="form-group col-4">
+                <input class="form-control" type="year" name="ano" value="{{.Filters.Year}}" placeholder="Ano" />
+            </div>
+        </div>
+
+        {{if .Filters.State}}
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select name="cidade" class="custom-select">
+                    <option value="">Escolha uma Cidade</option>
+                    {{range $i, $v := .CitiesOfState}}
+                        <option
+                            value="{{$v}}"
+                            {{if eq $v $.Filters.City}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+            <div class="form-group col-4">
+                <select name="cargo" class="custom-select">
+                    <option value="">Cargo</option>
+                    {{range $i, $v := .AllPositions}}
+                        <option
+                            value="{{$v}}"
+                            {{if eq $v $.Filters.Position}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+        </div>
+        {{end}}
+    </form>
+{{end}}
+
+{{define "candidatos"}}
+    <div>
+        <div
+            class="row"
+            style="margin-left: -8px; margin-right: -8px;"
+            id="candidatesList"
+        >
+            {{range .Candidates}}
+            <div class="col-6 col-md-4 col-lg-2" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
+                <a href="/candidatos/1" style="color: unset">
+                    {{template "candidatoCard" .}}
+                </a>
+            </div>
+            {{end}}
+        </div>
+
+        <div class="load-more-btn text-center pb-2">
+            <a href="{{.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+        </div>
+    </div>
+{{end}}
+
+{{define "emptyCandidatos"}}
+<div class="jumbotron mt-4" style="padding: 0;">
+    <p class="lead">Busque por candidaturas com propostas que você mais acredita!</p>
+</div>
+{{end}}
+
+{{define "content"}}
+    <div class="container mt-2" id="home">
+        {{template "filters" .}}
+
+        <div class="mt-2" id="candidates">
+            {{ if gt (len .Candidates) 0 }}
+                {{template "candidatos" .}}
+            {{else}}
+                {{template "emptyCandidatos" .}}
+            {{end}}
+        </div>
+    </div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+    $(function () {
+        var $home = $('#home');
+
+        $home.on('click', '.load-more-btn', function (e) {
+            e.preventDefault();
+            $.ajax({
+                method: 'get',
+                url: e.target.href,
+                success : function( data ) {
+                    appendCandidates(data);
+                }
+            });
+        });
+
+        $home.on('change', '#filtros', function (e) {
+            e.preventDefault();
+            var $filtersForm = $(this);
+            var replaceFilters = false;
+            var currentFieldName = e.target.name;
+
+            // Só trocamos o filtro quando o estado muda.
+            // Caso contrário, apenas trocaremos o
+            // conteúdo da div de candidatos.
+            if (currentFieldName === "estado") {
+                replaceFilters = true;
+                $filtersForm.find('[name=cidade]').val('');
+            }
+
+            submitForm($filtersForm, replaceFilters).done(function () {
+                if (replaceFilters && currentFieldName) {
+                    $home.find("[name="+currentFieldName+"]").focus();
+                }
+            });
+        });
+
+        /**
+         * Faremos o submit do form de filtros via AJAX e trocaremos
+         * as partes necessárias do body (a lista de candidatos
+         * ou filtro, por exemplo).
+         *
+         * @param $filtersForm
+         * @param replacingFilters
+         * @returns {*}
+         */
+        function submitForm($filtersForm, replacingFilters = false) {
+            return $.ajax({
+                url: $filtersForm.attr('action'),
+                type: $filtersForm.attr('method'),
+                data: $filtersForm.serialize(),
+                success : function( data ) {
+                    history.pushState("", "" , "?"+$filtersForm.serialize());
+
+                    var $html = $(data);
+
+                    if (replacingFilters) {
+                        $home.find('#filtros').replaceWith($html.find('#filtros'));
+                    }
+
+                    $home.find('#candidates').replaceWith($html.find('#candidates'));
+                },
+                error: function( xhr, err ) {
+                    console.log('Ocorreu um erro.');
+                }
+            });
+        }
+
+        function appendCandidates(data) {
+            $html = $(data);
+            $home.find('#candidatesList').append($html.find('#candidatesList').html());
+            $home.find('.load-more-btn').replaceWith($(data).find('.load-more-btn'));
+        }
+    });
+</script>
+{{end}}

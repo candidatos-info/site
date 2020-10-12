@@ -1,0 +1,30 @@
+{{define "content"}}
+<div class="d-flex flex-column flex-grow">
+    <div class="container" style="padding-bottom: 60px">
+        <h1 class="text-center page-title">Sou um(a) Candidato(a)</h1>
+
+        <p>
+            Bem-vindo a seção do Candidatos.info dedicada ao cadastro, edição de conteúdo e envio de denúncia de candidatos.
+        </p>
+
+        <p>
+            Se você também quer ter visibilidade para mostrar suas propostas e aumentar seu alcance na próxima eleição, cadastre-se usando seu email oficial cadastrado no TSE.
+        </p>
+
+        <p>
+            Precisa editar seu perfil, abrir ou replicar uma denúncia?s
+        </p>
+
+        <form action="" method="post">
+            <div class="form-group">
+                <label for="email" class="sr-only">E-mail</label>
+                <input type="email" class="form-control text-center" name="email" placeholder="Digite aqui seu email oficial" required />
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-lg btn-block bg-secondary-button text-white">Enviar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,74 @@
+{{define "cardColaborador"}}
+<div class="card shadow rounded bg-text-dark py-4" style="border: 0;">
+    <img class="card-img-top p-4 rounded-circle" style="filter: grayscale(100%)" src="{{.ImageURL}}" alt="Foto do perfil de {{.Name}}" />
+    <h5 class="text-center colaborador-title text-fluxo-candidato">{{.Name}}</h5>
+    <h6 class="text-center colaborador-subtitle text-text">{{.Title}}</h6>
+    <div class="d-flex justify-content-center align-items-center">
+        {{range .SocialLinks}}
+        <div class="p-2"><a href="{{.Link}}" class="text-secondary-button">{{template "socialIcon" .Provider}}</a></div>
+        {{end}}
+    </div>
+</div>
+{{end}}
+
+{{define "pageStyles"}}
+<style>
+    .colaborador-title {
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .colaborador-subtitle {
+        font-size: 12px;
+    }
+</style>
+{{end}}
+
+{{define "content"}}
+    <div class="d-flex flex-column flex-grow">
+        <div class="container" style="padding-bottom: 60px">
+            <h1 class="text-center page-title">Sobre</h1>
+
+            <p>
+                O TSE já provê várias informações sobre candidaturas no repositório de dados eleitorais, por exemplo, nome na urna, número, etc. Ações de transparência pública como esta alimenta páginas como esta e esta, que permite que as informações sobre as candidaturas sejam encontradas e visualizadas em um navegador. Um dos problemas é que essas páginas não contêm informações relacionadas a biografia, nem as intenções caso eleita (propostas) e nem meios para o eleitorado se comunicar com as pessoas candidatas. Outro problema é que as páginas mostram diferentes aspectos das candidaturas, não existindo um lugar que publique os diversos tipos de informações e/ou proveja os dados consolidados.
+            </p>
+            <p>
+                Uma vez que o impacto das pessoas candidatas no eleitorado potencial é muito desigual, acreditamos que unir levantamento colaborativo, agregação e publicação de informações sobre as candidaturas são um meio importante de ajudar a população a conhecer mais e melhor seus possíveis representantes. Por exemplo, uma candidata pode contribuir com conteúdo do site atualizando suas propostas e uma desenvolvedora pode contribuir com o código que obtém informações sobre patrimônio declarado dos políticos. Dessa forma, o objetivo deste projeto é a criação de uma plataforma colaborativa e aberta que permita o enriquecimento e disponibilização das informações sobre as candidaturas legislativas e executivas no âmbito municipal (vereadores e prefeitos).
+            </p>
+        </div>
+
+        <div class="bg-secondary-button text-fluxo-candidato" style="padding-bottom: 60px">
+            <div class="container">
+                <h2 class="page-title text-center">Parceiros</h2>
+
+                <div class="row">
+                    <div class="col-6 col-md-3 text-center">
+                        <img src="/img/parceiros/parceiro-placeholder.svg" alt="" />
+                    </div>
+                    <div class="col-6 col-md-3 text-center">
+                        <img src="/img/parceiros/parceiro-placeholder.svg" alt="" />
+                    </div>
+                    <div class="col-6 col-md-3 text-center">
+                        <img src="/img/parceiros/parceiro-placeholder.svg" alt="" />
+                    </div>
+                    <div class="col-6 col-md-3 text-center">
+                        <img src="/img/parceiros/parceiro-placeholder.svg" alt="" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-text-dark text-fluxo-candidato" style="padding-bottom: 60px">
+            <div class="container">
+                <h2 class="text-center page-title">Equipe</h2>
+
+                <div class="row">
+                    {{range .Team}}
+                        <div class="col-6 col-md-3 mb-4">
+                            {{template "cardColaborador" .}}
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
