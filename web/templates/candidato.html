@@ -1,0 +1,30 @@
+{{define "content"}}
+<div class="container">
+    <h1>Hello</h1>
+
+    <section class="bg-white rounded p-4">
+        <h3 class="box-title">Quem sou eu?</h3>
+        {{.Candidato.Biography}}
+    </section>
+
+    <section>
+        <h3 class="page-title text-center" style="margin-top: 30px; margin-bottom: 30px;">Candidaturas relacionadas</h3>
+        <div class="overflow-auto row flex-row flex-nowrap" style="margin-left: 0; margin-right: 0;">
+            {{range .RelatedCandidates}}
+            <div class="col-6" style="padding: 4px;">
+                {{template "candidatoCard" .}}
+            </div>
+            {{end}}
+        </div>
+    </section>
+</div>
+{{end}}
+
+{{define "pageStyles"}}
+<style>
+    .box-title {
+        font-size: 20px;
+        font-weight: bold;
+    }
+</style>
+{{end}}

@@ -14,8 +14,13 @@
     <meta name="theme-color" content="#E5F5FF">
 
     <link rel="icon" href="/favicon.ico?v=2">
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:400,700&display=swap" rel="stylesheet">
     <title>{{template "title" .}}</title>
     <style>
+        * {
+            font-family: "Work Sans", sans-serif;
+        }
+
         .custom-shadow-bottom {
             background: #F7FAFC;
             box-shadow: 0 4px 2px -2px rgba(0, 151, 255, 0.1);
@@ -243,4 +248,87 @@ candidatos.info
     <path d="M355 99.5452C355 98.7616 355.135 98.0384 355.404 97.3753C355.674 96.6922 356.067 96.1096 356.585 95.6274C357.104 95.1251 357.736 94.7333 358.482 94.4521C359.228 94.1507 360.067 94 361 94C361.933 94 362.772 94.1507 363.518 94.4521C364.264 94.7333 364.886 95.1251 365.383 95.6274C365.902 96.1096 366.295 96.6922 366.565 97.3753C366.855 98.0384 367 98.7616 367 99.5452C367 100.309 366.855 101.022 366.565 101.685C366.295 102.348 365.902 102.931 365.383 103.433C364.886 103.915 364.264 104.297 363.518 104.578C362.772 104.859 361.933 105 361 105C360.067 105 359.228 104.859 358.482 104.578C357.736 104.297 357.104 103.915 356.585 103.433C356.067 102.931 355.674 102.348 355.404 101.685C355.135 101.022 355 100.309 355 99.5452Z"
           fill="white"/>
 </svg>
+{{end}}
+
+{{define "candidatoCard"}}
+<div
+        class="
+        card card-shadow
+        {{if lt .TransparencyPercentage 25}}
+            border-danger
+        {{else if and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50)}}
+            border-orange
+        {{else if and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75)}}
+            border-warning
+        {{else if and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100)}}
+            border-teal
+        {{else}}
+            border-success
+        {{end}}
+    "
+        style="border-width: 5px 0 0;"
+>
+    <div class="mt-2">
+        {{template "candidateTransparency" .}}
+    </div>
+    <img
+            class="rounded-circle cover mx-auto p-1"
+            src="{{.ImageURL}}"
+            alt="Card image cap"
+            style="width: 128px; height: 128px;"
+    />
+    <div class="card-body">
+        <h5 class="card-title text-dark mb-0">{{.Name}}</h5>
+        <small class="card-text text-dark" style="font-size: 10px;">{{.City}}</small>
+        <p class="card-text text-text mb-0">{{.Position}}</p>
+        <p class="card-text text-text">{{.CandidatureNumber}}</p>
+        <div >
+            {{range .Descriptions}}
+            <span class="badge badge-pill bg-button" style="font-size: 9px">{{.Tag}}</span>
+            {{end}}
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "candidateTransparency"}}
+<span class="d-flex justify-content-center align-items-center">
+    <span
+            class="
+            rounded-circle d-flex align-items-center justify-content-center
+            {{if (lt .TransparencyPercentage 25) }}
+                bg-danger
+            {{else if (and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50))}}
+                bg-orange
+            {{else if (and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75))}}
+                bg-warning
+            {{else if (and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100))}}
+                bg-teal
+            {{else}}
+                bg-success
+            {{end}}
+        "
+            style="height: 14px; width: 14px; margin-right: 5px;"
+    >
+        <svg style="height: 11px; width: auto;" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 6.00018L6.50012 11.0001L5.00009 6.00009L8 6.00018Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M11 6L6.5 11L7.99981 6.00018L11 6Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M10.9998 6.00021L10 3.00006L8 3.00006L8 6.00021L10.9998 6.00021Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M5 6L5 3L3 3L2 6L5 6Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M8 6.00012L8 3.00012L5 3.00012L5 6.00012L8 6.00012Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+            <path d="M2 6.00006L6.5 11.0001L5 6.00006L2 6.00006Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
+        </svg>
+    </span>
+
+    <span
+            class="text-center"
+            style="font-size: 9px;"
+    >
+        {{if (lt .TransparencyPercentage 25)}}
+            Perfil pouco transparente.
+        {{else}}
+            Perfil {{.TransparencyPercentage}}% transparente.
+        {{end}}
+    </span>
+</span>
 {{end}}

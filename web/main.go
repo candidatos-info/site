@@ -226,6 +226,25 @@ func getAllTags() []string {
     }
 }
 
+func getRelatedCandidate(_candidate *Candidate) *[]Candidate {
+    return &[]Candidate{
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+        newCandidate(),
+    }
+}
+
+func findCandidateById(_id string) Candidate {
+    return newCandidate()
+}
+
 func sobreHandler(c echo.Context) error {
     return c.Render(http.StatusOK, "sobre.html", map[string]interface{}{
         "Team": getTeamMembers(),
@@ -278,10 +297,22 @@ func aceitarTermoFormHandler(c echo.Context) error {
     return c.Redirect(http.StatusSeeOther, "/atualizar-candidato?token=" + token)
 }
 
+func candidateHandler(c echo.Context) error {
+    // @TODO: get from route.
+    id := "123"
+    candidate := findCandidate(id)
+
+    return c.Render(http.StatusOK, "candidato.html", map[string]interface{}{
+        "Candidato": candidate,
+        "RelatedCandidates": getRelatedCandidate(&candidate),
+    })
+}
+
 func main() {
     templates := make(map[string]*template.Template)
     templates["index.html"] = template.Must(template.ParseFiles("templates/index.html", "templates/layout.html"))
     templates["sobre.html"] = template.Must(template.ParseFiles("templates/sobre.html", "templates/layout.html"))
+    templates["candidato.html"] = template.Must(template.ParseFiles("templates/candidato.html", "templates/layout.html"))
     templates["sou-candidato.html"] = template.Must(template.ParseFiles("templates/sou-candidato.html", "templates/layout.html"))
     templates["sou-candidato-success.html"] = template.Must(template.ParseFiles("templates/sou-candidato-success.html", "templates/layout.html"))
     templates["aceitar-termo.html"] = template.Must(template.ParseFiles("templates/aceitar-termo.html", "templates/layout.html"))
@@ -294,6 +325,7 @@ func main() {
     }
     e.Static("/", "public")
 	e.GET("/", homeHandler)
+	e.GET("/candidato/:id", candidateHandler)
 	e.GET("/sobre", sobreHandler)
 	e.GET("/sou-candidato", souCandidatoHandler)
 	e.POST("/sou-candidato", souCandidatoFormHandler)
