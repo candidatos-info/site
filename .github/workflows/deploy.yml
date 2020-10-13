@@ -35,9 +35,6 @@ jobs:
     - name: Config app engine environment variables
       run: python3 set_env.py ${{ secrets.EMAIL }} ${{ secrets.PASSWORD }} ${{ secrets.SITE_URL }} ${{ secrets.SECRET }} ${{ secrets.ELECTION_YEAR }} ${{ secrets.UPDATE_PROFILE }} ${{ secrets.DB_NAME }} ${{ secrets.DB_URL }}
 
-    - name: Build frontend to production
-      run: cd frontend && npm install && npm run build && rm -rf node_modules
-
     - name: Initialize Google Cloud SDK
       uses: zxyle/publish-gae-action@master
       with:

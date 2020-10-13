@@ -1,11 +1,10 @@
 {{define "content"}}
 <div class="container" style="padding-top: 60px;">
-    <p>
-        <strong>
-            Seus dados foram atualizados com sucesso!
-        </strong>
-    </p>
-
-    <a href="/" class="btn btn-block btn-lg btn-primary">Ver meu perfil</a>
+        {{if .Success}}
+        <p><strong>Seu perfil foi atualizado com sucesso</strong></p>
+        <a href="/c/{{.Year}}/{{.SequentialID}}" class="btn btn-block btn-lg btn-primary">Ver meu perfil</a>
+        {{else}}
+        <p>{{.ErrorMsg}}</p>
+        {{end}}
 </div>
 {{end}}

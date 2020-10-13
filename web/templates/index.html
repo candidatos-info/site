@@ -11,10 +11,10 @@
                     name="estado"
                 >
                     <option value="">Escolha um estado</option>
-                    {{range $i, $val := .AllStates}}
+                    {{range $id, $val := .AllStates}}
                         <option
-                            value="{{$val}}"
-                            {{ if eq $.Filters.State $val }} selected {{end}}
+                            value="{{$id}}"
+                            {{ if eq $.Filters.State $id }} selected {{end}}
                         >
                             {{$val}}
                         </option>
@@ -44,10 +44,25 @@
             <div class="form-group col-4">
                 <select name="cargo" class="custom-select">
                     <option value="">Cargo</option>
-                    {{range $i, $v := .AllPositions}}
+                    {{range $i, $v := .AllRoles}}
+                        <option
+                            value="{{$i}}"
+                            {{if eq $i $.Filters.Role}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select name="tags" class="custom-select">
+                    <option value="">Escolha uma Causa/Pauta</option>
+                    {{range $i, $v := .Tags}}
                         <option
                             value="{{$v}}"
-                            {{if eq $v $.Filters.Position}}selected{{end}}
+                            {{if eq $v $.Filters.Tag}}selected{{end}}
                         >
                             {{$v}}
                         </option>
@@ -68,7 +83,7 @@
         >
             {{range .Candidates}}
             <div class="col-6 col-md-4 col-lg-2" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
-                <a href="/candidatos/1" style="color: unset">
+                <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
                     {{template "candidatoCard" .}}
                 </a>
             </div>

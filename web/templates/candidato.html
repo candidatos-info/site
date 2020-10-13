@@ -13,7 +13,7 @@
                 <div class="col-6">
                     <img
                             class="rounded-circle cover mx-auto p-1"
-                            src="{{.Candidato.ImageURL}}"
+                            src="{{.Candidato.PhotoURL}}"
                             alt="Card image cap"
                             style="width: 128px; height: 128px;"
                     />
@@ -21,15 +21,15 @@
                 <div class="col-6">
                     <h5 class="card-title text-dark mb-0">{{.Candidato.Name}}</h5>
                     <small class="card-text text-dark" style="font-size: 10px;">{{.Candidato.City}}</small>
-                    <p class="card-text text-text mb-0">{{.Candidato.Position}}</p>
-                    <p class="card-text text-text">{{.Candidato.CandidatureNumber}}</p>
+                    <p class="card-text text-text mb-0">{{.Candidato.Role}}</p>
+                    <p class="card-text text-text">{{.Candidato.BallotNumber}}</p>
                 </div>
             </div>
 
             <div class="row">
-                {{range .Candidato.SocialLinks}}
+                {{range .Candidato.Contacts}}
                     <div class="col-6 col-md-4 col-lg-2">
-                        <div class="p-2"><a href="{{.Link}}" class="text-secondary-button">{{template "socialIcon" .Provider}} {{.Provider}}</a></div>
+                        <div class="p-2"><a href="{{.Value}}" class="text-secondary-button">{{template "socialIcon" .SocialNetwork}} {{.SocialNetwork}}</a></div>
                     </div>
                 {{end}}
             </div>
@@ -37,10 +37,10 @@
     </section>
 
     <section class="bg-white rounded p-4 mb-4">
-        <h3 class="box-title mb-4">Pautas</h3>
-        {{range .Candidato.Descriptions}}
+        <h3 class="box-title mb-4">Causas/Pautas</h3>
+        {{range .Candidato.Proposals}}
         <p>
-            <strong>{{.Tag}}:&nbsp;</strong>{{.Description}}
+            <strong>{{.Topic}}:&nbsp;</strong>{{.Description}}
         </p>
         {{end}}
     </section>

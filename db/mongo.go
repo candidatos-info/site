@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/candidatos-info/descritor"
@@ -15,7 +16,7 @@ import (
 )
 
 const (
-	timeout = 10 // in seconds
+	timeout = 15 // in seconds
 )
 
 //Client manages all iteractions with mongodb
@@ -65,7 +66,8 @@ func (c *Client) GetCities(state string) ([]string, error) {
 	var location descritor.Location
 	filter := bson.M{"state": state}
 	if err := c.client.Database(c.dbName).Collection(descritor.LocationsCollection).FindOne(ctx, filter).Decode(&location); err != nil {
-		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %v", descritor.LocationsCollection, err), nil)
+
+		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %q", descritor.LocationsCollection, err), nil)
 	}
 	return location.Cities, nil
 }
@@ -75,7 +77,7 @@ func (c *Client) GetCandidateByEmail(email string, year int) (*descritor.Candida
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
 	var candidate descritor.CandidateForDB
-	filter := bson.M{"email": email, "year": year}
+	filter := bson.M{"email": strings.ToUpper(email), "year": year}
 	if err := c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection).FindOne(ctx, filter).Decode(&candidate); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidato pelo ano [%d] e pelo email [%s] no banco na collection [%s], erro %v", year, email, descritor.CandidaturesCollection, err), nil)
 	}
@@ -120,7 +122,9 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 // FindCandidatesWithParams searches for a list of candidates with given params
 func (c *Client) FindCandidatesWithParams(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
 	var candidatures []*descritor.CandidateForDB
-	paginatedData, err := pagination.New(c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection)).Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(resolveQuery(queryMap)).Find()
+	db := c.client.Database(c.dbName)
+	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
+	paginatedData, err := p.Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(resolveQuery(queryMap)).Find()
 	if err != nil {
 		return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar por lista candidatos, erro %v", err), nil)
 	}
