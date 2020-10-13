@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	b64 "encoding/base64"
-
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
 	"github.com/candidatos-info/site/email"
@@ -179,93 +177,6 @@ func paseDescritorProposalsToDTO(proposals []*descritor.Proposal) []*proposal {
 		})
 	}
 	return p
-}
-
-func updateProfileHandler(c echo.Context) error {
-	encodedAccessToken := c.QueryParam("access_token")
-	if encodedAccessToken == "" {
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Código de acesso é inválido.", Code: http.StatusBadRequest})
-	}
-	accessTokenBytes, err := b64.StdEncoding.DecodeString(encodedAccessToken)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
-	}
-	if !tokenService.IsValid(string(accessTokenBytes)) {
-		return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
-	}
-	claims, err := token.GetClaims(string(accessTokenBytes))
-	if err != nil {
-		log.Printf("failed to extract email from token claims, erro %v\n", err)
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
-	}
-	email := claims["email"]
-	request := struct {
-		Biography string      `json:"biography"`
-		Conctacts []*contact  `json:"contacts"`
-		Proposals []*proposal `json:"proposals"`
-	}{}
-	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Corpo de requisição inválido", Code: http.StatusBadRequest})
-	}
-	if len(request.Biography) > maxBiographyTextSize {
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres.", maxBiographyTextSize), Code: http.StatusBadRequest})
-	}
-	if request.Proposals != nil {
-		if len(request.Proposals) > maxProposalsPerCandidate {
-			return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de tópicos de candidatos é %d, foram enviados %d", maxProposalsPerCandidate, len(request.Proposals)), Code: http.StatusBadRequest})
-		}
-		for _, proposal := range request.Proposals {
-			if len(proposal.Description) > maxDescriptionTextSize {
-				return c.JSON(http.StatusBadRequest, defaultResponse{Message: fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres. Tamanho das descrição do tópico %s é de %d caracteres", maxDescriptionTextSize, proposal.Topic, len(proposal.Description)), Code: http.StatusBadRequest})
-			}
-		}
-	}
-	candidate, err := dbClient.GetCandidateByEmail(email, currentYear)
-	if err != nil {
-		log.Printf("failed to find candidate using email from token claims, erro %v\n", err)
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
-	}
-	candidate.Biography = request.Biography
-	candidate.Proposals = parseProposals(request.Proposals)
-	candidate.Contacts = parseContacts(request.Conctacts)
-	counter := 0.0
-	if candidate.Biography != "" {
-		counter++
-	}
-	if candidate.Proposals != nil && len(candidate.Proposals) > 0 {
-		counter++
-	}
-	if candidate.Contacts != nil && len(candidate.Contacts) > 0 {
-		counter++
-	}
-	candidate.Transparency = counter / 3.0
-	if _, err := dbClient.UpdateCandidateProfile(candidate); err != nil {
-		log.Printf("failed to update candidates profile, erro %v\n", err)
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao atualizar dados de candidato. Tente novamente mais tarde.", Code: http.StatusInternalServerError})
-	}
-	return c.JSON(http.StatusOK, defaultResponse{Message: "Seus dados foram atualizados com sucesso!", Code: http.StatusOK})
-}
-
-func parseProposals(proposals []*proposal) []*descritor.Proposal {
-	var p []*descritor.Proposal
-	for _, proposal := range proposals {
-		p = append(p, &descritor.Proposal{
-			Topic:       proposal.Topic,
-			Description: proposal.Description,
-		})
-	}
-	return p
-}
-
-func parseContacts(contacts []*contact) []*descritor.Contact {
-	var c []*descritor.Contact
-	for _, contact := range contacts {
-		c = append(c, &descritor.Contact{
-			SocialNetwork: contact.SocialNetwork,
-			Value:         contact.Value,
-		})
-	}
-	return c
 }
 
 type candidateCard struct {
@@ -488,11 +399,12 @@ func main() {
 
 	// Frontend
 	e.GET("/", newHomeHandler(dbClient))
-	e.GET("/candidatos/:year/:id", newCandidateHandler(dbClient))
+	e.GET("/c/:year/:id", newCandidateHandler(dbClient))
 	e.GET("/sobre", sobreHandler)
 	e.GET("/sou-candidato", souCandidatoGET)
 	e.POST("/sou-candidato", newSouCandidatoFormHandler(dbClient, tokenService, emailClient, currentYear))
 	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags, currentYear))
+	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient, currentYear))
 
 	// API endpoints
 	// e.GET("/api/v2/states", statesHandler)
