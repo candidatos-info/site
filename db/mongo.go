@@ -121,7 +121,9 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 // FindCandidatesWithParams searches for a list of candidates with given params
 func (c *Client) FindCandidatesWithParams(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
 	var candidatures []*descritor.CandidateForDB
-	paginatedData, err := pagination.New(c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection)).Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(resolveQuery(queryMap)).Find()
+	db := c.client.Database(c.dbName)
+	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
+	paginatedData, err := p.Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(resolveQuery(queryMap)).Find()
 	if err != nil {
 		return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar por lista candidatos, erro %v", err), nil)
 	}

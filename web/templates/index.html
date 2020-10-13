@@ -55,6 +55,21 @@
                 </select>
             </div>
         </div>
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select name="tags" class="custom-select">
+                    <option value="">Escolha uma Causa/Pauta</option>
+                    {{range $i, $v := .Tags}}
+                        <option
+                            value="{{$v}}"
+                            {{if eq $v $.Filters.Tag}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+        </div>
         {{end}}
     </form>
 {{end}}

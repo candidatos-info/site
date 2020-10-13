@@ -14,7 +14,7 @@ import (
 
 //  in the format they are going to be presented in UI
 var (
-	uiRoles  = []string{"Vereador(a)", "Prefeito(a)"}
+	uiRoles  = map[string]string{"vereador": "Vereador(a)", "prefeito": "Prefeito(a)", "vice-prefeito": "Vice Prefeito(a)"}
 	uiStates = map[string]string{"AL": "Alagoas"}
 )
 
@@ -23,7 +23,7 @@ type homeFilter struct {
 	Year     string
 	City     string
 	Role     string
-	Tags     []string
+	Tag      string
 	NextPage int
 }
 
@@ -40,7 +40,7 @@ func buildLoadMoreURL(filter *homeFilter) string {
 		url = url + "&" + fmt.Sprintf("%s=%s", key, val)
 	}
 
-	return "?" + strings.Trim(url, "&") + "&offset=" + strconv.Itoa(filter.NextPage)
+	return "?" + strings.Trim(url, "&") + "&page=" + strconv.Itoa(filter.NextPage)
 }
 
 func newHomeHandler(db *db.Client) echo.HandlerFunc {
@@ -52,7 +52,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 
 		candidates := []*candidateCard{}
 		cities := []string{}
-		nextPage := 0
+		page := 0
 		state := c.QueryParam("estado")
 		if state != "" {
 			var err error
@@ -61,7 +61,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 				log.Printf("error fetching cities from a state (%s):%q\n", state, err)
 				return c.String(http.StatusInternalServerError, "erro buscando cidades.")
 			}
-			candidates, nextPage, err = filterCandidates(c)
+			candidates, page, err = filterCandidates(c, db)
 			// TODO: substituir por página de erro.
 			if err != nil {
 				log.Printf("error filtering candidates:%q", err)
@@ -69,19 +69,23 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			}
 		}
 		filter := &homeFilter{
-			State:    "",
-			City:     "",
-			Year:     "2020",
-			Role:     "",
-			NextPage: nextPage,
+			State:    state,
+			City:     c.QueryParam("cidade"),
+			Year:     year,
+			Role:     c.QueryParam("cargo"),
+			NextPage: page + 1,
+			Tag:      c.QueryParam("tag"),
 		}
-		return c.Render(http.StatusOK, "index.html", map[string]interface{}{
+		r := c.Render(http.StatusOK, "index.html", map[string]interface{}{
 			"AllStates":     uiStates,
 			"AllRoles":      uiRoles,
 			"CitiesOfState": cities,
 			"Filters":       filter,
 			"Candidates":    candidates,
 			"LoadMoreUrl":   buildLoadMoreURL(filter),
+			"Tags":          tags,
 		})
+		fmt.Println(r)
+		return r
 	}
 }

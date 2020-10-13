@@ -251,13 +251,13 @@ candidatos.info
 {{end}}
 
 {{define "candidatoCardBoxBorderColor"}}
-{{if lt .TransparencyPercentage 25}}
+{{if lt .Transparency 25.}}
 border-danger
-{{else if and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50)}}
+{{else if and (ge .Transparency 25.) (lt .Transparency 50.)}}
 border-orange
-{{else if and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75)}}
+{{else if and (ge .Transparency 50.) (lt .Transparency 75.)}}
 border-warning
-{{else if and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100)}}
+{{else if and (ge .Transparency 75.) (lt .Transparency 100.)}}
 border-teal
 {{else}}
 border-success
@@ -277,18 +277,18 @@ border-success
     </div>
     <img
             class="rounded-circle cover mx-auto p-1"
-            src="{{.ImageURL}}"
+            src="{{.Picture}}"
             alt="Card image cap"
             style="width: 128px; height: 128px;"
     />
     <div class="card-body">
         <h5 class="card-title text-dark mb-0">{{.Name}}</h5>
         <small class="card-text text-dark" style="font-size: 10px;">{{.City}}</small>
-        <p class="card-text text-text mb-0">{{.Position}}</p>
-        <p class="card-text text-text">{{.CandidatureNumber}}</p>
+        <p class="card-text text-text mb-0">{{.Role}}</p>
+        <p class="card-text text-text">{{.Number}}</p>
         <div >
-            {{range .Descriptions}}
-            <span class="badge badge-pill bg-button" style="font-size: 9px">{{.Tag}}</span>
+            {{range .Tags}}
+            <span class="badge badge-pill bg-button" style="font-size: 9px">{{.}}</span>
             {{end}}
         </div>
     </div>
@@ -296,13 +296,13 @@ border-success
 {{end}}
 
 {{define "candidateBgColorForTransparency"}}
-{{if (lt .TransparencyPercentage 25) }}
+{{if (lt .Transparency 25.) }}
 bg-danger
-{{else if (and (ge .TransparencyPercentage 25) (lt .TransparencyPercentage 50))}}
+{{else if (and (ge .Transparency 25.) (lt .Transparency 50.))}}
 bg-orange
-{{else if (and (ge .TransparencyPercentage 50) (lt .TransparencyPercentage 75))}}
+{{else if (and (ge .Transparency 50.) (lt .Transparency 75.))}}
 bg-warning
-{{else if (and (ge .TransparencyPercentage 75) (lt .TransparencyPercentage 100))}}
+{{else if (and (ge .Transparency 75.) (lt .Transparency 100.))}}
 bg-teal
 {{else}}
 bg-success
@@ -346,10 +346,10 @@ bg-success
             class="text-center"
             style="font-size: 9px;"
     >
-        {{if (lt .TransparencyPercentage 25)}}
+        {{if (lt .Transparency 25.)}}
             Perfil pouco transparente.
         {{else}}
-            Perfil {{.TransparencyPercentage}}% transparente.
+            Perfil {{.Transparency}}% transparente.
         {{end}}
     </span>
 </span>

@@ -36,7 +36,7 @@ const (
 	whatsAppLogoURL          = "https://i0.wp.com/cantinhodabrantes.com.br/wp-content/uploads/2017/08/whatsapp-logo-PNG-Transparent.png?fit=1000%2C1000&ssl=1"
 	searchCookieExpiration   = 360 //in hours
 	searchCacheCookie        = "searchCookie"
-	defaultPageSize          = 10
+	defaultPageSize          = 20
 )
 
 var (
@@ -54,7 +54,7 @@ var (
 		"VEM": "vice-prefeito",
 	}
 	allowedToUpdateProfile bool
-	tags                   = []string{"Urbanismo", "LGBTQ", "Meio ambiente", "Esporte", "Educação", "Ecossocialismo", "Transformação digital", "Cultura", "Economia"}
+	tags                   = mustLoadTags()
 )
 
 type defaultResponse struct {
@@ -364,8 +364,8 @@ type candidateCard struct {
 	Gender       string   `json:"gender"`
 }
 
-func filterCandidates(c echo.Context) ([]*candidateCard, int, error) {
-	candidatesFromDB, cacheCookie, pagination, err := getCandidatesByParams(c)
+func filterCandidates(c echo.Context, dbClient *db.Client) ([]*candidateCard, int, error) {
+	candidatesFromDB, cacheCookie, pagination, err := getCandidatesByParams(c, dbClient)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -379,9 +379,9 @@ func filterCandidates(c echo.Context) ([]*candidateCard, int, error) {
 			c.Transparency,
 			c.PhotoURL,
 			c.BallotName,
-			c.City,
+			strings.Title(strings.ToLower(c.City)),
 			c.State,
-			c.Role,
+			uiRoles[c.Role],
 			c.Party,
 			c.BallotNumber,
 			candidateTags,
@@ -390,15 +390,16 @@ func filterCandidates(c echo.Context) ([]*candidateCard, int, error) {
 		})
 	}
 	c.SetCookie(cacheCookie)
-	return ret, int(pagination.Next), nil
+	return ret, int(pagination.Page), nil
 }
 
-func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.Cookie, *pagination.PaginationData, error) {
+func getCandidatesByParams(c echo.Context, dbClient *db.Client) ([]*descritor.CandidateForDB, *http.Cookie, *pagination.PaginationData, error) {
 	queryMap, cookie, err := getQueryFilters(c)
 	if err != nil {
 		log.Printf("failed to get filters, error %v\n", err)
 		return nil, nil, nil, err
 	}
+	fmt.Println(queryMap)
 	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
 	if err != nil {
 		pageSize = defaultPageSize
@@ -412,25 +413,31 @@ func getCandidatesByParams(c echo.Context) ([]*descritor.CandidateForDB, *http.C
 }
 
 func getQueryFilters(c echo.Context) (map[string]interface{}, *http.Cookie, error) {
-	year := c.QueryParam("year")
-	state := c.QueryParam("state")
+	year := c.QueryParam("ano")
+	state := c.QueryParam("estado")
 	city := c.QueryParam("city")
-	gender := c.QueryParam("gender")
-	name := c.QueryParam("name")
-	role := c.QueryParam("role")
+
+	// Check cookies and override query parameters when needed.
+	cacheCookie, _ := c.Cookie(searchCacheCookie)
+	if cacheCookie != nil && (year == "" || state == "" || city == "") {
+		cookieValues := strings.Split(cacheCookie.Value, ",")
+		if year == "" {
+			year = cookieValues[0]
+		}
+		if state == "" {
+			state = cookieValues[1]
+		}
+		fmt.Println(cookieValues)
+		if city == "" && len(cookieValues) > 2 {
+			city = cookieValues[2]
+		}
+	}
+	// TODO: change query parameters to English.
+	gender := c.QueryParam("genero")
+	name := c.QueryParam("nome")
+	role := c.QueryParam("cargo")
 	tags := c.QueryParam("tags")
 	queryMap := make(map[string]interface{})
-	cacheCookie, _ := c.Cookie(searchCacheCookie)
-	if cacheCookie != nil {
-		cookieValues := strings.Split(cacheCookie.Value, ",")
-		queryMap["state"] = cookieValues[1]
-		y, err := strconv.Atoi(cookieValues[0])
-		if err != nil {
-			log.Printf("failed to parse year from cache cookie [%s] to int, error %v\n", cookieValues[0], err)
-			return nil, nil, exception.New(exception.ProcessmentError, "Ano fornecido é inválido.", nil)
-		}
-		queryMap["year"] = y
-	}
 	if city != "" {
 		queryMap["city"] = city
 	}
@@ -446,9 +453,7 @@ func getQueryFilters(c echo.Context) (map[string]interface{}, *http.Cookie, erro
 	if name != "" {
 		queryMap["name"] = name
 	}
-	if state != "" {
-		queryMap["state"] = state
-	}
+
 	if year != "" {
 		y, err := strconv.Atoi(year)
 		if err != nil {
@@ -462,17 +467,21 @@ func getQueryFilters(c echo.Context) (map[string]interface{}, *http.Cookie, erro
 
 func getSearchCookie(queryMap map[string]interface{}) *http.Cookie {
 	year := ""
-	if queryMap["year"] != nil {
+	if queryMap["ano"] != nil {
 		year = fmt.Sprintf("%d", queryMap["year"].(int))
 	}
 	state := ""
-	if queryMap["state"] != nil {
+	if queryMap["estado"] != nil {
 		state = queryMap["state"].(string)
+	}
+	city := ""
+	if queryMap["cidade"] != nil {
+		city = queryMap["city"].(string)
 	}
 	if year != "" && state != "" {
 		return &http.Cookie{
 			Name:    searchCacheCookie,
-			Value:   fmt.Sprintf("%s,%s", year, state),
+			Value:   fmt.Sprintf("%s,%s,%s", year, state, city),
 			Expires: time.Now().Add(time.Hour * searchCookieExpiration),
 		}
 	}
