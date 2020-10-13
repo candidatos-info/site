@@ -359,7 +359,7 @@ type candidateCard struct {
 	Party        string   `json:"party"`
 	Number       int      `json:"number"`
 	Tags         []string `json:"tags"`
-	SequencialID string   `json:"sequencial_id"`
+	SequentialID string   `json:"sequential_id"`
 	Gender       string   `json:"gender"`
 }
 
