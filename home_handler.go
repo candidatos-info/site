@@ -9,7 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
+	"github.com/candidatos-info/site/exception"
+	pagination "github.com/gobeam/mongo-go-pagination"
 	"github.com/labstack/echo"
 )
 
@@ -118,4 +121,92 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 		})
 		return r
 	}
+}
+
+func filterCandidates(c echo.Context, dbClient *db.Client) ([]*candidateCard, int, error) {
+	candidatesFromDB, pagination, err := getCandidatesByParams(c, dbClient)
+	if err != nil {
+		return nil, 0, err
+	}
+	var ret []*candidateCard
+	for _, c := range candidatesFromDB {
+		var candidateTags []string
+		for _, proposal := range c.Proposals {
+			candidateTags = append(candidateTags, proposal.Topic)
+		}
+		ret = append(ret, &candidateCard{
+			c.Transparency,
+			c.PhotoURL,
+			c.BallotName,
+			strings.Title(strings.ToLower(c.City)),
+			c.State,
+			uiRoles[c.Role],
+			c.Party,
+			c.BallotNumber,
+			candidateTags,
+			c.SequencialCandidate,
+			c.Gender,
+		})
+	}
+	return ret, int(pagination.Page), nil
+}
+
+func getCandidatesByParams(c echo.Context, dbClient *db.Client) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
+	queryMap, err := getQueryFilters(c)
+	if err != nil {
+		log.Printf("failed to get filters, error %v\n", err)
+		return nil, nil, err
+	}
+	fmt.Println(queryMap)
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil {
+		pageSize = defaultPageSize
+	}
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		page = 1
+	}
+	candidatures, pagination, err := dbClient.FindCandidatesWithParams(queryMap, pageSize, page)
+	return candidatures, pagination, err
+}
+
+func getQueryFilters(c echo.Context) (map[string]interface{}, error) {
+	// TODO: change query parameters to English.
+	year := c.QueryParam("ano")
+	state := c.QueryParam("estado")
+	city := c.QueryParam("cidade")
+	gender := c.QueryParam("genero")
+	name := c.QueryParam("nome")
+	role := c.QueryParam("cargo")
+	tags := c.QueryParam("tags")
+
+	queryMap := make(map[string]interface{})
+	if state != "" {
+		queryMap["state"] = state
+	}
+	if city != "" {
+		queryMap["city"] = city
+	}
+	if year != "" {
+		y, err := strconv.Atoi(year)
+		if err != nil {
+			log.Printf("failed to parse year from string [%s] to int, error %v\n", year, err)
+			return nil, exception.New(exception.ProcessmentError, "Ano fornecido é inválido.", nil)
+		}
+		queryMap["year"] = y
+	}
+
+	if gender != "" {
+		queryMap["gender"] = gender
+	}
+	if role != "" {
+		queryMap["role"] = role
+	}
+	if tags != "" {
+		queryMap["tags"] = strings.Split(tags, ",")
+	}
+	if name != "" {
+		queryMap["name"] = name
+	}
+	return queryMap, nil
 }

@@ -118,6 +118,11 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client, year int) echo.Hand
 	}
 }
 func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string, year int) echo.HandlerFunc {
+	// TODO remove this struct
+	type defaultResponse struct {
+		Message string `json:"message"`
+		Code    int    `json:"code"`
+	}
 	return func(c echo.Context) error {
 		encodedAccessToken := c.QueryParam("access_token")
 		if encodedAccessToken == "" {
