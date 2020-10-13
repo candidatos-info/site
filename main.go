@@ -570,6 +570,7 @@ func main() {
 	// Frontend
 	e.GET("/", newHomeHandler(dbClient))
 	e.GET("/candidatos/:year/:id", newCandidateHandler(dbClient))
+	e.GET("/sobre", sobreHandler)
 
 	// API endpoints
 	// e.GET("/api/v2/states", statesHandler)
