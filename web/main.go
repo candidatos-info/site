@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/labstack/echo"
 	"html/template"
 	"io"
 	"math/rand"
@@ -11,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/labstack/echo"
 )
 
 type HomeFilters struct {
@@ -204,7 +205,7 @@ func homeHandler(c echo.Context) error {
 	filters := newHomeFilters(state, year, c.QueryParam("cidade"), c.QueryParam("cargo"))
 	offset, offsetErr := strconv.Atoi(c.QueryParam("offset"))
 	if offsetErr != nil {
-	     offset = 0
+		offset = 0
 	}
 	candidatos := getCandidatos(filters, offset)
 

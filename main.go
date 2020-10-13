@@ -405,6 +405,7 @@ func main() {
 	e.POST("/sou-candidato", newSouCandidatoFormHandler(dbClient, tokenService, emailClient, currentYear))
 	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags, currentYear))
 	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient, currentYear))
+	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient, currentYear))
 
 	// API endpoints
 	// e.GET("/api/v2/states", statesHandler)

@@ -142,6 +142,12 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string, year int
 			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
 		}
 		// @TODO: só mostrar a tela de aceitar-termo caso o candidato ainda não tenha aceitado
+		if false {
+			return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{
+				"Token":      encodedAccessToken,
+				"TextoTermo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat.",
+			})
+		}
 		r := c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{
 			"Token":     encodedAccessToken,
 			"AllTags":   tags,
