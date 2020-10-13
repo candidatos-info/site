@@ -27,6 +27,7 @@ type CandidateTag struct {
 }
 
 type Candidate struct {
+	ID                     int
 	Name                   string
 	Email                  string
 	Party                  string
@@ -51,6 +52,11 @@ type TeamMember struct {
 	Title       string
 	ImageURL    string
 	SocialLinks []*SocialLink
+}
+
+type SelectOption struct {
+	Label string
+	Value string
 }
 
 func newSocialLink(provider string, link string) *SocialLink {
@@ -87,6 +93,7 @@ func newCandidateTag(tag string, description string) *CandidateTag {
 
 func newCandidate() *Candidate {
 	return &Candidate{
+		ID:                     rand.Intn(100),
 		Name:                   "Fulado de Tal",
 		Email:                  "fulano@example.com",
 		CandidatureNumber:      "55555",
@@ -262,6 +269,11 @@ func findCandidateById(_id string) *Candidate {
 	return newCandidate()
 }
 
+func saveContactMessage(_ *Candidate, _ string, _ string, _ string) error {
+	// Save the "fale-conosco" message.
+	return nil
+}
+
 func sobreHandler(c echo.Context) error {
 	return c.Render(http.StatusOK, "sobre.html", map[string]interface{}{
 		"Team": getTeamMembers(),
@@ -325,6 +337,38 @@ func candidateHandler(c echo.Context) error {
 	})
 }
 
+func faleConoscoHandler(c echo.Context) error {
+	token := c.QueryParam("token")
+	candidate := findCandidate(token)
+
+	return c.Render(http.StatusOK, "fale-conosco.html", map[string]interface{}{
+		"Candidate": candidate,
+		"Token":     token,
+		"TypeOptions": []SelectOption{
+			SelectOption{Label: "Sugestão", Value: "sugestão"},
+			SelectOption{Label: "Reclamação", Value: "reclamação"},
+			SelectOption{Label: "Denúncia", Value: "denúncia"},
+			SelectOption{Label: "Pergunta", Value: "Pergunta"},
+			SelectOption{Label: "Requisitar nova Causa", Value: "nova-causa"},
+		},
+	})
+}
+
+func faleConoscoFormHandler(c echo.Context) error {
+	token := c.FormValue("token")
+	messageType := c.FormValue("type")
+	subject := c.FormValue("assunto")
+	description := c.FormValue("descricao")
+
+	candidate := findCandidate(token)
+
+	saveContactMessage(candidate, messageType, subject, description)
+
+	return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+		"Candidate": candidate,
+	})
+}
+
 func main() {
 	templates := make(map[string]*template.Template)
 	templates["index.html"] = template.Must(template.ParseFiles("templates/index.html", "templates/layout.html"))
@@ -335,6 +379,8 @@ func main() {
 	templates["aceitar-termo.html"] = template.Must(template.ParseFiles("templates/aceitar-termo.html", "templates/layout.html"))
 	templates["atualizar-candidato.html"] = template.Must(template.ParseFiles("templates/atualizar-candidato.html", "templates/layout.html"))
 	templates["atualizar-candidato-success.html"] = template.Must(template.ParseFiles("templates/atualizar-candidato-success.html", "templates/layout.html"))
+	templates["fale-conosco.html"] = template.Must(template.ParseFiles("templates/fale-conosco.html", "templates/layout.html"))
+	templates["fale-conosco-success.html"] = template.Must(template.ParseFiles("templates/fale-conosco-success.html", "templates/layout.html"))
 
 	e := echo.New()
 	e.Renderer = &TemplateRegistry{
@@ -350,6 +396,8 @@ func main() {
 	e.POST("/atualizar-candidato", atualizarCandidatoFormHandler)
 	e.GET("/aceitar-termo", aceitarTermoHandler)
 	e.POST("/aceitar-termo", aceitarTermoFormHandler)
+	e.GET("/fale-conosco", faleConoscoHandler)
+	e.POST("/fale-conosco", faleConoscoFormHandler)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
