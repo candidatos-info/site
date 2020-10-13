@@ -21,7 +21,7 @@
 
             <div class="form-group">
                 <label for="numero" class="form-label">NÚMERO*:</label>
-                <input type="text" id="numero" disabled class="form-control text-center" value="{{.Candidato.CandidatureNumber}}" />
+                <input type="text" id="numero" disabled class="form-control text-center" value="{{.Candidato.BallotNumber}}" />
             </div>
 
             <div class="form-group">
@@ -31,7 +31,7 @@
 
             <div class="form-group">
                 <label for="numberOfTerms" class="form-label">NÚMERO DE MANDATOS*:</label>
-                <input type="text" id="numberOfTerms" disabled class="form-control text-center" value="{{.Candidato.NumberOfTerms}}" />
+                <input type="text" id="numberOfTerms" disabled class="form-control text-center" value="1" />
             </div>
 
             <div class="form-group">
@@ -92,9 +92,9 @@
                 {{range .AllTags}}"{{.}}",{{end}}
             ],
             subjects: [
-                {{range .Candidato.Descriptions}}
+                {{range .Candidato.Proposals}}
                     {
-                        tag: "{{.Tag}}",
+                        tag: "{{.Topic}}",
                         description: "{{.Description}}",
                     },
                 {{end}}

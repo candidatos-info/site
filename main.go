@@ -93,87 +93,6 @@ func contactHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, defaultResponse{Message: "Obrigado pelo contato. Sua mensagem foi enviada com sucesso!", Code: http.StatusOK})
 }
 
-func loginHandler(c echo.Context) error {
-	request := struct {
-		Email string `json:"email"`
-	}{}
-	if err := c.Bind(&request); err != nil {
-		log.Printf("failed to read request body, error %v", err)
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "corpo de requisição inválido", Code: http.StatusBadRequest})
-	}
-	if !emailRegex.MatchString(request.Email) {
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Email fornecido é inválido.", Code: http.StatusBadRequest})
-	}
-	foundCandidate, err := dbClient.GetCandidateByEmail(strings.ToUpper(request.Email), currentYear)
-	if err != nil {
-		log.Printf("failed to find candidate by email, error %v\n", err)
-		var e *exception.Exception
-		if errors.As(err, &e) {
-			return c.JSON(e.Code, defaultResponse{Message: e.Message, Code: e.Code})
-		}
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Erro interno de processamento!", Code: http.StatusInternalServerError})
-	}
-	accessToken, err := tokenService.GetToken(request.Email)
-	if err != nil {
-		log.Printf("failed to get acess token, error %v\n", err)
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao gerar código de acesso ao sisteme. Tente novamente mais tarde.", Code: http.StatusInternalServerError})
-	}
-	encodedAccessToken := b64.StdEncoding.EncodeToString([]byte(accessToken))
-	emailMessage := buildProfileAccessEmail(foundCandidate, encodedAccessToken)
-	if err := emailClient.Send(emailClient.Email, []string{foundCandidate.Email}, "Código para acessar candidatos.info", emailMessage); err != nil {
-		log.Printf("failed to send email to [%s], erro %v\n", request.Email, err)
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao enviar email com código de acesso. Por favor tente novamente mais tarde.", Code: http.StatusInternalServerError})
-	}
-	return c.JSON(http.StatusOK, defaultResponse{Message: "Email com código de acesso enviado. Verifique sua caixa de spam caso não encontre.", Code: http.StatusOK})
-}
-
-func requestAccessHandler(c echo.Context) error {
-	encodedAccessToken := c.QueryParam("access_token")
-	if encodedAccessToken == "" {
-		return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Código de acesso é inválido.", Code: http.StatusBadRequest})
-	}
-	accessTokenBytes, err := b64.StdEncoding.DecodeString(encodedAccessToken)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
-	}
-	if !tokenService.IsValid(string(accessTokenBytes)) {
-		return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
-	}
-	claims, err := token.GetClaims(string(accessTokenBytes))
-	if err != nil {
-		log.Printf("failed to extract email from token claims, erro %v\n", err)
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
-	}
-	email := claims["email"]
-	foundCandidate, err := dbClient.GetCandidateByEmail(email, currentYear)
-	if err != nil {
-		log.Printf("failed to find candidate using email from token claims, erro %v\n", err)
-		return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
-	}
-	response := struct {
-		Transparence  float64               `json:"transparence"`   // Current candidate transparency (gotten from database).
-		Email         string                `json:"email"`          // Candidate email.
-		Name          string                `json:"name"`           // Candidate name.
-		BallotNumber  int                   `json:"ballot_number"`  // Candidate ballot number.
-		Party         string                `json:"party"`          // Candidate party.
-		Biography     string                `json:"biography"`      // Candidate biography.
-		AvailableTags []string              `json:"available_tags"` // Available tags on system.
-		Contacts      []*descritor.Contact  `json:"contacts"`       // Candidate's contacts.
-		Proposals     []*descritor.Proposal `json:"proposals"`      // Candidate's proposals.
-	}{
-		Transparence:  foundCandidate.Transparency,
-		Email:         strings.ToLower(foundCandidate.Email),
-		Name:          foundCandidate.Name,
-		BallotNumber:  foundCandidate.BallotNumber,
-		Party:         foundCandidate.Party,
-		Biography:     foundCandidate.Biography,
-		AvailableTags: tags,
-		Contacts:      foundCandidate.Contacts,
-		Proposals:     foundCandidate.Proposals,
-	}
-	return c.JSON(http.StatusOK, response)
-}
-
 func configsHandler(c echo.Context) error {
 	response := struct {
 		AllowChangeProfile bool     `json:"allow_change_profile"`
@@ -571,6 +490,9 @@ func main() {
 	e.GET("/", newHomeHandler(dbClient))
 	e.GET("/candidatos/:year/:id", newCandidateHandler(dbClient))
 	e.GET("/sobre", sobreHandler)
+	e.GET("/sou-candidato", souCandidatoGET)
+	e.POST("/sou-candidato", newSouCandidatoFormHandler(dbClient, tokenService, emailClient, currentYear))
+	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags, currentYear))
 
 	// API endpoints
 	// e.GET("/api/v2/states", statesHandler)

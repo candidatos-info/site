@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/candidatos-info/descritor"
@@ -76,7 +77,7 @@ func (c *Client) GetCandidateByEmail(email string, year int) (*descritor.Candida
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
 	var candidate descritor.CandidateForDB
-	filter := bson.M{"email": email, "year": year}
+	filter := bson.M{"email": strings.ToUpper(email), "year": year}
 	if err := c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection).FindOne(ctx, filter).Decode(&candidate); err != nil {
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar candidato pelo ano [%d] e pelo email [%s] no banco na collection [%s], erro %v", year, email, descritor.CandidaturesCollection, err), nil)
 	}
