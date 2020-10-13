@@ -266,11 +266,12 @@ func getRelatedCandidate(_candidate *Candidate) []*Candidate {
 }
 
 func findCandidateById(_id string) *Candidate {
+	// @TODO: Find candidate by ID.
 	return newCandidate()
 }
 
 func saveContactMessage(_ *Candidate, _ string, _ string, _ string) error {
-	// Save the "fale-conosco" message.
+	// @TODO: Save the "fale-conosco" message.
 	return nil
 }
 
@@ -304,8 +305,12 @@ func atualizarCandidatoHandler(c echo.Context) error {
 }
 
 func atualizarCandidatoFormHandler(c echo.Context) error {
+	token := c.QueryParam("token")
+	candidate := findCandidate(token)
 	// @TODO: processar form.
-	return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{})
+	return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+		"Candidate": candidate,
+	})
 }
 
 func aceitarTermoHandler(c echo.Context) error {
