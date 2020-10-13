@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	b64 "encoding/base64"
 
@@ -365,7 +364,7 @@ type candidateCard struct {
 }
 
 func filterCandidates(c echo.Context, dbClient *db.Client) ([]*candidateCard, int, error) {
-	candidatesFromDB, cacheCookie, pagination, err := getCandidatesByParams(c, dbClient)
+	candidatesFromDB, pagination, err := getCandidatesByParams(c, dbClient)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -389,15 +388,14 @@ func filterCandidates(c echo.Context, dbClient *db.Client) ([]*candidateCard, in
 			c.Gender,
 		})
 	}
-	c.SetCookie(cacheCookie)
 	return ret, int(pagination.Page), nil
 }
 
-func getCandidatesByParams(c echo.Context, dbClient *db.Client) ([]*descritor.CandidateForDB, *http.Cookie, *pagination.PaginationData, error) {
-	queryMap, cookie, err := getQueryFilters(c)
+func getCandidatesByParams(c echo.Context, dbClient *db.Client) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
+	queryMap, err := getQueryFilters(c)
 	if err != nil {
 		log.Printf("failed to get filters, error %v\n", err)
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 	fmt.Println(queryMap)
 	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
@@ -409,38 +407,35 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) ([]*descritor.Ca
 		page = 1
 	}
 	candidatures, pagination, err := dbClient.FindCandidatesWithParams(queryMap, pageSize, page)
-	return candidatures, cookie, pagination, err
+	return candidatures, pagination, err
 }
 
-func getQueryFilters(c echo.Context) (map[string]interface{}, *http.Cookie, error) {
+func getQueryFilters(c echo.Context) (map[string]interface{}, error) {
+	// TODO: change query parameters to English.
 	year := c.QueryParam("ano")
 	state := c.QueryParam("estado")
-	city := c.QueryParam("city")
-
-	// Check cookies and override query parameters when needed.
-	cacheCookie, _ := c.Cookie(searchCacheCookie)
-	if cacheCookie != nil && (year == "" || state == "" || city == "") {
-		cookieValues := strings.Split(cacheCookie.Value, ",")
-		if year == "" {
-			year = cookieValues[0]
-		}
-		if state == "" {
-			state = cookieValues[1]
-		}
-		fmt.Println(cookieValues)
-		if city == "" && len(cookieValues) > 2 {
-			city = cookieValues[2]
-		}
-	}
-	// TODO: change query parameters to English.
+	city := c.QueryParam("cidade")
 	gender := c.QueryParam("genero")
 	name := c.QueryParam("nome")
 	role := c.QueryParam("cargo")
 	tags := c.QueryParam("tags")
+
 	queryMap := make(map[string]interface{})
+	if state != "" {
+		queryMap["state"] = state
+	}
 	if city != "" {
 		queryMap["city"] = city
 	}
+	if year != "" {
+		y, err := strconv.Atoi(year)
+		if err != nil {
+			log.Printf("failed to parse year from string [%s] to int, error %v\n", year, err)
+			return nil, exception.New(exception.ProcessmentError, "Ano fornecido é inválido.", nil)
+		}
+		queryMap["year"] = y
+	}
+
 	if gender != "" {
 		queryMap["gender"] = gender
 	}
@@ -453,39 +448,7 @@ func getQueryFilters(c echo.Context) (map[string]interface{}, *http.Cookie, erro
 	if name != "" {
 		queryMap["name"] = name
 	}
-
-	if year != "" {
-		y, err := strconv.Atoi(year)
-		if err != nil {
-			log.Printf("failed to parse year from string [%s] to int, error %v\n", year, err)
-			return nil, nil, exception.New(exception.ProcessmentError, "Ano fornecido é inválido.", nil)
-		}
-		queryMap["year"] = y
-	}
-	return queryMap, getSearchCookie(queryMap), nil
-}
-
-func getSearchCookie(queryMap map[string]interface{}) *http.Cookie {
-	year := ""
-	if queryMap["ano"] != nil {
-		year = fmt.Sprintf("%d", queryMap["year"].(int))
-	}
-	state := ""
-	if queryMap["estado"] != nil {
-		state = queryMap["state"].(string)
-	}
-	city := ""
-	if queryMap["cidade"] != nil {
-		city = queryMap["city"].(string)
-	}
-	if year != "" && state != "" {
-		return &http.Cookie{
-			Name:    searchCacheCookie,
-			Value:   fmt.Sprintf("%s,%s,%s", year, state, city),
-			Expires: time.Now().Add(time.Hour * searchCookieExpiration),
-		}
-	}
-	return nil
+	return queryMap, nil
 }
 
 func statesHandler(c echo.Context) error {
@@ -606,6 +569,7 @@ func main() {
 
 	// Frontend
 	e.GET("/", newHomeHandler(dbClient))
+	e.GET("/candidatos/:year/:id", newCandidateHandler(dbClient))
 
 	// API endpoints
 	// e.GET("/api/v2/states", statesHandler)

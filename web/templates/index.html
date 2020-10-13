@@ -46,8 +46,8 @@
                     <option value="">Cargo</option>
                     {{range $i, $v := .AllRoles}}
                         <option
-                            value="{{$v}}"
-                            {{if eq $v $.Filters.Role}}selected{{end}}
+                            value="{{$i}}"
+                            {{if eq $i $.Filters.Role}}selected{{end}}
                         >
                             {{$v}}
                         </option>

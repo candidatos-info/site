@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net/http"
@@ -45,15 +46,39 @@ func buildLoadMoreURL(filter *homeFilter) string {
 
 func newHomeHandler(db *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		candidates := []*candidateCard{}
+		cities := []string{}
+		page := 0
+
 		year := c.QueryParam("ano")
 		if year == "" {
 			year = strconv.Itoa(time.Now().Year())
 		}
-
-		candidates := []*candidateCard{}
-		cities := []string{}
-		page := 0
 		state := c.QueryParam("estado")
+		city := c.QueryParam("cidade")
+
+		// Check cookies and override query parameters when needed.
+
+		if year == "" || state == "" || city == "" {
+			cookie, _ := c.Cookie(searchCacheCookie)
+			if cookie != nil {
+				cookieValues := strings.Split(cookie.Value, ",")
+				if year == "" {
+					year = cookieValues[0]
+				}
+				if state == "" {
+					state = cookieValues[1]
+				}
+				if city == "" && len(cookieValues) > 2 {
+					aux, err := base64.StdEncoding.DecodeString(cookieValues[2])
+					if err != nil {
+						log.Printf("Error decoding city from cookie (%s):%q", cookieValues[2], err)
+					} else {
+						city = string(aux)
+					}
+				}
+			}
+		}
 		if state != "" {
 			var err error
 			cities, err = db.GetCities(state)
@@ -86,6 +111,11 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			"Tags":          tags,
 		})
 		fmt.Println(r)
+		c.SetCookie(&http.Cookie{
+			Name:    searchCacheCookie,
+			Value:   fmt.Sprintf("%s,%s,%s", year, state, base64.StdEncoding.EncodeToString([]byte(city))),
+			Expires: time.Now().Add(time.Hour * searchCookieExpiration),
+		})
 		return r
 	}
 }
