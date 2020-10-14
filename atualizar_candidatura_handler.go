@@ -101,7 +101,7 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client, year int) echo.Hand
 		if candidate.Contacts != nil && len(candidate.Contacts) > 0 {
 			counter++
 		}
-		candidate.Transparency = counter / 3.0
+		candidate.Transparency = (counter / 3.0) * 100
 
 		// Updating candidates.
 		if _, err := dbClient.UpdateCandidateProfile(candidate); err != nil {
