@@ -151,7 +151,7 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 		if false {
 			return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{
 				"Token":      encodedAccessToken,
-				"TextoTermo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat.",
+				"TextoTermo": loadTerms(),
 			})
 		}
 		r := c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{
