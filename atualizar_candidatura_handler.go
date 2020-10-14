@@ -13,6 +13,8 @@ import (
 	"github.com/labstack/echo"
 )
 
+const maxProposals = 5
+
 func newAtualizarCandidaturaFormHandler(dbClient *db.Client, year int) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		encodedAccessToken := c.FormValue("token")
@@ -154,9 +156,10 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string, year int
 			})
 		}
 		r := c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{
-			"Token":     encodedAccessToken,
-			"AllTags":   tags,
-			"Candidato": foundCandidate,
+			"Token":        encodedAccessToken,
+			"AllTags":      tags,
+			"Candidato":    foundCandidate,
+			"MaxProposals": maxProposals,
 		})
 		fmt.Println(r)
 		return r
