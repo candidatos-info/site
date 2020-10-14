@@ -82,7 +82,7 @@
             id="candidatesList"
         >
             {{range .Candidates}}
-            <div class="col-6 col-md-4 col-lg-2" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
+            <div class="col-12 col-md-4 col-lg-2" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
                 <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
                     {{template "candidatoCard" .}}
                 </a>
