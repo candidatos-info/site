@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -66,9 +67,9 @@ func (c *Client) GetCities(state string) ([]string, error) {
 	var location descritor.Location
 	filter := bson.M{"state": state}
 	if err := c.client.Database(c.dbName).Collection(descritor.LocationsCollection).FindOne(ctx, filter).Decode(&location); err != nil {
-
 		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar estados disponíveis do banco na collection [%s], erro %q", descritor.LocationsCollection, err), nil)
 	}
+	sort.Strings(location.Cities) // TODO get it sorted from MongoDB?
 	return location.Cities, nil
 }
 
