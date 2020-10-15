@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/candidatos-info/site/db"
+	"github.com/candidatos-info/site/email"
 	"github.com/candidatos-info/site/token"
 	"github.com/labstack/echo"
 )
 
-func newFaleConoscoHandler(dbClient *db.Client, year int) echo.HandlerFunc {
+func newFaleConoscoHandler(year int) echo.HandlerFunc {
 	// TODO remove this struct
 	type defaultResponse struct {
 		Message string `json:"message"`
@@ -40,7 +40,7 @@ func newFaleConoscoHandler(dbClient *db.Client, year int) echo.HandlerFunc {
 	}
 }
 
-func newFaleConoscoFormHandler(dbClient *db.Client, tokenService *token.Token, year int) echo.HandlerFunc {
+func newFaleConoscoFormHandler(tokenService *token.Token, emailClient *email.Client, contactEmail string, year int) echo.HandlerFunc {
 	// TODO remove this struct
 	type defaultResponse struct {
 		Message string `json:"message"`
@@ -78,10 +78,13 @@ func newFaleConoscoFormHandler(dbClient *db.Client, tokenService *token.Token, y
 		email := claims["email"]
 		foundCandidate, err := dbClient.GetCandidateByEmail(email, year)
 
-		saveErr := dbClient.SaveContactMessage(foundCandidate, messageType, subject, description)
-		if saveErr != nil {
-			log.Printf("failed to save the message, erro %v\n", err)
-			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao salvar mensagem.", Code: http.StatusInternalServerError})
+		emailMessage := buildContactMessage(messageType, description)
+		if err := emailClient.Send(emailClient.Email, []string{contactEmail}, "Fale conosco: "+subject+" candidatos.info", emailMessage); err != nil {
+			log.Printf("failed to sending email (%s):%q", contactEmail, err)
+			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+				"Success":  false,
+			})
 		}
 
 		return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
