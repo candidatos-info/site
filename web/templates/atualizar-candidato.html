@@ -97,7 +97,7 @@
 <script>
     function subjectsComponent() {
         return {
-            maxSubjects: 5,
+            maxSubjects: {{.MaxProposals}},
             allSubjects: [
                 {{range .AllTags}}"{{.}}",{{end}}
             ],
