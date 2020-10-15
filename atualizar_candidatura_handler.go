@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
@@ -147,11 +148,15 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 			log.Printf("failed to find candidate using email from token claims (email:%s, currentYear:%d), erro %q\n", email, globals.Year, err)
 			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
 		}
+
+		_, month, day := time.Now().Date()
 		// @TODO: só mostrar a tela de aceitar-termo caso o candidato ainda não tenha aceitado
 		if false {
 			return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{
-				"Token":      encodedAccessToken,
-				"TextoTermo": loadTerms(),
+				"Token":                encodedAccessToken,
+				"Candidate":            foundCandidate,
+				"termsAcceptanceDay":   day,
+				"termsAcceptanceMonth": month,
 			})
 		}
 		r := c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{

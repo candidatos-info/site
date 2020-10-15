@@ -44,7 +44,7 @@ var (
 		"VEM": "vice-prefeito",
 	}
 	allowedToUpdateProfile bool
-	tags                   = loadTags()
+	tags                   = mustLoadTags()
 )
 
 type candidateCard struct {
