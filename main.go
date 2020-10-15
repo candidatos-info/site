@@ -75,11 +75,6 @@ func (t *templateRegistry) Render(w io.Writer, name string, data interface{}, c 
 	return tmpl.ExecuteTemplate(w, "layout.html", data)
 }
 
-type selectOption struct {
-	Label string
-	Value string
-}
-
 func main() {
 	urlConnection := os.Getenv("DB_URL")
 	if urlConnection == "" {

@@ -16,6 +16,11 @@ func newFaleConoscoHandler(dbClient *db.Client, year int) echo.HandlerFunc {
 		Message string `json:"message"`
 		Code    int    `json:"code"`
 	}
+	type SelectOption struct {
+		Label string
+		Value string
+	}
+
 	return func(c echo.Context) error {
 		encodedAccessToken := c.QueryParam("access_token")
 		if encodedAccessToken == "" {
@@ -24,12 +29,12 @@ func newFaleConoscoHandler(dbClient *db.Client, year int) echo.HandlerFunc {
 
 		return c.Render(http.StatusOK, "fale-conosco.html", map[string]interface{}{
 			"Token": encodedAccessToken,
-			"TypeOptions": []selectOption{
-				selectOption{Label: "Sugestão", Value: "sugestão"},
-				selectOption{Label: "Reclamação", Value: "reclamação"},
-				selectOption{Label: "Denúncia", Value: "denúncia"},
-				selectOption{Label: "Pergunta", Value: "Pergunta"},
-				selectOption{Label: "Requisitar nova Causa", Value: "nova-causa"},
+			"TypeOptions": []SelectOption{
+				SelectOption{Label: "Sugestão", Value: "sugestão"},
+				SelectOption{Label: "Reclamação", Value: "reclamação"},
+				SelectOption{Label: "Denúncia", Value: "denúncia"},
+				SelectOption{Label: "Pergunta", Value: "Pergunta"},
+				SelectOption{Label: "Requisitar nova Causa", Value: "nova-causa"},
 			},
 		})
 	}
