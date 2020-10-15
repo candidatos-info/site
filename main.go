@@ -75,6 +75,11 @@ func (t *templateRegistry) Render(w io.Writer, name string, data interface{}, c 
 	return tmpl.ExecuteTemplate(w, "layout.html", data)
 }
 
+type selectOption struct {
+	Label string
+	Value string
+}
+
 func main() {
 	urlConnection := os.Getenv("DB_URL")
 	if urlConnection == "" {
@@ -134,6 +139,8 @@ func main() {
 	templates["aceitar-termo.html"] = template.Must(template.ParseFiles("web/templates/aceitar-termo.html", "web/templates/layout.html"))
 	templates["atualizar-candidato.html"] = template.Must(template.ParseFiles("web/templates/atualizar-candidato.html", "web/templates/layout.html"))
 	templates["atualizar-candidato-success.html"] = template.Must(template.ParseFiles("web/templates/atualizar-candidato-success.html", "web/templates/layout.html"))
+	templates["fale-conosco.html"] = template.Must(template.ParseFiles("web/templates/fale-conosco.html", "web/templates/layout.html"))
+	templates["fale-conosco-success.html"] = template.Must(template.ParseFiles("web/templates/fale-conosco-success.html", "web/templates/layout.html"))
 	e := echo.New()
 	e.Renderer = &templateRegistry{
 		templates: templates,
@@ -147,6 +154,9 @@ func main() {
 	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags, currentYear))
 	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient, currentYear))
 	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient, currentYear))
+	e.GET("/fale-conosco", newFaleConoscoHandler(dbClient, currentYear))
+	e.POST("/fale-conosco", newFaleConoscoFormHandler(dbClient, tokenService, currentYear))
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")

@@ -139,6 +139,12 @@ func (c *Client) FindCandidatesWithParams(queryMap map[string]interface{}, pageS
 	return candidatures, &paginatedData.Pagination, nil
 }
 
+// SaveContactMessage stores messages sent from the "contact" form
+func (c *Client) SaveContactMessage(_candidate *descritor.CandidateForDB, _messageType string, _subject string, _description string) error {
+	// TODO: Implement this part!
+	return nil
+}
+
 func resolveQuery(query map[string]interface{}) bson.M {
 	result := make(bson.M, len(query))
 	for k, v := range query {
