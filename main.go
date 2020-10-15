@@ -93,6 +93,10 @@ func main() {
 	if emailAccount == "" {
 		log.Fatal("missing EMAIL environment variable")
 	}
+	contactEmail := os.Getenv("CONTACT_EMAIL")
+	if emailAccount == "" {
+		log.Fatal("missing CONTACT_EMAIL environment variable")
+	}
 	password := os.Getenv("PASSWORD")
 	if password == "" {
 		log.Fatal("missing PASSWORD environment variable")
@@ -134,6 +138,8 @@ func main() {
 	templates["aceitar-termo.html"] = template.Must(template.ParseFiles("web/templates/aceitar-termo.html", "web/templates/layout.html"))
 	templates["atualizar-candidato.html"] = template.Must(template.ParseFiles("web/templates/atualizar-candidato.html", "web/templates/layout.html"))
 	templates["atualizar-candidato-success.html"] = template.Must(template.ParseFiles("web/templates/atualizar-candidato-success.html", "web/templates/layout.html"))
+	templates["fale-conosco.html"] = template.Must(template.ParseFiles("web/templates/fale-conosco.html", "web/templates/layout.html"))
+	templates["fale-conosco-success.html"] = template.Must(template.ParseFiles("web/templates/fale-conosco-success.html", "web/templates/layout.html"))
 	e := echo.New()
 	e.Renderer = &templateRegistry{
 		templates: templates,
@@ -147,6 +153,9 @@ func main() {
 	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags, currentYear))
 	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient, currentYear))
 	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient, currentYear))
+	e.GET("/fale-conosco", newFaleConoscoHandler(currentYear))
+	e.POST("/fale-conosco", newFaleConoscoFormHandler(tokenService, emailClient, contactEmail, currentYear))
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("missing PORT environment variable")
