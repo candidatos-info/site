@@ -2,96 +2,107 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/candidatos-info/site/db"
 	"github.com/candidatos-info/site/email"
 	"github.com/candidatos-info/site/token"
 	"github.com/labstack/echo"
 )
 
 func newFaleConoscoHandler(year int) echo.HandlerFunc {
-	// TODO remove this struct
-	type defaultResponse struct {
-		Message string `json:"message"`
-		Code    int    `json:"code"`
-	}
-	type SelectOption struct {
-		Label string
-		Value string
-	}
-
 	return func(c echo.Context) error {
 		encodedAccessToken := c.QueryParam("access_token")
-		if encodedAccessToken == "" {
-			return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Código de acesso é inválido.", Code: http.StatusBadRequest})
+		accessTokenBytes, err := base64.StdEncoding.DecodeString(encodedAccessToken)
+		if err != nil {
+			log.Printf("error decoding access token %s", string(encodedAccessToken))
+			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+				"ErrorMsg": "Código de acesso inválido",
+				"Success":  false,
+			})
 		}
-
+		if !tokenService.IsValid(string(accessTokenBytes)) {
+			log.Printf("invalid access token")
+			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+				"ErrorMsg": "Código de acesso inválido",
+				"Success":  false,
+			})
+		}
 		return c.Render(http.StatusOK, "fale-conosco.html", map[string]interface{}{
 			"Token": encodedAccessToken,
-			"TypeOptions": []SelectOption{
-				SelectOption{Label: "Sugestão", Value: "sugestão"},
-				SelectOption{Label: "Reclamação", Value: "reclamação"},
-				SelectOption{Label: "Denúncia", Value: "denúncia"},
-				SelectOption{Label: "Pergunta", Value: "Pergunta"},
-				SelectOption{Label: "Requisitar nova Causa", Value: "nova-causa"},
+			"TypeOptions": []struct {
+				Label string
+				Value string
+			}{
+				{Label: "Sugestão", Value: "sugestão"},
+				{Label: "Reclamação", Value: "reclamação"},
+				{Label: "Denúncia", Value: "denúncia"},
+				{Label: "Pergunta", Value: "pergunta"},
+				{Label: "Requisitar nova Causa/Pauta", Value: "nova-causa"},
 			},
 		})
 	}
 }
 
-func newFaleConoscoFormHandler(tokenService *token.Token, emailClient *email.Client, contactEmail string, year int) echo.HandlerFunc {
-	// TODO remove this struct
-	type defaultResponse struct {
-		Message string `json:"message"`
-		Code    int    `json:"code"`
-	}
+func newFaleConoscoFormHandler(db *db.Client, tokenService *token.Token, emailClient *email.Client, contactEmail string, year int) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		messageType := c.FormValue("type")
-		if messageType == "" {
-			return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Tipo da mensagem é inválido.", Code: http.StatusBadRequest})
-		}
-		subject := c.FormValue("assunto")
-		if subject == "" {
-			return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Assunto da mensagem é inválido.", Code: http.StatusBadRequest})
-		}
-		description := c.FormValue("descricao")
-		if description == "" {
-			return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Descrição da mensagem é inválido.", Code: http.StatusBadRequest})
-		}
 		encodedAccessToken := c.FormValue("access_token")
-		if encodedAccessToken == "" {
-			return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Código de acesso é inválido.", Code: http.StatusBadRequest})
-		}
 		accessTokenBytes, err := base64.StdEncoding.DecodeString(encodedAccessToken)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
+			log.Printf("error decoding access token %s", string(encodedAccessToken))
+			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+				"ErrorMsg": "Código de acesso inválido",
+				"Success":  false,
+			})
 		}
 		if !tokenService.IsValid(string(accessTokenBytes)) {
-			return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
+			log.Printf("invalid access token")
+			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+				"ErrorMsg": "Código de acesso inválido",
+				"Success":  false,
+			})
+		}
+		mType := c.FormValue("tipo")
+		subject := c.FormValue("assunto")
+		content := c.FormValue("descricao")
+		if mType == "" || subject == "" || content == "" {
+			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+				"ErrorMsg": "Tipo, assunto e descrição são campos obrigatórios.",
+				"Success":  false,
+			})
 		}
 		claims, err := token.GetClaims(string(accessTokenBytes))
 		if err != nil {
 			log.Printf("failed to extract email from token claims, erro %v\n", err)
-			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
+			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+				"Success":  false,
+			})
 		}
 		email := claims["email"]
-		foundCandidate, err := dbClient.GetCandidateByEmail(email, year)
+		cand, err := db.GetCandidateByEmail(email, year)
+		mSub := fmt.Sprintf("[Fale conosco] %s", mType)
+		mContent := fmt.Sprintf(`
+Saudações Equipe Técnica do Candidatos.info,
 
-		emailMessage := buildContactMessage(messageType, description)
-		if err := emailClient.Send(emailClient.Email, []string{contactEmail}, "Fale conosco: "+subject+" candidatos.info", emailMessage); err != nil {
+%s
+
+Cordialmente,
+%s(%s),%d`, content, cand.BallotName, cand.Name, cand.BallotNumber)
+		if err := emailClient.Send(emailClient.Email, []string{contactEmail}, mSub, mContent); err != nil {
 			log.Printf("failed to sending email (%s):%q", contactEmail, err)
 			return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
 				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
 				"Success":  false,
 			})
 		}
-
 		return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
-			"Candidate":    foundCandidate,
+			"Candidate":    cand,
 			"Success":      true,
 			"Year":         year,
-			"SequentialID": foundCandidate.SequencialCandidate,
+			"SequentialID": cand.SequencialCandidate,
 		})
 	}
 }

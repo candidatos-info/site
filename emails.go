@@ -20,10 +20,3 @@ func buildReportEmail(candidate *descritor.CandidateForDB, report string) string
 	emailBodyBuilder.WriteString(fmt.Sprintf("\n\n%s\n", report))
 	return emailBodyBuilder.String()
 }
-
-func buildContactMessage(messageType, body string) string {
-	var emailBodyBuilder strings.Builder
-	emailBodyBuilder.WriteString(fmt.Sprintf("Nova mensagem do tipo %s: <br>", messageType))
-	emailBodyBuilder.WriteString(fmt.Sprintf("\n\n%s\n", body))
-	return emailBodyBuilder.String()
-}
