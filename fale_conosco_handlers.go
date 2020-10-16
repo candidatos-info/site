@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-func newFaleConoscoHandler(year int) echo.HandlerFunc {
+func newFaleConoscoHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		encodedAccessToken := c.QueryParam("access_token")
 		accessTokenBytes, err := base64.StdEncoding.DecodeString(encodedAccessToken)
@@ -46,7 +46,7 @@ func newFaleConoscoHandler(year int) echo.HandlerFunc {
 	}
 }
 
-func newFaleConoscoFormHandler(db *db.Client, tokenService *token.Token, emailClient *email.Client, contactEmail string, year int) echo.HandlerFunc {
+func newFaleConoscoFormHandler(db *db.Client, tokenService *token.Token, emailClient *email.Client, contactEmail string) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		encodedAccessToken := c.FormValue("access_token")
 		accessTokenBytes, err := base64.StdEncoding.DecodeString(encodedAccessToken)
@@ -82,7 +82,7 @@ func newFaleConoscoFormHandler(db *db.Client, tokenService *token.Token, emailCl
 			})
 		}
 		email := claims["email"]
-		cand, err := db.GetCandidateByEmail(email, year)
+		cand, err := db.GetCandidateByEmail(email, globals.Year)
 		mSub := fmt.Sprintf("[Fale conosco] %s", mType)
 		mContent := fmt.Sprintf(`
 Saudações Equipe Técnica do Candidatos.info,
@@ -101,7 +101,6 @@ Cordialmente,
 		return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
 			"Candidate":    cand,
 			"Success":      true,
-			"Year":         year,
 			"SequentialID": cand.SequencialCandidate,
 		})
 	}

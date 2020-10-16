@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-func newAceitarTermoFormHandler(dbClient *db.Client, year int) echo.HandlerFunc {
+func newAceitarTermoFormHandler(dbClient *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		encodedAccessToken := c.FormValue("token")
 		if encodedAccessToken == "" {
