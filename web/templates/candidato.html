@@ -12,10 +12,10 @@
             <div class="row">
                 <div class="col-6">
                     <img
-                            class="rounded-circle cover mx-auto p-1"
-                            src="{{.Candidato.PhotoURL}}"
-                            alt="Card image cap"
-                            style="width: 128px; height: 128px;"
+                        class="rounded-circle cover mx-auto p-1"
+                        src="{{.Candidato.PhotoURL}}"
+                        alt="Card image cap"
+                        style="width: 128px; height: 128px;"
                     />
                 </div>
                 <div class="col-6">
@@ -38,16 +38,24 @@
 
     <section class="bg-white rounded p-4 mb-4">
         <h3 class="box-title mb-4">Causas/Pautas</h3>
-        {{range .Candidato.Proposals}}
-        <p>
-            <strong>{{.Topic}}:&nbsp;</strong>{{.Description}}
-        </p>
+        {{if not .Candidato.Proposals}}
+            {{template "emptyState" "Este candidato não disponibilizou propostas :("}}
+        {{else}}
+            {{range .Candidato.Proposals}}
+            <p>
+                <strong>{{.Topic}}:&nbsp;</strong>{{.Description}}
+            </p>
+            {{end}}
         {{end}}
     </section>
 
     <section class="bg-white rounded p-4">
         <h3 class="box-title">Quem sou eu?</h3>
-        {{.Candidato.Biography}}
+        {{if .Candidato.Biography}}
+            {{.Candidato.Biography}}
+        {{else}}
+            {{template "emptyState" "Este candidato não disponibilizou biografia :("}}
+        {{end}}
     </section>
 
     <section>

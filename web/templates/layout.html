@@ -107,6 +107,16 @@
             margin-top: 60px;
             margin-bottom: 60px;
         }
+
+        .space-y-2 > * + *	{
+            margin-top: 0.5rem;
+        }
+        .space-y-4 > * + *	{
+            margin-top: 1rem;
+        }
+        .space-y-6 > * + *	{
+            margin-top: 1.6rem;
+        }
     </style>
     {{template "pageStyles" .}}
 </head>
@@ -353,4 +363,23 @@ bg-success
         {{end}}
     </span>
 </span>
+{{end}}
+
+{{define "emptyState"}}
+    <div class="text-text space-y-6 pt-4 d-flex flex-column justify-content-center align-items-center">
+        <svg width="86" height="54" viewBox="0 0 86 54" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <g opacity="0.5">
+            <path d="M39.4438 20.5011L30.1946 51.3338L20.9443 20.5005L39.4438 20.5011Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            <path d="M70.0606 31.854L55.8073 28.9881L54.5017 23.169L63.4775 20.4517L70.0606 31.854Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            <path d="M83.558 6.50684L78.1961 12.9107L75.0195 11.8666L76.2107 6.50684H83.558Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            <path d="M43.0007 29.2762L48.3372 31.055L30.1943 51.3334L39.4432 20.5011H45.1353L43.0007 29.2762Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            <path d="M65.0584 15.0454L60.7065 2.23761L50.4926 2.23761L47.9814 9.62626L56.2682 12.4995L55.766 15.0454H65.0584Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            <path d="M20.9454 20.5001L20.9454 2L8.612 2L2.44531 20.5001L20.9454 20.5001Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            <path d="M39.4454 20.5006H45.1349L45.8465 17.18L33.7503 12.9107L36.5964 2.00055L20.9453 2.00055L20.9453 20.5006H39.4454Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            <path d="M2.44238 20.5005L30.1925 51.334L20.9425 20.5005L2.44238 20.5005Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="3.46876" stroke-linejoin="round"/>
+            </g>
+        </svg>
+
+        <p>{{.}}</p>
+    </div>
 {{end}}
