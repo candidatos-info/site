@@ -15,7 +15,7 @@ import (
 
 const maxProposals = 5
 
-func newAtualizarCandidaturaFormHandler(dbClient *db.Client, year int) echo.HandlerFunc {
+func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		encodedAccessToken := c.FormValue("token")
 		if encodedAccessToken == "" {
@@ -81,7 +81,7 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client, year int) echo.Hand
 		}
 		// Fetching candidate and updating counters.
 		email := claims["email"]
-		candidate, err := dbClient.GetCandidateByEmail(email, year)
+		candidate, err := dbClient.GetCandidateByEmail(email, globals.Year)
 		if err != nil {
 			log.Printf("failed to find candidate using email from token claims, erro %v\n", err)
 			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
@@ -114,12 +114,11 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client, year int) echo.Hand
 		return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
 			"ErrorMsg":     "Seus dados foram atualizados com sucesso!",
 			"Success":      true,
-			"Year":         year,
 			"SequentialID": candidate.SequencialCandidate,
 		})
 	}
 }
-func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string, year int) echo.HandlerFunc {
+func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.HandlerFunc {
 	// TODO remove this struct
 	type defaultResponse struct {
 		Message string `json:"message"`
@@ -143,9 +142,9 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string, year int
 			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
 		}
 		email := claims["email"]
-		foundCandidate, err := dbClient.GetCandidateByEmail(email, year)
+		foundCandidate, err := dbClient.GetCandidateByEmail(email, globals.Year)
 		if err != nil {
-			log.Printf("failed to find candidate using email from token claims (email:%s, currentYear:%d), erro %q\n", email, currentYear, err)
+			log.Printf("failed to find candidate using email from token claims (email:%s, currentYear:%d), erro %q\n", email, globals.Year, err)
 			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
 		}
 		// @TODO: só mostrar a tela de aceitar-termo caso o candidato ainda não tenha aceitado

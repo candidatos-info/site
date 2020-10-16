@@ -135,6 +135,17 @@
         integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
         crossorigin="anonymous"></script>
 {{template "scripts" .}}
+<!-- Global site tag (gtag.js) - Google Analytics -->
+{{ if .IsProdEnv }}
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-180639450-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-180639450-1');
+</script>
+{{end}}
 </body>
 </html>
 {{define "footer"}}

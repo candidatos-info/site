@@ -28,6 +28,7 @@ const (
 	searchCookieExpiration   = 360 //in hours
 	searchCacheCookie        = "searchCookie"
 	defaultPageSize          = 20
+	prodEnvironmentName      = "standard"
 )
 
 var (
@@ -36,7 +37,6 @@ var (
 	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
 	siteURL        string
 	suportEmails   = []string{"abuarquemf@gmail.com"}
-	currentYear    int
 	emailRegex     = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	rolesMap       = map[string]string{
 		"EM":  "prefeito",
@@ -61,6 +61,14 @@ type candidateCard struct {
 	Gender       string   `json:"gender"`
 }
 
+// Shared **read-only** variable. Used by templates and other functions.
+// Please keep it short and instantiated in the beginning of the main.
+// Keep this struct close to templateRegistry, which is where it is used.
+var globals struct {
+	Env  string
+	Year int
+}
+
 type templateRegistry struct {
 	templates map[string]*template.Template
 }
@@ -71,10 +79,30 @@ func (t *templateRegistry) Render(w io.Writer, name string, data interface{}, c 
 		err := errors.New("template not found -> " + name)
 		return err
 	}
+	if data == nil {
+		data = make(map[string]interface{})
+	}
+	m := data.(map[string]interface{})
+	m["IsProdEnv"] = globals.Env == prodEnvironmentName
+	m["Env"] = globals.Env
+	m["Year"] = globals.Year
 	return tmpl.ExecuteTemplate(w, "layout.html", data)
 }
 
 func main() {
+	// #### Global Params ####
+	ey := os.Getenv("ELECTION_YEAR")
+	if ey == "" {
+		log.Fatal("missing ELECTION_YEAR environment variable")
+	}
+	electionYearAsInt, err := strconv.Atoi(ey)
+	if err != nil {
+		log.Fatalf("failed to parse environment variable ELECTION_YEAR with value [%s] to  int, error %v", ey, err)
+	}
+	globals.Year = electionYearAsInt
+	globals.Env = os.Getenv("GAE_ENV") // should be correlated to prodEnvironmentName to be able to identify when the server is running in production.
+
+	// Other environment variables.
 	urlConnection := os.Getenv("DB_URL")
 	if urlConnection == "" {
 		log.Fatal("missing DB_URL environment variable")
@@ -110,15 +138,6 @@ func main() {
 		log.Fatal("missing SECRET environment variable")
 	}
 	tokenService = token.New(authSecret)
-	ey := os.Getenv("ELECTION_YEAR")
-	if ey == "" {
-		log.Fatal("missing ELECTION_YEAR environment variable")
-	}
-	electionYearAsInt, err := strconv.Atoi(ey)
-	if err != nil {
-		log.Fatalf("failed to parse environment variable ELECTION_YEAR with value [%s] to  int, error %v", ey, err)
-	}
-	currentYear = electionYearAsInt
 	updateProfile := os.Getenv("UPDATE_PROFILE")
 	if updateProfile == "" {
 		log.Fatal("missing UPDATE_PROFILE environment variable")
@@ -128,6 +147,9 @@ func main() {
 		log.Fatalf("failed to parte environment variable UPDATE_PROFILE with value [%s] to int, error %v", updateProfile, err)
 	}
 	allowedToUpdateProfile = r == 1
+
+	// Template registration.
+	// Template data MUST BE either nil or a map[string]interface{}.
 	templates := make(map[string]*template.Template)
 	templates["index.html"] = template.Must(template.ParseFiles("web/templates/index.html", "web/templates/layout.html"))
 	templates["sobre.html"] = template.Must(template.ParseFiles("web/templates/sobre.html", "web/templates/layout.html"))
@@ -139,21 +161,24 @@ func main() {
 	templates["atualizar-candidato-success.html"] = template.Must(template.ParseFiles("web/templates/atualizar-candidato-success.html", "web/templates/layout.html"))
 	templates["fale-conosco.html"] = template.Must(template.ParseFiles("web/templates/fale-conosco.html", "web/templates/layout.html"))
 	templates["fale-conosco-success.html"] = template.Must(template.ParseFiles("web/templates/fale-conosco-success.html", "web/templates/layout.html"))
+
 	e := echo.New()
 	e.Renderer = &templateRegistry{
 		templates: templates,
 	}
+
+	// Rotes.
 	e.Static("/", "web/public")
 	e.GET("/", newHomeHandler(dbClient))
 	e.GET("/c/:year/:id", newCandidateHandler(dbClient))
 	e.GET("/sobre", sobreHandler)
 	e.GET("/sou-candidato", souCandidatoGET)
-	e.POST("/sou-candidato", newSouCandidatoFormHandler(dbClient, tokenService, emailClient, currentYear))
-	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags, currentYear))
-	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient, currentYear))
-	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient, currentYear))
-	e.GET("/fale-conosco", newFaleConoscoHandler(currentYear))
-	e.POST("/fale-conosco", newFaleConoscoFormHandler(dbClient, tokenService, emailClient, contactEmail, currentYear))
+	e.POST("/sou-candidato", newSouCandidatoFormHandler(dbClient, tokenService, emailClient))
+	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags))
+	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient))
+	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient))
+	e.GET("/fale-conosco", newFaleConoscoHandler())
+	e.POST("/fale-conosco", newFaleConoscoFormHandler(dbClient, tokenService, emailClient, contactEmail))
 
 	port := os.Getenv("PORT")
 	if port == "" {
