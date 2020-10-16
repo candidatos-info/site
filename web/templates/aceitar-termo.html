@@ -24,7 +24,7 @@
                     CANDIDAT{{ if eq .Candidate.Gender "MASCULINO" }}O{{ else }}A{{ end }}
 
                     Nome / Razão Social: {{ .Candidate.Name }}
-                    CPF / CNPJ: 999.999.999-99
+                    CPF / CNPJ: {{ .Candidate.LegalCode }}
                     Considerando que
 
                     a) o objetivo do site Candidatos.Info consiste na sistematização das informações oficiais disponibilizadas pelo TSE sobre candidaturas no legislativo e no executivo municipal;
