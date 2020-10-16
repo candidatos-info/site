@@ -5,20 +5,22 @@
     >
         <div class="rounded-top {{template "candidateBgColorForTransparency" .Candidato}}" style="height: 6px;"></div>
         <div class="px-4 py-2">
-            <div class="d-flex justify-content-start">
+            <div class="d-flex justify-content-center px-3">
                 {{template "candidateTransparency" .Candidato}}
             </div>
 
             <div class="row">
-                <div class="col-6">
+                <div class="col-6 mx-auto">
                     <img
-                            class="rounded-circle cover mx-auto p-1"
+                            class="card-img-top d-block img-fluid w-100 mx-auto my-2"
                             src="{{.Candidato.PhotoURL}}"
                             alt="Card image cap"
-                            style="width: 128px; height: 128px;"
                     />
                 </div>
-                <div class="col-6">
+            </div>
+
+            <div class="row">
+                <div class="col-10 mx-auto text-center">
                     <h5 class="card-title text-dark mb-0">{{.Candidato.Name}}</h5>
                     <small class="card-text text-dark" style="font-size: 10px;">{{.Candidato.City}}</small>
                     <p class="card-text text-text mb-0">{{.Candidato.Role}}</p>

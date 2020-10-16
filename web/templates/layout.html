@@ -266,22 +266,21 @@ border-success
 
 {{define "candidatoCard"}}
 <div
-        class="
+    class="
         card card-shadow
         {{template "candidatoCardBoxBorderColor" .}}
-        "
-        style="border-width: 5px 0 0; height: 100%;"
+    "
+    style="border-width: 5px 0 0; height: 100%;"
 >
-    <div class="mt-2">
+    <div class="my-2 px-3">
         {{template "candidateTransparency" .}}
     </div>
     <img
-            class="rounded-circle cover mx-auto p-1"
-            src="{{.Picture}}"
-            alt="Card image cap"
-            style="width: 128px; height: 128px;"
+        class="card-img-top d-block img-fluid w-75 mx-auto my-2"
+        src="{{.Picture}}"
+        alt="Card image cap"
     />
-    <div class="card-body">
+    <div class="card-body text-center">
         <h5 class="card-title text-dark mb-0">{{.Name}}</h5>
         <small class="card-text text-dark" style="font-size: 10px;">{{.City}}</small>
         <p class="card-text text-text mb-0">{{.Role}}</p>
@@ -324,13 +323,13 @@ bg-success
 {{end}}
 
 {{define "candidateTransparency"}}
-<span class="d-flex justify-content-center align-items-center">
+<span class="d-flex justify-content-start align-items-center">
     <span
-            class="
+        class="
             rounded-circle d-flex align-items-center justify-content-center
             {{template "candidateBgColorForTransparency" .}}
         "
-            style="height: 14px; width: 14px; margin-right: 5px;"
+        style="height: 14px; width: 14px; margin-right: 5px;"
     >
         <svg style="height: 11px; width: auto;" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 6.00018L6.50012 11.0001L5.00009 6.00009L8 6.00018Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
@@ -343,8 +342,8 @@ bg-success
     </span>
 
     <span
-            class="text-center"
-            style="font-size: 9px;"
+        class="text-center"
+        style="font-size: 9px;"
     >
         {{if (lt .Transparency 25.)}}
             Perfil pouco transparente.
