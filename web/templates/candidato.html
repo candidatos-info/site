@@ -52,7 +52,7 @@
     <section class="bg-white rounded p-4">
         <h3 class="box-title">Quem sou eu?</h3>
         {{if .Candidato.Biography}}
-            {{.}}
+            {{.Candidato.Biography}}
         {{else}}
             {{template "emptyState" "Este candidato não disponibilizou biografia :("}}
         {{end}}
