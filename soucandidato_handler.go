@@ -46,7 +46,7 @@ func login(db *db.Client, tokenService *token.Token, emailClient *email.Client, 
 		log.Printf("failed to sending email (%s):%q", email, err)
 		return "Erro inesperado. Por favor tentar novamente mais tarde."
 	}
-	return fmt.Sprintf("Email com código de acesso enviado para <strong>%s</strong>. Verifique sua caixa de spam caso não encontre.", email)
+	return fmt.Sprintf("Email com código de acesso enviado para %s. Verifique sua caixa de spam caso não encontre.", email)
 }
 
 func souCandidatoGET(c echo.Context) error {
