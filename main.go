@@ -92,9 +92,9 @@ func main() {
 	if emailAccount == "" {
 		log.Fatal("missing EMAIL environment variable")
 	}
-	contactEmail := os.Getenv("FALE_CONOSCO_MAIL")
+	contactEmail := os.Getenv("FALE_CONOSCO_EMAIL")
 	if contactEmail == "" {
-		log.Fatal("missing FALE_CONOSCO_MAIL environment variable")
+		log.Fatal("missing FALE_CONOSCO_EMAIL environment variable")
 	}
 	password := os.Getenv("PASSWORD")
 	if password == "" {
