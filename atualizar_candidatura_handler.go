@@ -110,7 +110,7 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client, year int) echo.Hand
 			})
 		}
 		return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-			"ErrorMsg":     "<strong>Seus dados foram atualizados com sucesso!</strong>",
+			"ErrorMsg":     "Seus dados foram atualizados com sucesso!",
 			"Success":      true,
 			"Year":         year,
 			"SequentialID": candidate.SequencialCandidate,
