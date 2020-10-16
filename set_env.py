@@ -7,7 +7,7 @@ replace on app.yaml."""
 app_engine_file = "app.yaml"
 
 if __name__ == "__main__":
-    if len(sys.argv) != 9:
+    if len(sys.argv) != 10:
         sys.exit("invalid number of arguments: {}".format(len(sys.argv)))
     email = sys.argv[1]
     password = sys.argv[2]
