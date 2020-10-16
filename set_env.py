@@ -1,7 +1,7 @@
 import sys
 import re
 
-"""This script gets EMAIL, PASSWORD, SITE_URL, SECRET, ELECTION_YEAR, UPDATE_PROFILE, DB_NAME and DB_URL environment variables used on app engine from Github Secrets and
+"""This script gets EMAIL, PASSWORD, SITE_URL, SECRET, ELECTION_YEAR, UPDATE_PROFILE, DB_NAME, DB_URL, and FALE_CONOSCO_EMAIL environment variables used on app engine from Github Secrets and
 replace on app.yaml."""
 
 app_engine_file = "app.yaml"
@@ -17,6 +17,7 @@ if __name__ == "__main__":
     update_profile = sys.argv[6]
     db_name = sys.argv[7]
     db_url = sys.argv[8]
+    fale_conosco_email = sys.argv[9]
     file_content = ""
     with open(app_engine_file, "r") as file:
         app_engine_file_content = file.read()
@@ -28,6 +29,7 @@ if __name__ == "__main__":
         line = re.sub(r"##UPDATE_PROFILE", update_profile, line)
         line = re.sub(r"##DB_NAME", db_name, line)
         line = re.sub(r"##DB_URL", db_url, line)
+        line = re.sub(r"##FALE_CONOSCO_EMAIL", fale_conosco_email, line)
         file_content = line
     with open(app_engine_file, "w") as file:
         file.write(file_content)

@@ -31,7 +31,6 @@ const (
 )
 
 var (
-	dbClient       *db.Client
 	emailClient    *email.Client
 	tokenService   *token.Token
 	candidateRoles = []string{"vereador", "prefeito"} // available candidate roles
@@ -93,9 +92,9 @@ func main() {
 	if emailAccount == "" {
 		log.Fatal("missing EMAIL environment variable")
 	}
-	contactEmail := os.Getenv("CONTACT_EMAIL")
-	if emailAccount == "" {
-		log.Fatal("missing CONTACT_EMAIL environment variable")
+	contactEmail := os.Getenv("FALE_CONOSCO_MAIL")
+	if contactEmail == "" {
+		log.Fatal("missing FALE_CONOSCO_MAIL environment variable")
 	}
 	password := os.Getenv("PASSWORD")
 	if password == "" {
@@ -154,7 +153,7 @@ func main() {
 	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient, currentYear))
 	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient, currentYear))
 	e.GET("/fale-conosco", newFaleConoscoHandler(currentYear))
-	e.POST("/fale-conosco", newFaleConoscoFormHandler(tokenService, emailClient, contactEmail, currentYear))
+	e.POST("/fale-conosco", newFaleConoscoFormHandler(dbClient, tokenService, emailClient, contactEmail, currentYear))
 
 	port := os.Getenv("PORT")
 	if port == "" {

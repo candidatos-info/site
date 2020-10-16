@@ -356,11 +356,14 @@ bg-success
             class="text-center"
             style="font-size: 9px;"
     >
-        {{if (lt .Transparency 25.)}}
+        {{if (lt .Transparency 25.) }}
             Perfil pouco transparente.
+        {{else if (and (ge .Transparency 25.) (lt .Transparency 75.))}}
+            Perfil com transparência mediana.
         {{else}}
-            Perfil {{.Transparency}}% transparente.
+            Perfil muito transparente.
         {{end}}
+
     </span>
 </span>
 {{end}}
