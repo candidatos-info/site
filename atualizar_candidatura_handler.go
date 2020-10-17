@@ -150,8 +150,8 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 		}
 
 		_, month, day := time.Now().Date()
-		// @TODO: só mostrar a tela de aceitar-termo caso o candidato ainda não tenha aceitado
-		if false {
+
+		if foundCandidate.AcceptedTerms.IsZero() {
 			return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{
 				"Token":                encodedAccessToken,
 				"Candidate":            foundCandidate,
