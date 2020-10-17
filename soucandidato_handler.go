@@ -42,7 +42,7 @@ func login(db *db.Client, tokenService *token.Token, emailClient *email.Client, 
 	}
 	encodedAccessToken := b64.StdEncoding.EncodeToString([]byte(accessToken))
 	emailMessage := buildProfileAccessEmail(foundCandidate, encodedAccessToken)
-	subject := fmt.Sprintf("Link para acesso a candidatura %d de %s/%s", foundCandidate.BallotNumber, foundCandidate.City, foundCandidate.State)
+	subject := fmt.Sprintf("Link para acesso à candidatura %d de %s/%s", foundCandidate.BallotNumber, foundCandidate.City, foundCandidate.State)
 	if err := emailClient.Send(emailClient.Email, []string{foundCandidate.Email}, subject, emailMessage); err != nil {
 		log.Printf("failed on sending email (%s):%q\n", email, err)
 		return "Erro inesperado. Por favor tentar novamente mais tarde."
