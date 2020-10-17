@@ -8,10 +8,11 @@ import (
 )
 
 func buildProfileAccessEmail(candidate *descritor.CandidateForDB, accessToken string) string {
-	var emailBodyBuilder strings.Builder
-	emailBodyBuilder.WriteString(fmt.Sprintf("Olá, %s!<br>", candidate.Name))
-	emailBodyBuilder.WriteString(fmt.Sprintf("para acessar seu perfil click no link: %s/profile?access_token=%s\n", siteURL, accessToken))
-	return emailBodyBuilder.String()
+	return fmt.Sprintf(`
+	Olá, %s!<br><br>
+	Identificamos através dos dados públicos do TSE que você está cadastrado na eleição de %d na cidade de %s no estado de %s como %s.<br>
+	Recebemos sua solicitação para acessar a plataforma candidatos.info e editar seu perfil. Para isso clique no seguinte link: %s/atualizar-candidatura?access_token=%s
+	<br><br><br>Caso tenha recebido este email por engano apenas desconsidere-o.<br>`, candidate.Name, candidate.Year, candidate.City, candidate.State, candidate.Role, siteURL, accessToken)
 }
 
 func buildReportEmail(candidate *descritor.CandidateForDB, report string) string {
