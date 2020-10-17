@@ -176,7 +176,7 @@ func main() {
 	e.POST("/sou-candidato", newSouCandidatoFormHandler(dbClient, tokenService, emailClient))
 	e.GET("/atualizar-candidatura", newAtualizarCandidaturaHandler(dbClient, tags))
 	e.POST("/atualizar-candidatura", newAtualizarCandidaturaFormHandler(dbClient))
-	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient))
+	e.POST("/aceitar-termo", newAceitarTermoFormHandler(dbClient, electionYearAsInt))
 	e.GET("/fale-conosco", newFaleConoscoHandler())
 	e.POST("/fale-conosco", newFaleConoscoFormHandler(dbClient, tokenService, emailClient, contactEmail))
 
