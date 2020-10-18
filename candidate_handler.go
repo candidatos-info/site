@@ -28,9 +28,43 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 			log.Printf("%q", err)
 			return echo.ErrInternalServerError
 		}
+		queryMap := make(map[string]interface{})
+		queryMap["city"] = candidate.City
+		queryMap["state"] = candidate.State
+		var candidateTags []string
+		for _, proposal := range candidate.Proposals {
+			candidateTags = append(candidateTags, proposal.Topic)
+		}
+		queryMap["tags"] = candidateTags
+		relatedCandidatures, _, err := db.FindCandidatesWithParams(queryMap, defaultPageSize, 1)
+		if err != nil {
+			log.Printf("failed to find related candidatures, error %v\n", err)
+			return echo.ErrInternalServerError
+		}
+		var relatedCandidatesCards []*candidateCard
+		for _, rc := range relatedCandidatures {
+			var tags []string
+			for _, p := range rc.Proposals {
+				tags = append(tags, p.Topic)
+			}
+			relatedCandidatesCards = append(relatedCandidatesCards, &candidateCard{
+				Transparency: rc.Transparency,
+				Picture:      rc.PhotoURL,
+				Name:         rc.BallotName,
+				City:         rc.City,
+				State:        rc.State,
+				Role:         rc.Role,
+				Party:        rc.Party,
+				Number:       rc.BallotNumber,
+				Tags:         tags,
+				SequentialID: rc.SequencialCandidate,
+				Gender:       rc.Gender,
+			})
+		}
 		r := c.Render(http.StatusOK, "candidato.html", map[string]interface{}{
+			// "Filter":            buildFilter(filter),
 			"Candidato":         candidate,
-			"RelatedCandidates": []*candidateCard{},
+			"RelatedCandidates": relatedCandidatesCards,
 		})
 		fmt.Println(r)
 		return r
