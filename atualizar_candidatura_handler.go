@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
@@ -118,6 +119,37 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 		})
 	}
 }
+
+func mapMonthsToPortuguese(month time.Month) string {
+	switch int(month) {
+	case 1:
+		return "Janeiro"
+	case 2:
+		return "Fevereiro"
+	case 3:
+		return "Março"
+	case 4:
+		return "Abril"
+	case 5:
+		return "Maio"
+	case 6:
+		return "Junho"
+	case 7:
+		return "Julho"
+	case 8:
+		return "Agosto"
+	case 9:
+		return "Setembro"
+	case 10:
+		return "Outubro"
+	case 11:
+		return "Novembro"
+	case 12:
+		return "Dezembro"
+	}
+	return ""
+}
+
 func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.HandlerFunc {
 	// TODO remove this struct
 	type defaultResponse struct {
@@ -147,11 +179,15 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 			log.Printf("failed to find candidate using email from token claims (email:%s, currentYear:%d), erro %q\n", email, globals.Year, err)
 			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
 		}
-		// @TODO: só mostrar a tela de aceitar-termo caso o candidato ainda não tenha aceitado
-		if false {
+
+		_, month, day := time.Now().Date()
+
+		if foundCandidate.AcceptedTerms.IsZero() {
 			return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{
-				"Token":      encodedAccessToken,
-				"TextoTermo": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid aspernatur at atque distinctio dolores in, iusto labore mollitia optio quia quibusdam quod tempora! Iste neque optio placeat provident quaerat.",
+				"Token":                encodedAccessToken,
+				"Candidate":            foundCandidate,
+				"termsAcceptanceDay":   day,
+				"termsAcceptanceMonth": mapMonthsToPortuguese(month),
 			})
 		}
 		r := c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{
