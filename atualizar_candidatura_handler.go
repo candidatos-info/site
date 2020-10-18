@@ -10,6 +10,7 @@ import (
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
+	"github.com/candidatos-info/site/exception"
 	"github.com/candidatos-info/site/token"
 	"github.com/labstack/echo"
 )
@@ -19,13 +20,6 @@ const maxProposals = 5
 func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		encodedAccessToken := c.FormValue("token")
-		if encodedAccessToken == "" {
-			log.Printf("empty token")
-			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-				"ErrorMsg": "Código de acesso inválido",
-				"Success":  false,
-			})
-		}
 		accessTokenBytes, err := base64.StdEncoding.DecodeString(encodedAccessToken)
 		if err != nil {
 			log.Printf("error decoding access token %s", string(encodedAccessToken))
@@ -151,37 +145,49 @@ func mapMonthsToPortuguese(month time.Month) string {
 }
 
 func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.HandlerFunc {
-	// TODO remove this struct
-	type defaultResponse struct {
-		Message string `json:"message"`
-		Code    int    `json:"code"`
-	}
 	return func(c echo.Context) error {
 		encodedAccessToken := c.QueryParam("access_token")
-		if encodedAccessToken == "" {
-			return c.JSON(http.StatusBadRequest, defaultResponse{Message: "Código de acesso é inválido.", Code: http.StatusBadRequest})
-		}
 		accessTokenBytes, err := base64.StdEncoding.DecodeString(encodedAccessToken)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
+			log.Printf("error decoding access token %s", string(encodedAccessToken))
+			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+				"Success":  false,
+			})
 		}
 		if !tokenService.IsValid(string(accessTokenBytes)) {
-			return c.JSON(http.StatusUnauthorized, defaultResponse{Message: "Código de acesso inválido.", Code: http.StatusUnauthorized})
+			log.Printf("invalid access token")
+			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": "Código de acesso inválido",
+				"Success":  false,
+			})
 		}
 		claims, err := token.GetClaims(string(accessTokenBytes))
 		if err != nil {
-			log.Printf("failed to extract email from token claims, erro %v\n", err)
-			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao processar token de acesso.", Code: http.StatusInternalServerError})
+			log.Printf("failed to extract email from token claims, error %v\n", err)
+			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+				"Success":  false,
+			})
 		}
 		email := claims["email"]
 		foundCandidate, err := dbClient.GetCandidateByEmail(email, globals.Year)
 		if err != nil {
-			log.Printf("failed to find candidate using email from token claims (email:%s, currentYear:%d), erro %q\n", email, globals.Year, err)
-			return c.JSON(http.StatusInternalServerError, defaultResponse{Message: "Falha ao buscar informaçōes de candidatos.", Code: http.StatusInternalServerError})
+			log.Printf("failed find candidate on DB (email:%s), error %v\n", email, err)
+			switch {
+			case err != nil && err.(*exception.Exception).Code == exception.NotFound:
+				return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+					"ErrorMsg": fmt.Sprintf("Não encontramos um cadastro de candidatura através do email %s. Por favor verifique se o email está correto.", email),
+					"Success":  false,
+				})
+			case err != nil:
+				return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+					"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+					"Success":  false,
+				})
+			}
 		}
-
 		_, month, day := time.Now().Date()
-
 		if foundCandidate.AcceptedTerms.IsZero() {
 			return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{
 				"Token":                encodedAccessToken,
