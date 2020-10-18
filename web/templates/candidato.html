@@ -35,9 +35,9 @@
             {{if .Candidato.Contacts}}
             <div class="row py-1">
                 {{range .Candidato.Contacts}}
-                    <div class="col-12">
-                        <div class="py-1 candidate-card--contact"><a href="{{.Value}}" class="text-secondary-button">{{template "socialIcon" .SocialNetwork}} {{.SocialNetwork}}</a></div>
-                    </div>
+                <div class="col-12">
+                    <div class="py-1 d-flex justify-content-start align-items-center candidate-card--contact"><a href="{{.Value}}" class="text-secondary-button"><span class="candidate-card--contact-icon">{{template "socialIcon" .SocialNetwork}}</span> <span> {{.SocialNetwork}}</span></a></div>
+                </div>
                 {{end}}
             </div>
             {{end}}
