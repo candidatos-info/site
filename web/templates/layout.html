@@ -36,11 +36,11 @@
         }
 
         .bg-button {
-            background-color: #83CAFD;
+            background-color: #0795FB;
         }
 
         .border-button {
-            border-color: #83CAFD;
+            border-color: #0795FB;
         }
 
         .card-shadow {
@@ -116,6 +116,39 @@
         }
         .space-y-6 > * + *	{
             margin-top: 1.6rem;
+        }
+
+        /** Candidate Card */
+        .candidate-card .candidate-card--title {
+            font-size: .875rem;
+            text-transform: capitalize;
+        }
+
+        .candidate-card .candidate-card--city {
+            font-size: .625rem;
+        }
+        .candidate-card .candidate-card--position, .candidate-card .candidate-card--number {
+            font-size: .75rem;
+        }
+        .candidate-card .candidate-card--tag {
+            font-weight: normal;
+            font-size: .625rem;
+            padding: 4px 10px;
+        }
+
+        /** Transparency Card */
+        .transparency-card .transparency-card--icon {
+            height: 20px;
+            width: 20px;
+            margin-right: 5px;
+        }
+        .transparency-card .transparency-card--diamond {
+            height: 15px;
+            width: auto;
+        }
+
+        .transparency-card .transparency-card--text {
+            font-size: 	.625rem;
         }
     </style>
     {{template "pageStyles" .}}
@@ -289,6 +322,7 @@ border-success
 <div
     class="
         card card-shadow
+        candidate-card
         {{template "candidatoCardBoxBorderColor" .}}
     "
     style="border-width: 5px 0 0; height: 100%;"
@@ -297,20 +331,26 @@ border-success
         {{template "candidateTransparency" .}}
     </div>
     <img
-        class="card-img-top d-block img-fluid w-50 mx-auto my-2"
+        class="card-img-top d-block img-fluid w-25 mx-auto my-2"
         src="{{.Picture}}"
         alt="Card image cap"
     />
     <div class="card-body text-center">
-        <h5 class="card-title text-dark mb-0">{{.Name}}</h5>
-        <small class="card-text text-dark" style="font-size: 10px;">{{.City}}</small>
-        <p class="card-text text-text mb-0">{{.Role}}</p>
-        <p class="card-text text-text">{{.Number}}</p>
-        <div >
+        <div class="d-flex flex-column space-y-0 mb-2">
+            <h5 class="card-title candidate-card--title text-secondary-button mb-0">{{.Name}}</h5>
+            <small class="card-text candidate-card--city text-secondary-button">{{.City}}</small>
+        </div>
+        <div class="d-flex flex-column space-y-0 ">
+            <p class="card-text candidate-card--position text-text mb-0">{{.Role}}</p>
+            <p class="card-text candidate-card--number text-text font-weight-bold">{{.Number}}</p>
+        </div>
+        {{if .Tags}}
+        <div class="mt-2 text-left">
             {{range .Tags}}
-            <span class="badge badge-pill bg-button" style="font-size: 9px">{{.}}</span>
+            <span class="badge badge-pill bg-button px-4">{{.}}</span>
             {{end}}
         </div>
+        {{end}}
     </div>
 </div>
 {{end}}
@@ -344,15 +384,15 @@ bg-success
 {{end}}
 
 {{define "candidateTransparency"}}
-<span class="d-flex justify-content-start align-items-center">
+<span class="d-flex justify-content-start align-items-center transparency-card">
     <span
         class="
             rounded-circle d-flex align-items-center justify-content-center
+            transparency-card--icon
             {{template "candidateBgColorForTransparency" .}}
         "
-        style="height: 14px; width: 14px; margin-right: 5px;"
     >
-        <svg style="height: 11px; width: auto;" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="transparency-card--diamond" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 6.00018L6.50012 11.0001L5.00009 6.00009L8 6.00018Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
             <path d="M11 6L6.5 11L7.99981 6.00018L11 6Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
             <path d="M10.9998 6.00021L10 3.00006L8 3.00006L8 6.00021L10.9998 6.00021Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
@@ -363,8 +403,7 @@ bg-success
     </span>
 
     <span
-        class="text-center"
-        style="font-size: 9px;"
+        class="text-center transparency-card--text"
     >
         {{if (lt .Transparency 25.) }}
             Perfil pouco transparente.
