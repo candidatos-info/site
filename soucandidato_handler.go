@@ -18,7 +18,7 @@ import (
 const (
 	imageWidth  = 100
 	imageHeight = 30
-	logoURL     = "https://s3.amazonaws.com/candidatos.info-public/logo.jpg"
+	logoURL     = "https://s3.amazonaws.com/candidatos.info-public/Logo-1px.png"
 )
 
 func newSouCandidatoFormHandler(db *db.Client, tokenService *token.Token, emailClient *email.Client) echo.HandlerFunc {
@@ -58,12 +58,13 @@ func login(db *db.Client, tokenService *token.Token, emailClient *email.Client, 
 }
 
 func buildProfileAccessEmail(candidate *descritor.CandidateForDB, accessToken string) string {
+	link := fmt.Sprintf("%s/atualizar-candidatura?access_token=%s", siteURL, accessToken)
 	var emailBodyBuilder strings.Builder
 	emailBodyBuilder.WriteString(fmt.Sprintf("Olá, %s!<br><br>", candidate.Name))
 	emailBodyBuilder.WriteString(fmt.Sprintf("Identificamos através dos dados públicos do TSE que você está cadastrado na eleição de %d na cidade de %s no estado de %s como %s.<br><br><br>", globals.Year, candidate.City, candidate.State, candidate.Role))
-	emailBodyBuilder.WriteString(fmt.Sprintf("Recebemos sua solicitação para acessar a plataforma candidatos.info e editar seu perfil. Para isso clique no seguinte link (ou copie e cole no navegador): %s/atualizar-candidatura?access_token=%s", siteURL, accessToken))
+	emailBodyBuilder.WriteString(fmt.Sprintf("Recebemos sua solicitação para acessar a plataforma candidatos.info e editar seu perfil. Para acessar <a href=\"%s\">clique aqui</a>. <br><br>Caso o link não esteja funcionando copie e cole no navegador o seguinte link:<br> %s", link, link))
 	emailBodyBuilder.WriteString("<br><br><br>Caso tenha recebido este email por engano, por favor desconsidere-o.<br>")
-	emailBodyBuilder.WriteString(fmt.Sprintf("Atenciosamente, <img src=%s width=%d height=%d>", logoURL, imageWidth, imageHeight))
+	emailBodyBuilder.WriteString(fmt.Sprintf("Atenciosamente, <br><img src=%s width=%d height=%d>", logoURL, imageWidth, imageHeight))
 	return emailBodyBuilder.String()
 }
 
