@@ -14,20 +14,20 @@ import (
 	"github.com/labstack/echo"
 )
 
-func newSouCandidatoFormHandler(db *db.Client, tokenService *token.Token, emailClient *email.Client, year int) echo.HandlerFunc {
+func newSouCandidatoFormHandler(db *db.Client, tokenService *token.Token, emailClient *email.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		email := c.FormValue("email")
 		return c.Render(http.StatusOK, "sou-candidato-success.html", map[string]interface{}{
-			"Text": login(db, tokenService, emailClient, email, year),
+			"Text": login(db, tokenService, emailClient, email),
 		})
 	}
 }
 
-func login(db *db.Client, tokenService *token.Token, emailClient *email.Client, email string, year int) string {
+func login(db *db.Client, tokenService *token.Token, emailClient *email.Client, email string) string {
 	if !emailRegex.MatchString(email) {
 		return fmt.Sprintf("email inválido %s", email)
 	}
-	foundCandidate, err := db.GetCandidateByEmail(strings.ToUpper(email), year)
+	foundCandidate, err := db.GetCandidateByEmail(strings.ToUpper(email), globals.Year)
 	switch {
 	case err != nil && err.(*exception.Exception).Code == exception.NotFound:
 		return fmt.Sprintf("O email %s não foi encontrado no registro do TSE. Por favor verifique se houve algum erro na digitação.", email)
@@ -46,7 +46,7 @@ func login(db *db.Client, tokenService *token.Token, emailClient *email.Client, 
 		log.Printf("failed to sending email (%s):%q", email, err)
 		return "Erro inesperado. Por favor tentar novamente mais tarde."
 	}
-	return fmt.Sprintf("Email com código de acesso enviado para <strong>%s</strong>. Verifique sua caixa de spam caso não encontre.", email)
+	return fmt.Sprintf("Email com código de acesso enviado para %s. Verifique sua caixa de spam caso não encontre.", email)
 }
 
 func souCandidatoGET(c echo.Context) error {
