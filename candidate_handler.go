@@ -43,7 +43,7 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 		} else {
 			p, err := strconv.Atoi(queryPage)
 			if err != nil {
-				log.Printf("failed to parse query page [%s] to int, error %v\n", err)
+				log.Printf("failed to parse query page [%s] to int, error %v\n", queryPage, err)
 				return echo.ErrInternalServerError
 			}
 			page = p
