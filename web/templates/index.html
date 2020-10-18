@@ -1,76 +1,101 @@
 {{define "filters"}}
-<form name="filtros" id="filtros" method="get">
-    <div class="form-row">
-        <div class="form-group col-8">
-            <select class="custom-select" name="estado">
-                <option value="">Escolha um estado</option>
-                {{range $id, $val := .AllStates}}
-                <option value="{{$id}}" {{ if eq $.Filters.State $id }} selected {{end}}>
-                    {{$val}}
-                </option>
-                {{end}}
-            </select>
+    <form
+        name="filtros"
+        id="filtros"
+        method="get"
+    >
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select
+                    class="custom-select"
+                    name="estado"
+                >
+                    <option value="">Escolha um estado</option>
+                    {{range $id, $val := .AllStates}}
+                        <option
+                            value="{{$id}}"
+                            {{ if eq $.Filters.State $id }} selected {{end}}
+                        >
+                            {{$val}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+            <div class="form-group col-4">
+                <select name="ano" class="custom-select" disabled="disabled">
+                    <option selected="true">{{.Filters.Year}}</option>
+                </select>
+            </div>
         </div>
-        <div class="form-group col-4">
-            <input class="form-control" type="year" name="ano" value="{{.Filters.Year}}" placeholder="Ano" />
-        </div>
-    </div>
 
-    {{if .Filters.State}}
-    <div class="form-row">
-        <div class="form-group col-8">
-            <select name="cidade" class="custom-select">
-                <option value="">Escolha uma Cidade</option>
-                {{range $i, $v := .CitiesOfState}}
-                <option value="{{$v}}" {{if eq $v $.Filters.City}}selected{{end}}>
-                    {{$v}}
-                </option>
-                {{end}}
-            </select>
+        {{if .Filters.State}}
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select name="cidade" class="custom-select">
+                    <option value="">Escolha uma Cidade</option>
+                    {{range $i, $v := .CitiesOfState}}
+                        <option
+                            value="{{$v}}"
+                            {{if eq $v $.Filters.City}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
+            <div class="form-group col-4">
+                <select name="cargo" class="custom-select">
+                    <option value="">Cargo</option>
+                    {{range $i, $v := .AllRoles}}
+                        <option
+                            value="{{$i}}"
+                            {{if eq $i $.Filters.Role}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
         </div>
-        <div class="form-group col-4">
-            <select name="cargo" class="custom-select">
-                <option value="">Cargo</option>
-                {{range $i, $v := .AllRoles}}
-                <option value="{{$i}}" {{if eq $i $.Filters.Role}}selected{{end}}>
-                    {{$v}}
-                </option>
-                {{end}}
-            </select>
+        <div class="form-row">
+            <div class="form-group col-8">
+                <select name="tags" size=3 class="custom-select" multiple>
+                    <option value="">Escolha uma Causa/Pauta</option>
+                    {{range $i, $v := .Tags}}
+                        <option
+                            value="{{$v}}"
+                            {{if eq $v $.Filters.Tag}}selected{{end}}
+                        >
+                            {{$v}}
+                        </option>
+                    {{end}}
+                </select>
+            </div>
         </div>
-    </div>
-    <div class="form-row">
-        <div class="form-group col-8">
-            <select name="tags" class="custom-select">
-                <option value="">Escolha uma Causa/Pauta</option>
-                {{range $i, $v := .Tags}}
-                <option value="{{$v}}" {{if eq $v $.Filters.Tag}}selected{{end}}>
-                    {{$v}}
-                </option>
-                {{end}}
-            </select>
-        </div>
-    </div>
-    {{end}}
-</form>
+        {{end}}
+    </form>
 {{end}}
 
 {{define "candidatos"}}
-<div>
-    <div class="row" style="margin-left: -8px; margin-right: -8px; align-items: stretch;" id="candidatesList">
-        {{range .Candidates}}
-        <div class="col-12 col-md-4 col-lg-2" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
-            <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
-                {{template "candidatoCard" .}}
-            </a>
+    <div>
+        <div
+            class="row"
+            style="margin-left: -8px; margin-right: -8px; align-items: stretch;"
+            id="candidatesList"
+        >
+            {{range .Candidates}}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
+                <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
+                    {{template "candidatoCard" .}}
+                </a>
+            </div>
+            {{end}}
         </div>
-        {{end}}
-    </div>
 
-    <div class="load-more-btn text-center pb-2">
-        <a href="{{.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+        <div class="load-more-btn text-center pb-2">
+            <a href="{{.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+        </div>
     </div>
-</div>
 {{end}}
 
 {{define "emptyCandidatos"}}
@@ -80,17 +105,17 @@
 {{end}}
 
 {{define "content"}}
-<div class="container mt-2" id="home">
-    {{template "filters" .}}
+    <div class="container mt-2" id="home">
+        {{template "filters" .}}
 
-    <div class="mt-2" id="candidates">
-        {{ if gt (len .Candidates) 0 }}
-        {{template "candidatos" .}}
-        {{else}}
-        {{template "emptyCandidatos" .}}
-        {{end}}
+        <div class="mt-2" id="candidates">
+            {{ if gt (len .Candidates) 0 }}
+                {{template "candidatos" .}}
+            {{else}}
+                {{template "emptyCandidatos" .}}
+            {{end}}
+        </div>
     </div>
-</div>
 {{end}}
 
 {{define "scripts"}}
@@ -103,7 +128,7 @@
             $.ajax({
                 method: 'get',
                 url: e.target.href,
-                success: function (data) {
+                success : function( data ) {
                     appendCandidates(data);
                 }
             });
@@ -125,7 +150,7 @@
 
             submitForm($filtersForm, replaceFilters).done(function () {
                 if (replaceFilters && currentFieldName) {
-                    $home.find("[name=" + currentFieldName + "]").focus();
+                    $home.find("[name="+currentFieldName+"]").focus();
                 }
             });
         });
@@ -144,8 +169,8 @@
                 url: $filtersForm.attr('action'),
                 type: $filtersForm.attr('method'),
                 data: $filtersForm.serialize(),
-                success: function (data) {
-                    history.pushState("", "", "?" + $filtersForm.serialize());
+                success : function( data ) {
+                    history.pushState("", "" , "?"+$filtersForm.serialize());
 
                     var $html = $(data);
 
@@ -155,7 +180,7 @@
 
                     $home.find('#candidates').replaceWith($html.find('#candidates'));
                 },
-                error: function (xhr, err) {
+                error: function( xhr, err ) {
                     console.log('Ocorreu um erro.');
                 }
             });

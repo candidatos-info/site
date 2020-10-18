@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/candidatos-info/site/db"
+	"github.com/candidatos-info/site/exception"
 	"github.com/candidatos-info/site/token"
 	"github.com/labstack/echo"
 )
@@ -14,13 +16,6 @@ import (
 func newAceitarTermoFormHandler(dbClient *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		encodedAccessToken := c.FormValue("token")
-		if encodedAccessToken == "" {
-			log.Printf("empty token")
-			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-				"ErrorMsg": "Código de acesso inválido",
-				"Success":  false,
-			})
-		}
 		accessTokenBytes, err := base64.StdEncoding.DecodeString(encodedAccessToken)
 		if err != nil {
 			log.Printf("error decoding access token %s", string(encodedAccessToken))
@@ -30,7 +25,7 @@ func newAceitarTermoFormHandler(dbClient *db.Client) echo.HandlerFunc {
 			})
 		}
 		if !tokenService.IsValid(string(accessTokenBytes)) {
-			log.Printf("invalid access token")
+			log.Printf("invalid access token:%s\n", string(accessTokenBytes))
 			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
 				"ErrorMsg": "Código de acesso inválido",
 				"Success":  false,
@@ -45,8 +40,38 @@ func newAceitarTermoFormHandler(dbClient *db.Client) echo.HandlerFunc {
 			})
 		}
 		email := claims["email"]
-		fmt.Println(email)
-		// TODO: save the acceptance of the terms in the DB
-		return c.Redirect(http.StatusSeeOther, "/atualizar-candidato?token="+string(encodedAccessToken))
+		foundCandidate, err := dbClient.GetCandidateByEmail(email, globals.Year)
+		if err != nil {
+			switch {
+			case err != nil && err.(*exception.Exception).Code == exception.NotFound:
+				return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+					"ErrorMsg": fmt.Sprintf("Não encontramos um cadastro de candidatura através do email %s. Por favor verifique se o email está correto.", email),
+					"Success":  false,
+				})
+			case err != nil:
+				log.Printf("failed find candidate on DB (email:%s), error %v\n", email, err)
+				return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+					"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+					"Success":  false,
+				})
+			}
+		}
+		loc, err := time.LoadLocation("UTC")
+		if err != nil {
+			log.Printf("failed load location (UTC), error %v\n", err)
+			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+				"Success":  false,
+			})
+		}
+		foundCandidate.AcceptedTerms = time.Now().In(loc)
+		if _, err := dbClient.UpdateCandidateProfile(foundCandidate); err != nil {
+			log.Printf("failed to update candidate with time that terms were accepted, error %v", err)
+			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+				"Success":  false,
+			})
+		}
+		return c.Redirect(http.StatusSeeOther, "/atualizar-candidatura?access_token="+encodedAccessToken)
 	}
 }

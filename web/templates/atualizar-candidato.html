@@ -33,7 +33,24 @@
                 <label for="numberOfTerms" class="form-label">NÚMERO DE MANDATOS*:</label>
                 <input type="text" id="numberOfTerms" disabled class="form-control text-center" value="1" />
             </div>
-
+            <div class="form-group">
+                <label for="contato" class="form-label">CONTATO*:</label><br>
+                <div class="btn-group">
+                    {{ $Contact := "" }}
+                    {{ $SocialNetwork := "" }}
+                    {{ if gt (len .Candidato.Contacts) 0 }}
+                       {{ $c := index .Candidato.Contacts 0 }}
+                       {{ $Contact = $c.Value }}
+                       {{ $SocialNetwork = $c.SocialNetwork }}
+                    {{end}}
+                    <input type="text" value="{{$Contact}}" size=100 maxlength=100 id="contact" name="contact" class="form-control" required />
+                    <select name="provider" class="selectpicker">
+                        {{ range $sn,$text := .SocialNetworks }}
+                            <option value="{{$sn}}" {{if eq $sn $SocialNetwork }}selected{{end}} >{{$text}}</option>
+                        {{end}}
+                    </select>
+                </div>
+            </div>
             <div class="form-group">
                 <label for="biography">BIOGRAFIA (MÁX 500 CARACTERES)*:</label>
                 <textarea maxlength="500" class="form-control" name="biography" id="biography" rows="5">{{.Candidato.Biography}}</textarea>
