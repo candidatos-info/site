@@ -11,7 +11,7 @@ func buildProfileAccessEmail(candidate *descritor.CandidateForDB, accessToken st
 	return fmt.Sprintf(`
 	Olá, %s!<br><br>
 	Identificamos através dos dados públicos do TSE que você está cadastrado na eleição de %d na cidade de %s no estado de %s como %s.<br>
-	Recebemos sua solicitação para acessar a plataforma candidatos.info e editar seu perfil. Para isso clique no seguinte link: %s/atualizar-candidatura?access_token=%s
+	Recebemos sua solicitação para acessar a plataforma candidatos.info e editar seu perfil. Para isso clique no seguinte link (ou copie e cole no navegador): <a src="%s/atualizar-candidatura?access_token=%s">%s/atualizar-candidatura?access_token=%s</a>
 	<br><br><br>Caso tenha recebido este email por engano apenas desconsidere-o.<br>`, candidate.Name, candidate.Year, candidate.City, candidate.State, candidate.Role, siteURL, accessToken)
 }
 
