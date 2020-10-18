@@ -36,33 +36,48 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 			candidateTags = append(candidateTags, proposal.Topic)
 		}
 		queryMap["tags"] = candidateTags
-		relatedCandidatures, _, err := db.FindCandidatesWithParams(queryMap, defaultPageSize, 1)
+		var page int
+		queryPage := c.QueryParam("p")
+		if queryPage == "" {
+			page = 1
+		} else {
+			p, err := strconv.Atoi(queryPage)
+			if err != nil {
+				log.Printf("failed to parse query page [%s] to int, error %v\n", err)
+				return echo.ErrInternalServerError
+			}
+			page = p
+		}
+		relatedCandidatures, paginationData, err := db.FindCandidatesWithParams(queryMap, defaultPageSize, page)
 		if err != nil {
 			log.Printf("failed to find related candidatures, error %v\n", err)
 			return echo.ErrInternalServerError
 		}
 		var relatedCandidatesCards []*candidateCard
 		for _, rc := range relatedCandidatures {
-			var tags []string
-			for _, p := range rc.Proposals {
-				tags = append(tags, p.Topic)
+			if rc.SequencialCandidate != id {
+				var tags []string
+				for _, p := range rc.Proposals {
+					tags = append(tags, p.Topic)
+				}
+				relatedCandidatesCards = append(relatedCandidatesCards, &candidateCard{
+					Transparency: rc.Transparency,
+					Picture:      rc.PhotoURL,
+					Name:         rc.BallotName,
+					City:         rc.City,
+					State:        rc.State,
+					Role:         rc.Role,
+					Party:        rc.Party,
+					Number:       rc.BallotNumber,
+					Tags:         tags,
+					SequentialID: rc.SequencialCandidate,
+					Gender:       rc.Gender,
+				})
 			}
-			relatedCandidatesCards = append(relatedCandidatesCards, &candidateCard{
-				Transparency: rc.Transparency,
-				Picture:      rc.PhotoURL,
-				Name:         rc.BallotName,
-				City:         rc.City,
-				State:        rc.State,
-				Role:         rc.Role,
-				Party:        rc.Party,
-				Number:       rc.BallotNumber,
-				Tags:         tags,
-				SequentialID: rc.SequencialCandidate,
-				Gender:       rc.Gender,
-			})
 		}
+		loadMoreURL := fmt.Sprintf("%s/c/%d/%s?p=%d", siteURL, year, candidate.SequencialCandidate, paginationData.Next)
 		r := c.Render(http.StatusOK, "candidato.html", map[string]interface{}{
-			// "Filter":            buildFilter(filter),
+			"LoadMoreURL":       loadMoreURL,
 			"Candidato":         candidate,
 			"RelatedCandidates": relatedCandidatesCards,
 		})

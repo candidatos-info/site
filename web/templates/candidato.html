@@ -54,9 +54,10 @@
         {{end}}
     </section>
 
-    <section>
+    <section id="relatedCandidates">
         <h3 class="page-title text-center" style="margin-top: 30px; margin-bottom: 30px;">Candidaturas relacionadas</h3>
-        <div class="overflow-auto row flex-row flex-nowrap" style="margin-left: 0; margin-right: 0;">
+        <div class="overflow-auto row flex-row flex-nowrap" style="margin-left: 0; margin-right: 0;"
+            id="relatedCandidaturesList">
             {{range .RelatedCandidates}}
             <div class="col-6 col-md-4 col-lg-2" style="padding: 4px;">
                 <a href="/c/{{$.Candidato.Year}}/{{.SequentialID}}" style="color: unset;">
@@ -64,6 +65,9 @@
                 </a>
             </div>
             {{end}}
+            <div class="load-more-btn text-center pb-2">
+                <a href="{{.LoadMoreURL}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+            </div>
         </div>
     </section>
 </div>
@@ -76,4 +80,30 @@
         font-weight: bold;
     }
 </style>
+{{end}}
+{{define "scripts"}}
+<script>
+    $(function () {
+        var $home = $('#relatedCandidates');
+
+        $home.on('click', '.load-more-btn', function (e) {
+            e.preventDefault();
+            console.log(e.target.href)
+            $.ajax({
+                method: 'get',
+                url: e.target.href,
+                success: function (data) {
+                    appendCandidates(data);
+                }
+            });
+        });
+
+        function appendCandidates(data) {
+            $html = $(data);
+            $home.find('.load-more-btn').replaceWith('<div></div>');
+            $home.find('#relatedCandidaturesList').append($html.find('#relatedCandidaturesList').html());
+            $home.find('.load-more-btn').replaceWith($(data).find('.load-more-btn'));
+        }
+    });
+</script>
 {{end}}
