@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/candidatos-info/descritor"
@@ -15,7 +16,22 @@ import (
 	"github.com/labstack/echo"
 )
 
-const maxProposals = 5
+const (
+	maxProposals     = 5
+	maxContactsChars = 100
+)
+
+var (
+	socialNetworksUI = map[string]string{
+		"facebook":  "Facebook",
+		"instagram": "Instagram",
+		"twitter":   "Twitter",
+		"email":     "E-mail",
+		"whatsapp":  "Whatsapp",
+		"telefone":  "Telefone",
+		"paginaWeb": "Página Web",
+	}
+)
 
 func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -44,7 +60,6 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 			})
 		}
 		// Processing and validating form values.
-		// TODO: get and process contact.
 		numTags, err := strconv.Atoi(c.FormValue("numTags"))
 		if err != nil {
 			log.Printf("invalid numTags :%s, error %v\n", c.FormValue("numTags"), err)
@@ -74,6 +89,19 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 				"Success":  false,
 			})
 		}
+		contact := c.FormValue("contact")
+		if len(contact) == 0 {
+			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": "Contato é um campo obrigatório. Por favor, preencher",
+				"Success":  false,
+			})
+		}
+		if len(contact) > maxContactsChars {
+			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": fmt.Sprintf("Tamanho máximo do contato é de %d caracteres.", maxBiographyTextSize),
+				"Success":  false,
+			})
+		}
 		// Fetching candidate and updating counters.
 		email := claims["email"]
 		candidate, err := dbClient.GetCandidateByEmail(email, globals.Year)
@@ -86,6 +114,7 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 		}
 		candidate.Biography = bio
 		candidate.Proposals = props
+		candidate.Contacts = []*descritor.Contact{getContact(contact, c.FormValue("provider"))}
 		counter := 0.0
 		if candidate.Biography != "" {
 			counter++
@@ -197,12 +226,43 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 			})
 		}
 		r := c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{
-			"Token":        encodedAccessToken,
-			"AllTags":      tags,
-			"Candidato":    foundCandidate,
-			"MaxProposals": maxProposals,
+			"Token":          encodedAccessToken,
+			"AllTags":        tags,
+			"Candidato":      foundCandidate,
+			"MaxProposals":   maxProposals,
+			"SocialNetworks": socialNetworksUI,
 		})
 		fmt.Println(r)
 		return r
+	}
+}
+
+func getContact(addr, provider string) *descritor.Contact {
+	if strings.HasPrefix(addr, "http") {
+		return &descritor.Contact{
+			SocialNetwork: provider,
+			Value:         addr,
+		}
+	}
+	addrPrefix := ""
+	switch provider {
+	case "email":
+		addrPrefix = "mailto:"
+	case "telefone":
+		addrPrefix = "tel:"
+	case "whatsapp":
+		addrPrefix = "https://wa.me/"
+	case "facebook":
+		addrPrefix = "http://facebook.com/"
+	case "instagram":
+		addrPrefix = "http://instagram.com/"
+	case "twitter":
+		addrPrefix = "http://twitter.com/"
+	case "paginaWeb":
+		addrPrefix = "http://"
+	}
+	return &descritor.Contact{
+		SocialNetwork: provider,
+		Value:         addrPrefix + addr,
 	}
 }
