@@ -1,3 +1,22 @@
+{{define "media_tags"}}
+
+{{ $genderVariable := "o" }}
+{{ if eq .Candidato.Gender "FEMININO" }}
+    {{ $genderVariable = "a" }}
+{{ end }}
+
+<meta property="og:title" content="candidatos.info">
+<meta property="og:site_name" content="candidatos.info">
+<meta property="og:url" content="http://candidatos.info/">
+<meta property="og:description" content="{{.Candidato.Name}} (candidat{{ $genderVariable }} a {{.Candidato.Role}}) {{.Candidato.BallotNumber}} - {{.Candidato.City}}/{{ .Candidato.State }}. Pautas: {{ range $index, $element := .Candidato.Proposals}}{{if $index}}, {{end}}{{$element.Topic}}{{end}}.">
+<meta property="og:image" content="{{.Candidato.PhotoURL}}">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{.Candidato.PhotoURL}}">
+<meta name="twitter:image:alt" content="Foto d{{ $genderVariable }} candidat{{ $genderVariable }} {{.Candidato.Name}}">
+
+{{end}}
+
 {{define "content"}}
 <div class="container py-2">
     <section

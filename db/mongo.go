@@ -108,10 +108,11 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 	}
 	update := bson.M{
 		"$set": bson.M{
-			"biography":    candidate.Biography,
-			"transparency": candidate.Transparency,
-			"proposals":    candidate.Proposals,
-			"contacts":     candidate.Contacts,
+			"biography":      candidate.Biography,
+			"transparency":   candidate.Transparency,
+			"proposals":      candidate.Proposals,
+			"contacts":       candidate.Contacts,
+			"accepted_terms": candidate.AcceptedTerms,
 		},
 	}
 	if _, err := c.client.Database(c.dbName).Collection(descritor.CandidaturesCollection).UpdateOne(ctx, filter, update); err != nil {
