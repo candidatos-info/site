@@ -60,6 +60,7 @@ func buildLoadMoreURL(filter *homeFilter, baseURL string) string {
 }
 
 func newHomeHandler(db *db.Client) echo.HandlerFunc {
+	fmt.Println("HOME REQUEST")
 	return func(c echo.Context) error {
 		cities := []string{}
 		page := 0
@@ -73,28 +74,29 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 
 		// Check cookies and override query parameters when needed.
 
-		if year == "" || state == "" || city == "" {
-			cookie, _ := c.Cookie(searchCacheCookie)
-			if cookie != nil {
-				cookieValues := strings.Split(cookie.Value, ",")
-				if year == "" {
-					year = cookieValues[0]
-				}
-				if state == "" {
-					state = cookieValues[1]
-				}
-				if city == "" && len(cookieValues) > 2 {
-					aux, err := base64.StdEncoding.DecodeString(cookieValues[2])
-					if err != nil {
-						log.Printf("Error decoding city from cookie (%s):%q", cookieValues[2], err)
-					} else {
-						city = string(aux)
-					}
-				}
-			}
-		}
+		// if year == "" || state == "" || city == "" {
+		// 	cookie, _ := c.Cookie(searchCacheCookie)
+		// 	if cookie != nil {
+		// 		cookieValues := strings.Split(cookie.Value, ",")
+		// 		if year == "" {
+		// 			year = cookieValues[0]
+		// 		}
+		// 		if state == "" {
+		// 			state = cookieValues[1]
+		// 		}
+		// 		if city == "" && len(cookieValues) > 2 {
+		// 			aux, err := base64.StdEncoding.DecodeString(cookieValues[2])
+		// 			if err != nil {
+		// 				log.Printf("Error decoding city from cookie (%s):%q", cookieValues[2], err)
+		// 			} else {
+		// 				city = string(aux)
+		// 			}
+		// 		}
+		// 	}
+		// }
 		homeResultSet := &homeResultSet{}
 		if state != "" {
+			fmt.Println("buscando candidatos")
 			var err error
 			cities, err = db.GetCities(state)
 			if err != nil {
@@ -116,6 +118,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			NextPage: page + 1,
 			Tag:      c.QueryParam("tag"),
 		}
+		fmt.Println(filter)
 		r := c.Render(http.StatusOK, "index.html", map[string]interface{}{
 			"AllStates":                 uiStates,
 			"AllRoles":                  uiRoles,
@@ -128,6 +131,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			"Tags":                      tags,
 		})
 		fmt.Println(r)
+		fmt.Println("HEHE")
 		c.SetCookie(&http.Cookie{
 			Name:    searchCacheCookie,
 			Value:   fmt.Sprintf("%s,%s,%s", year, state, base64.StdEncoding.EncodeToString([]byte(city))),
@@ -331,6 +335,7 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) (*rawHomeResultS
 		log.Printf("failed to get page, error %v\n", err)
 		page = 1
 	}
+	fmt.Println(queryMap)
 	transparentCandidatures, pagination, err := dbClient.FindTransparentCandidatures(queryMap, pageSize, page)
 	nonTransparentCandidatures, pagination, err := dbClient.FindNonTransparentCandidatures(queryMap, pageSize, page)
 	return &rawHomeResultSet{
