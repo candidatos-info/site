@@ -121,6 +121,72 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 	return candidate, nil
 }
 
+// FindTransparentCandidatures searches for a list of candidatures with proposals defined
+func (c *Client) FindTransparentCandidatures(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
+	query := make(bson.M, len(queryMap))
+	for k, v := range query {
+		switch k {
+		case "name":
+			query["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}
+		case "tags":
+			if len(queryMap["tags"].([]string)) > 0 {
+				query["proposals.topic"] = bson.M{"$in": queryMap["tags"]}
+			}
+		default:
+			query[k] = v
+		}
+	}
+	query["transparency"] = bson.M{"$gte": 0.0} // candidatures without proposals does not count!
+	var candidatures []*descritor.CandidateForDB
+	db := c.client.Database(c.dbName)
+	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
+	paginatedData, err := p.Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(query).Find()
+	if err != nil {
+		return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar por lista candidatos, erro %v", err), nil)
+	}
+	for _, raw := range paginatedData.Data {
+		var candidature *descritor.CandidateForDB
+		if err := bson.Unmarshal(raw, &candidature); err != nil {
+			return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao deserializar struct de candidatura a partir da resposta do banco, erro %v", err), nil)
+		}
+		candidatures = append(candidatures, candidature)
+	}
+	return candidatures, &paginatedData.Pagination, nil
+}
+
+// FindNonTransparentCandidatures searches for non transparent candidatures
+func (c *Client) FindNonTransparentCandidatures(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
+	query := make(bson.M, len(queryMap))
+	for k, v := range query {
+		switch k {
+		case "name":
+			query["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}
+		case "tags":
+			if len(queryMap["tags"].([]string)) > 0 {
+				query["proposals.topic"] = bson.M{"$in": queryMap["tags"]}
+			}
+		default:
+			query[k] = v
+		}
+	}
+	query["transparency"] = bson.M{"$eq": nil}
+	var candidatures []*descritor.CandidateForDB
+	db := c.client.Database(c.dbName)
+	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
+	paginatedData, err := p.Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(query).Find()
+	if err != nil {
+		return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar por lista candidatos, erro %v", err), nil)
+	}
+	for _, raw := range paginatedData.Data {
+		var candidature *descritor.CandidateForDB
+		if err := bson.Unmarshal(raw, &candidature); err != nil {
+			return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao deserializar struct de candidatura a partir da resposta do banco, erro %v", err), nil)
+		}
+		candidatures = append(candidatures, candidature)
+	}
+	return candidatures, &paginatedData.Pagination, nil
+}
+
 // FindCandidatesWithParams searches for a list of candidates with given params
 func (c *Client) FindCandidatesWithParams(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
 	query := make(bson.M, len(queryMap))
