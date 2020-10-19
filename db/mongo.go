@@ -162,9 +162,7 @@ func (c *Client) FindNonTransparentCandidatures(queryMap map[string]interface{},
 		case "name":
 			query["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}
 		case "tags":
-			if len(queryMap["tags"].([]string)) > 0 {
-				query["proposals.topic"] = bson.M{"$in": queryMap["tags"]}
-			}
+			continue
 		default:
 			query[k] = v
 		}
