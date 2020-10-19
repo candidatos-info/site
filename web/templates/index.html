@@ -129,7 +129,12 @@
             {{end}}
         </div>
 
-        <div class="load-more-btn text-center pb-2">
+        <div
+            class="load-more-btn text-center pb-2"
+            data-replace-section="#candidatesList"
+            data-load-more-section="#transparentCandidatesLoadMore"
+            id="transparentCandidatesLoadMore"
+        >
             <a href="{{.TransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
         </div>
         {{else}}
@@ -232,12 +237,16 @@
         var $home = $('#home');
 
         $home.on('click', '.load-more-btn', function (e) {
+            var replaceSection = $(this).data('replace-section');
+            var loadMoreSectionId = $(this).data('load-more-section');
+
             e.preventDefault();
+
             $.ajax({
                 method: 'get',
                 url: e.target.href,
                 success : function( data ) {
-                    appendCandidates(data);
+                    appendCandidates(data, replaceSection, loadMoreSectionId);
                 }
             });
         });
@@ -294,10 +303,25 @@
             });
         }
 
-        function appendCandidates(data) {
-            $html = $(data);
-            $home.find('#candidatesList').append($html.find('#candidatesList').html());
-            $home.find('.load-more-btn').replaceWith($(data).find('.load-more-btn'));
+        function appendCandidates(newPage, sectionId, loadMoreId) {
+            var $newPage = $(newPage);
+            var $existingLoadMoreSection = $home.find(loadMoreId);
+            var $newLoadMoreSection = $newPage.find(loadMoreId)
+
+            $home.find(sectionId).append($newPage.find(sectionId).html());
+            
+            // Se a pagina nova tiver a seção de "load-more" quer dizer
+            // que temos outras paginas além dessa. Logo, trocaremos o
+            // href do link atual. Caso contrario, remove a seção da tela.
+            if ($newLoadMoreSection) {
+                console.log([
+                    $existingLoadMoreSection.find('a').attr('href'),
+                    $newLoadMoreSection.find('a').attr('href'),
+                ]);
+                $existingLoadMoreSection.find('a').attr('href', $newLoadMoreSection.find('a').attr('href'));
+            } else {
+                $existingLoadMoreSection.remove();
+            }
         }
     });
 </script>
