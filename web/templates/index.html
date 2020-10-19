@@ -164,7 +164,7 @@
 
 {{define "nonTransparentCandidates"}}
     {{if .NonTransparentCandidates}}
-    <div class="my-4">
+    <div class="my-4 mx-2">
         <div 
             x-data="{
                 showDetails: localStorage.getItem('nonTransparentsDropdown') === null
@@ -221,7 +221,12 @@
                         data-replace-load-more
                         id="nonTransparentCandidatesLoadMore"
                     >
-                        <a href="{{.NonTransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+                        <a href="{{.NonTransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">
+                            <span>ver mais</span>
+                            <svg class="-rotate-90" width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
                     </div>
                 </div>
             </div>
