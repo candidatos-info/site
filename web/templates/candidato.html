@@ -118,14 +118,18 @@
 
         $home.on('click', '.load-more-btn', function (e) {
             e.preventDefault();
-            console.log(e.target.href)
-            $.ajax({
-                method: 'get',
-                url: e.target.href,
-                success: function (data) {
-                    appendCandidates(data);
-                }
-            });
+            const nextPageNumber = e.target.href.split("?p=")[1];
+            if (nextPageNumber === "0") { // if there's no next page, hide the "load more" button
+                $home.find('.load-more-btn').replaceWith('<div></div>');
+            } else {
+                $.ajax({
+                    method: 'get',
+                    url: e.target.href,
+                    success: function (data) {
+                        appendCandidates(data);
+                    }
+                });
+            }
         });
 
         function appendCandidates(data) {
