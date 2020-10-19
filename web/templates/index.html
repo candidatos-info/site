@@ -101,7 +101,7 @@
                 <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
                     <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>                        
+                    </svg>
                 </button>
             </div>
             <div class="my-3" x-show="showDetails">
@@ -131,11 +131,16 @@
 
         <div
             class="load-more-btn text-center pb-2"
-            data-replace-section="#candidatesList"
+            data-append-section="#candidatesList"
             data-load-more-section="#transparentCandidatesLoadMore"
             id="transparentCandidatesLoadMore"
         >
-            <a href="{{.TransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+            <a href="{{$.TransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto d-flex align-items-center justify-content-center space-x-2">
+                <span>ver mais</span>
+                <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
         </div>
         {{else}}
         <div class="mb-3">
@@ -158,6 +163,7 @@
 {{end}}
 
 {{define "nonTransparentCandidates"}}
+    {{if .NonTransparentCandidates}}
     <div class="my-4">
         <div 
             x-data="{
@@ -197,17 +203,31 @@
         </div>
 
         <section class="mt-2">
-            <div class="overflow-auto row flex-row flex-nowrap" style="margin-left: 0; margin-right: 0;">
-                {{range .NonTransparentCandidates}}
-                <div class="col-7 col-md-4 col-lg-2" style="padding: 4px;">
-                    <a href="/candidatos/2" style="color: unset;">
-                        {{template "candidatoCard" .}}
-                    </a>
+            <div style="margin-left: 0; margin-right: 0;">
+                <div id="nonTransparentCandidatesCard" class="overflow-auto row flex-row flex-nowrap">
+                    {{range .NonTransparentCandidates}}
+                    <div class="col-7 col-md-4 col-lg-2" style="padding: 4px;">
+                        <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset;">
+                            {{template "candidatoCard" .}}
+                        </a>
+                    </div>
+                    {{end}}
+
+                    <div
+                        class="load-more-btn col-2 d-flex flex-column justify-content-center"
+                        style="padding: 4px;" 
+                        data-append-section="#nonTransparentCandidatesCard"
+                        data-load-more-section="#nonTransparentCandidatesLoadMore"
+                        data-replace-load-more
+                        id="nonTransparentCandidatesLoadMore"
+                    >
+                        <a href="{{.NonTransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+                    </div>
                 </div>
-                {{end}}
             </div>
         </section>
     </div>
+    {{end}}
 {{end}}
 
 {{define "emptyCandidatos"}}
@@ -237,16 +257,17 @@
         var $home = $('#home');
 
         $home.on('click', '.load-more-btn', function (e) {
-            var replaceSection = $(this).data('replace-section');
+            var appendSection = $(this).data('append-section');
             var loadMoreSectionId = $(this).data('load-more-section');
+            var replaceLoadMore = (typeof $(this).data('replace-load-more') !== 'undefined');
 
             e.preventDefault();
 
             $.ajax({
                 method: 'get',
-                url: e.target.href,
+                url: $(e.target).closest('a')[0].href,
                 success : function( data ) {
-                    appendCandidates(data, replaceSection, loadMoreSectionId);
+                    appendCandidates(data, appendSection, loadMoreSectionId, replaceLoadMore);
                 }
             });
         });
@@ -303,25 +324,23 @@
             });
         }
 
-        function appendCandidates(newPage, sectionId, loadMoreId) {
+        function appendCandidates(newPage, appendSection, loadMoreId, shouldReplaceButton) {
             var $newPage = $(newPage);
             var $existingLoadMoreSection = $home.find(loadMoreId);
-            var $newLoadMoreSection = $newPage.find(loadMoreId)
+            var $newLoadMoreSection = $newPage.find(loadMoreId);
 
-            $home.find(sectionId).append($newPage.find(sectionId).html());
-            
             // Se a pagina nova tiver a seção de "load-more" quer dizer
             // que temos outras paginas além dessa. Logo, trocaremos o
             // href do link atual. Caso contrario, remove a seção da tela.
-            if ($newLoadMoreSection) {
-                console.log([
-                    $existingLoadMoreSection.find('a').attr('href'),
-                    $newLoadMoreSection.find('a').attr('href'),
-                ]);
+            if ($newLoadMoreSection.length > 0 && ! shouldReplaceButton) {
                 $existingLoadMoreSection.find('a').attr('href', $newLoadMoreSection.find('a').attr('href'));
-            } else {
+            }
+
+            if ($newLoadMoreSection.length === 0 || shouldReplaceButton) {
                 $existingLoadMoreSection.remove();
             }
+
+            $home.find(appendSection).append($newPage.find(appendSection).html());
         }
     });
 </script>

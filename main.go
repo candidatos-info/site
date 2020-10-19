@@ -153,6 +153,7 @@ func main() {
 	templates := make(map[string]*template.Template)
 	templates["index.html"] = template.Must(template.ParseFiles("web/templates/index.html", "web/templates/layout.html"))
 	templates["index-transparent-load-more.html"] = template.Must(template.ParseFiles("web/templates/index-transparent-load-more.html", "web/templates/layout.html"))
+	templates["index-nontransparent-load-more.html"] = template.Must(template.ParseFiles("web/templates/index-nontransparent-load-more.html", "web/templates/layout.html"))
 	templates["sobre.html"] = template.Must(template.ParseFiles("web/templates/sobre.html", "web/templates/layout.html"))
 	templates["candidato.html"] = template.Must(template.ParseFiles("web/templates/candidato.html", "web/templates/layout.html"))
 	templates["sou-candidato.html"] = template.Must(template.ParseFiles("web/templates/sou-candidato.html", "web/templates/layout.html"))

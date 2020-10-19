@@ -1,29 +1,24 @@
-{{define "candidatos"}}
-<div
-    class="row"
-    style="margin-left: -8px; margin-right: -8px; align-items: stretch;"
-    id="candidatesList"
->
-    {{range .NonTransparentCandidates}}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
-        <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
-            {{template "candidatoCard" .}}
-        </a>
-    </div>
-    {{end}}
-</div>
-
-<div class="load-more-btn text-center pb-2">
-    <a href="{{.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
-</div>
-{{end}}
-
 {{define "content"}}
-    <div class="container mt-2" id="home">
-        <div class="mt-2" id="candidates">
-            {{ if gt (len .NonTransparentCandidates) 0 }}
-                {{template "candidatos" .}}
+    {{if .NonTransparentCandidates}}
+        <div id="nonTransparentCandidatesCard" class="overflow-auto row flex-row flex-nowrap">
+            {{range .NonTransparentCandidates}}
+            <div class="col-7 col-md-4 col-lg-2" style="padding: 4px;">
+                <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset;">
+                    {{template "candidatoCard" .}}
+                </a>
+            </div>
             {{end}}
+
+            <div
+                class="load-more-btn col-2 d-flex flex-column justify-content-center"
+                style="padding: 4px;" 
+                data-append-section="#nonTransparentCandidatesCard"
+                data-load-more-section="#nonTransparentCandidatesLoadMore"
+                data-replace-load-more
+                id="nonTransparentCandidatesLoadMore"
+            >
+                <a href="{{$.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+            </div>
         </div>
-    </div>
+    {{end}}
 {{end}}

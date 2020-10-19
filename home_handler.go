@@ -229,6 +229,7 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) ([]*descritor.Ca
 	}
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil {
+		log.Printf("failed to get page, error %v\n", err)
 		page = 1
 	}
 	candidatures, pagination, err := dbClient.FindCandidatesWithParams(queryMap, pageSize, page)
