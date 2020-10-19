@@ -131,7 +131,6 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			"Tags":                      tags,
 		})
 		fmt.Println(r)
-		fmt.Println("HEHE")
 		c.SetCookie(&http.Cookie{
 			Name:    searchCacheCookie,
 			Value:   fmt.Sprintf("%s,%s,%s", year, state, base64.StdEncoding.EncodeToString([]byte(city))),
