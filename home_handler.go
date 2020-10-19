@@ -151,6 +151,7 @@ func newHomeLoadMoreTransparentCandidates(db *db.Client) echo.HandlerFunc {
 
 		return c.Render(http.StatusOK, "index-transparent-load-more.html", map[string]interface{}{
 			"TransparentCandidates": candidates,
+			"Filters":               filter,
 			"LoadMoreUrl":           buildLoadMoreURL(filter, "/transparent-partial"),
 		})
 	}
