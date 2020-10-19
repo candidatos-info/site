@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/candidatos-info/descritor"
@@ -238,31 +237,8 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 }
 
 func getContact(addr, provider string) *descritor.Contact {
-	if strings.HasPrefix(addr, "http") {
-		return &descritor.Contact{
-			SocialNetwork: provider,
-			Value:         addr,
-		}
-	}
-	addrPrefix := ""
-	switch provider {
-	case "email":
-		addrPrefix = "mailto:"
-	case "telefone":
-		addrPrefix = "tel:"
-	case "whatsapp":
-		addrPrefix = "https://wa.me/"
-	case "facebook":
-		addrPrefix = "http://facebook.com/"
-	case "instagram":
-		addrPrefix = "http://instagram.com/"
-	case "twitter":
-		addrPrefix = "http://twitter.com/"
-	case "paginaWeb":
-		addrPrefix = "http://"
-	}
 	return &descritor.Contact{
 		SocialNetwork: provider,
-		Value:         addrPrefix + addr,
+		Value:         addr,
 	}
 }

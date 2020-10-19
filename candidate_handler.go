@@ -28,6 +28,26 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 			log.Printf("%q", err)
 			return echo.ErrInternalServerError
 		}
+		for _, sn := range candidate.Contacts {
+			addrPrefix := ""
+			switch sn.SocialNetwork {
+			case "email":
+				addrPrefix = "mailto:"
+			case "telefone":
+				addrPrefix = "tel:"
+			case "whatsapp":
+				addrPrefix = "https://wa.me/"
+			case "facebook":
+				addrPrefix = "http://facebook.com/"
+			case "instagram":
+				addrPrefix = "http://instagram.com/"
+			case "twitter":
+				addrPrefix = "http://twitter.com/"
+			case "paginaWeb":
+				addrPrefix = "http://"
+			}
+			sn.Value = addrPrefix + sn.Value
+		}
 		queryMap := make(map[string]interface{})
 		queryMap["city"] = candidate.City
 		queryMap["state"] = candidate.State
