@@ -77,6 +77,7 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 		}
 		loadMoreURL := fmt.Sprintf("%s/c/%d/%s?p=%d", siteURL, year, candidate.SequencialCandidate, paginationData.Next)
 		r := c.Render(http.StatusOK, "candidato.html", map[string]interface{}{
+			"HasMore":           paginationData.Next != 0,
 			"LoadMoreURL":       loadMoreURL,
 			"Candidato":         candidate,
 			"RelatedCandidates": relatedCandidatesCards,
