@@ -123,6 +123,7 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 
 // FindCandidatesWithParams searches for a list of candidates with given params
 func (c *Client) FindCandidatesWithParams(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
+	fmt.Println(queryMap)
 	var candidatures []*descritor.CandidateForDB
 	db := c.client.Database(c.dbName)
 	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
@@ -147,7 +148,9 @@ func resolveQuery(query map[string]interface{}) bson.M {
 		case "name":
 			result["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", query["name"]), Options: "i"}}
 		case "tags":
-			result["proposals.topic"] = bson.M{"$in": query["tags"]}
+			if len(query["tags"].([]string)) > 0 {
+				result["proposals.topic"] = bson.M{"$in": query["tags"]}
+			}
 		default:
 			result[k] = v
 		}
