@@ -20,8 +20,11 @@
 
 {{define "content"}}
 <div class="container py-2">
-    <section class="bg-white rounded mb-4">
-        <div class="rounded-top {{template "candidateBgColorForTransparency" .Candidato}}" style="height: 6px;"></div>
+    <section
+        class="bg-white rounded mb-4"
+    >
+        <div class="rounded-top {{template "candidateBgColorForTransparency" .Candidato.Transparency}}" style="height: 6px;"></div>
+
         <div class="px-4 py-2 candidate-card">
             <div class="d-flex justify-content-start">
                 {{template "candidateTransparency" .Candidato}}

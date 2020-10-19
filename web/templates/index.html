@@ -58,8 +58,8 @@
             </div>
         </div>
         <div class="form-row">
-            <div class="form-group col-8">
-                <select name="tags" size=3 class="custom-select" multiple>
+            <div class="form-group col-12 col-md-8">
+                <select name="tags" class="custom-select" size="3" multiple>
                     <option value="">Escolha uma Causa/Pauta</option>
                     {{range $i, $v := .Tags}}
                         <option
@@ -76,14 +76,51 @@
     </form>
 {{end}}
 
-{{define "candidatos"}}
+{{define "transparentCandidates"}}
     <div>
+        <div 
+            x-data="{
+                showDetails: localStorage.getItem('transparentsDropdown') === null
+                    ? true
+                    : localStorage.getItem('transparentsDropdown') === '1',
+                toggle: function () {
+                    this.showDetails = !this.showDetails;
+                    localStorage.setItem('transparentsDropdown', this.showDetails ? 1 : 0);
+                }
+            }"
+        >
+            <div class="d-flex justify-content-center align-items-center space-x-2">
+                <div class="transparency-card d-flex flex-column justify-content-center">
+                    {{template "candidateTransparencyDiamond" 100.}}
+                </div>
+    
+                <h3 class="home-section--title font-weight-bold m-0">
+                    Candidaturas Transparentes
+                </h3>
+
+                <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
+                    <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="my-3" x-show="showDetails">
+                <p>
+                    São consideradas candidaturas 100% transparentes aquelas que a pessoa candidata forneceu todas as informações requeridas sobre a candidatura, como por exemplo, causas/pautas defendidas e propostas.
+                </p>
+
+                <p>
+                    Para ter uma candidatura transparente, cadastre-se e adicione informações aqui.
+                </p>
+            </div>
+        </div>
+        {{if .TransparentCandidates}}
         <div
-            class="row"
+            class="row mt-3"
             style="margin-left: -8px; margin-right: -8px; align-items: stretch;"
             id="candidatesList"
         >
-            {{range .Candidates}}
+            {{range .TransparentCandidates}}
             <div class="col-12 col-sm-6 col-md-4 col-lg-3" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
                 <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
                     {{template "candidatoCard" .}}
@@ -92,10 +129,110 @@
             {{end}}
         </div>
 
-        <div class="load-more-btn text-center pb-2">
-            <a href="{{.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+        <div
+            class="load-more-btn text-center pb-2"
+            data-append-section="#candidatesList"
+            data-load-more-section="#transparentCandidatesLoadMore"
+            id="transparentCandidatesLoadMore"
+        >
+            <a href="{{$.TransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto d-flex align-items-center justify-content-center space-x-2">
+                <span>ver mais</span>
+                <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+        </div>
+        {{else}}
+        <div class="mb-3">
+            {{template "emptyTransparentCandidates" .}}
+        </div>
+        {{end}}
+    </div>
+{{end}}
+
+{{define "emptyTransparentCandidates"}}
+<div class="row justify-content-center home-section--empty-text">
+    <div class="col-10">
+        <div class="text-text pt-4 d-flex flex-column justify-content-center align-items-start">
+            {{template "emptyState" "Não existem candidaturas transparentes para a sua busca :("}}
+            <p class="mb-0">Se for um Candidato, cadastre-se no Candidatos.info.</p>
+            <p class="mb-0">Se for um Eleitor, cobre do seu candidato.</p>
         </div>
     </div>
+</div>
+{{end}}
+
+{{define "nonTransparentCandidates"}}
+    {{if .NonTransparentCandidates}}
+    <div class="my-4 mx-2">
+        <div 
+            x-data="{
+                showDetails: localStorage.getItem('nonTransparentsDropdown') === null
+                    ? true
+                    : localStorage.getItem('nonTransparentsDropdown') === '1',
+                toggle: function () {
+                    this.showDetails = !this.showDetails;
+                    localStorage.setItem('nonTransparentsDropdown', this.showDetails ? 1 : 0);
+                }
+            }"
+        >
+            <div class="d-flex justify-content-center align-items-center space-x-2">
+                <div class="transparency-card d-flex flex-column justify-content-center">
+                    {{template "candidateTransparencyDiamond" 0.}}
+                </div>
+
+                <h3 class="home-section--title font-weight-bold m-0">
+                    Candidaturas não Transparentes
+                </h3>
+
+                <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
+                    <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>                        
+                </button>
+            </div>
+            <div class="my-3" x-show="showDetails">
+                <p>
+                    Candidaturas sem informações básicas, nem descrição sobre suas causas e propostas.
+                </p>
+
+                <p>
+                    Para ter uma candidatura transparente, cadastre-se e adicione informações aqui.
+                </p>
+            </div>
+        </div>
+
+        <section class="mt-2">
+            <div style="margin-left: 0; margin-right: 0;">
+                <div id="nonTransparentCandidatesCard" class="overflow-auto row flex-row flex-nowrap">
+                    {{range .NonTransparentCandidates}}
+                    <div class="col-7 col-md-4 col-lg-2" style="padding: 4px;">
+                        <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset;">
+                            {{template "candidatoCard" .}}
+                        </a>
+                    </div>
+                    {{end}}
+
+                    <div
+                        class="load-more-btn col-2 d-flex flex-column justify-content-center"
+                        style="padding: 4px;" 
+                        data-append-section="#nonTransparentCandidatesCard"
+                        data-load-more-section="#nonTransparentCandidatesLoadMore"
+                        data-replace-load-more
+                        id="nonTransparentCandidatesLoadMore"
+                    >
+                        <a href="{{.NonTransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">
+                            <span>ver mais</span>
+                            <svg class="-rotate-90" width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    {{end}}
 {{end}}
 
 {{define "emptyCandidatos"}}
@@ -109,8 +246,9 @@
         {{template "filters" .}}
 
         <div class="mt-2" id="candidates">
-            {{ if gt (len .Candidates) 0 }}
-                {{template "candidatos" .}}
+            {{ if (ne .Filters.State "") }}
+                {{template "transparentCandidates" .}}
+                {{template "nonTransparentCandidates" .}}
             {{else}}
                 {{template "emptyCandidatos" .}}
             {{end}}
@@ -124,12 +262,17 @@
         var $home = $('#home');
 
         $home.on('click', '.load-more-btn', function (e) {
+            var appendSection = $(this).data('append-section');
+            var loadMoreSectionId = $(this).data('load-more-section');
+            var replaceLoadMore = (typeof $(this).data('replace-load-more') !== 'undefined');
+
             e.preventDefault();
+
             $.ajax({
                 method: 'get',
-                url: e.target.href,
+                url: $(e.target).closest('a')[0].href,
                 success : function( data ) {
-                    appendCandidates(data);
+                    appendCandidates(data, appendSection, loadMoreSectionId, replaceLoadMore);
                 }
             });
         });
@@ -186,10 +329,23 @@
             });
         }
 
-        function appendCandidates(data) {
-            $html = $(data);
-            $home.find('#candidatesList').append($html.find('#candidatesList').html());
-            $home.find('.load-more-btn').replaceWith($(data).find('.load-more-btn'));
+        function appendCandidates(newPage, appendSection, loadMoreId, shouldReplaceButton) {
+            var $newPage = $(newPage);
+            var $existingLoadMoreSection = $home.find(loadMoreId);
+            var $newLoadMoreSection = $newPage.find(loadMoreId);
+
+            // Se a pagina nova tiver a seção de "load-more" quer dizer
+            // que temos outras paginas além dessa. Logo, trocaremos o
+            // href do link atual. Caso contrario, remove a seção da tela.
+            if ($newLoadMoreSection.length > 0 && ! shouldReplaceButton) {
+                $existingLoadMoreSection.find('a').attr('href', $newLoadMoreSection.find('a').attr('href'));
+            }
+
+            if ($newLoadMoreSection.length === 0 || shouldReplaceButton) {
+                $existingLoadMoreSection.remove();
+            }
+
+            $home.find(appendSection).append($newPage.find(appendSection).html());
         }
     });
 </script>

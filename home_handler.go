@@ -31,7 +31,7 @@ type homeFilter struct {
 	NextPage int
 }
 
-func buildLoadMoreURL(filter *homeFilter) string {
+func buildLoadMoreURL(filter *homeFilter, baseURL string) string {
 	query := map[string]string{
 		"estado": filter.State,
 		"ano":    filter.Year,
@@ -44,7 +44,7 @@ func buildLoadMoreURL(filter *homeFilter) string {
 		url = url + "&" + fmt.Sprintf("%s=%s", key, val)
 	}
 
-	return "?" + strings.Trim(url, "&") + "&page=" + strconv.Itoa(filter.NextPage)
+	return baseURL + "?" + strings.Trim(url, "&") + "&page=" + strconv.Itoa(filter.NextPage)
 }
 
 func newHomeHandler(db *db.Client) echo.HandlerFunc {
@@ -109,9 +109,12 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			"AllRoles":      uiRoles,
 			"CitiesOfState": cities,
 			"Filters":       filter,
-			"Candidates":    candidates,
-			"LoadMoreUrl":   buildLoadMoreURL(filter),
-			"Tags":          tags,
+			// TODO: aqui precisamos de dois slices: um pra candidaturas transparentes, outro para as demais candidaturas.
+			"TransparentCandidates":     candidates,
+			"NonTransparentCandidates":  candidates,
+			"TransparentLoadMoreUrl":    buildLoadMoreURL(filter, "/transparent-partial"),
+			"NonTransparentLoadMoreUrl": buildLoadMoreURL(filter, "/nontransparent-partial"),
+			"Tags":                      tags,
 		})
 		fmt.Println(r)
 		c.SetCookie(&http.Cookie{
@@ -120,6 +123,68 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			Expires: time.Now().Add(time.Hour * searchCookieExpiration),
 		})
 		return r
+	}
+}
+
+func newHomeLoadMoreTransparentCandidates(db *db.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		year := c.QueryParam("ano")
+		if year == "" {
+			year = strconv.Itoa(time.Now().Year())
+		}
+		// TODO: aqui a gente só carrega candidaturas transparentes.
+		candidates, page, err := filterCandidates(c, db)
+		// TODO: substituir por página de erro.
+		if err != nil {
+			log.Printf("error filtering candidates:%q", err)
+			return c.String(http.StatusInternalServerError, "erro filtrando candidatos.")
+		}
+
+		filter := &homeFilter{
+			State:    c.QueryParam("estado"),
+			City:     c.QueryParam("cidade"),
+			Year:     year,
+			Role:     c.QueryParam("cargo"),
+			NextPage: page + 1,
+			Tag:      c.QueryParam("tag"),
+		}
+
+		return c.Render(http.StatusOK, "index-transparent-load-more.html", map[string]interface{}{
+			"TransparentCandidates": candidates,
+			"Filters":               filter,
+			"LoadMoreUrl":           buildLoadMoreURL(filter, "/transparent-partial"),
+		})
+	}
+}
+
+func newHomeLoadMoreNonTransparentCandidates(db *db.Client) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		year := c.QueryParam("ano")
+		if year == "" {
+			year = strconv.Itoa(time.Now().Year())
+		}
+		// TODO: aqui a gente só carrega candidaturas não transparentes.
+		candidates, page, err := filterCandidates(c, db)
+		// TODO: substituir por página de erro.
+		if err != nil {
+			log.Printf("error filtering candidates:%q", err)
+			return c.String(http.StatusInternalServerError, "erro filtrando candidatos.")
+		}
+
+		filter := &homeFilter{
+			State:    c.QueryParam("estado"),
+			City:     c.QueryParam("cidade"),
+			Year:     year,
+			Role:     c.QueryParam("cargo"),
+			NextPage: page + 1,
+			Tag:      c.QueryParam("tag"),
+		}
+
+		return c.Render(http.StatusOK, "index-nontransparent-load-more.html", map[string]interface{}{
+			"NonTransparentCandidates": candidates,
+			"Filters":                  filter,
+			"LoadMoreUrl":              buildLoadMoreURL(filter, "/nontransparent-partial"),
+		})
 	}
 }
 
@@ -164,6 +229,7 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) ([]*descritor.Ca
 	}
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil {
+		log.Printf("failed to get page, error %v\n", err)
 		page = 1
 	}
 	candidatures, pagination, err := dbClient.FindCandidatesWithParams(queryMap, pageSize, page)

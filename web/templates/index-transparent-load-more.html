@@ -1,0 +1,29 @@
+{{define "candidatos"}}
+<div
+    class="row"
+    style="margin-left: -8px; margin-right: -8px; align-items: stretch;"
+    id="candidatesList"
+>
+    {{range .TransparentCandidates}}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
+        <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
+            {{template "candidatoCard" .}}
+        </a>
+    </div>
+    {{end}}
+</div>
+
+<div class="load-more-btn text-center pb-2" id="transparentCandidatesLoadMore">
+    <a href="{{$.LoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
+</div>
+{{end}}
+
+{{define "content"}}
+    <div class="container mt-2" id="home">
+        <div class="mt-2" id="candidates">
+            {{ if gt (len .TransparentCandidates) 0 }}
+                {{template "candidatos" .}}
+            {{end}}
+        </div>
+    </div>
+{{end}}
