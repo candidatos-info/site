@@ -48,7 +48,7 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 			}
 			page = p
 		}
-		relatedCandidatures, paginationData, err := db.FindCandidatesWithParams(queryMap, defaultPageSize, page)
+		relatedCandidatures, paginationData, err := db.FindRelatedCandidatesWithParams(queryMap, defaultPageSize, page)
 		if err != nil {
 			log.Printf("failed to find related candidatures, error %v\n", err)
 			return echo.ErrInternalServerError
