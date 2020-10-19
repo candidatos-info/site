@@ -1,85 +1,65 @@
 {{define "filters"}}
-    <form
-        name="filtros"
-        id="filtros"
-        method="get"
-    >
-        <div class="form-row">
-            <div class="form-group col-8">
-                <select
-                    class="custom-select"
-                    name="estado"
-                >
-                    <option value="">Escolha um estado</option>
-                    {{range $id, $val := .AllStates}}
-                        <option
-                            value="{{$id}}"
-                            {{ if eq $.Filters.State $id }} selected {{end}}
-                        >
-                            {{$val}}
-                        </option>
-                    {{end}}
-                </select>
-            </div>
-            <div class="form-group col-4">
-                <select name="ano" class="custom-select" disabled="disabled">
-                    <option selected="true">{{.Filters.Year}}</option>
-                </select>
-            </div>
+<form name="filtros" id="filtros" method="get">
+    <div class="form-row">
+        <div class="form-group col-8">
+            <select class="custom-select" name="estado">
+                <option value="">Escolha um estado</option>
+                {{range $id, $val := .AllStates}}
+                <option value="{{$id}}" {{ if eq $.Filters.State $id }} selected {{end}}>
+                    {{$val}}
+                </option>
+                {{end}}
+            </select>
         </div>
+        <div class="form-group col-4">
+            <select name="ano" class="custom-select" disabled="disabled">
+                <option selected="true">{{.Filters.Year}}</option>
+            </select>
+        </div>
+    </div>
 
-        {{if .Filters.State}}
-        <div class="form-row">
-            <div class="form-group col-8">
-                <select name="cidade" class="custom-select">
-                    <option value="">Escolha uma Cidade</option>
-                    {{range $i, $v := .CitiesOfState}}
-                        <option
-                            value="{{$v}}"
-                            {{if eq $v $.Filters.City}}selected{{end}}
-                        >
-                            {{$v}}
-                        </option>
-                    {{end}}
-                </select>
-            </div>
-            <div class="form-group col-4">
-                <select name="cargo" class="custom-select">
-                    <option value="">Cargo</option>
-                    {{range $i, $v := .AllRoles}}
-                        <option
-                            value="{{$i}}"
-                            {{if eq $i $.Filters.Role}}selected{{end}}
-                        >
-                            {{$v}}
-                        </option>
-                    {{end}}
-                </select>
-            </div>
+    {{if .Filters.State}}
+    <div class="form-row">
+        <div class="form-group col-8">
+            <select name="cidade" class="custom-select">
+                <option value="">Escolha uma Cidade</option>
+                {{range $i, $v := .CitiesOfState}}
+                <option value="{{$v}}" {{if eq $v $.Filters.City}}selected{{end}}>
+                    {{$v}}
+                </option>
+                {{end}}
+            </select>
         </div>
-        <div class="form-row">
-            <div class="form-group col-12 col-md-8">
-                <select name="tags" class="custom-select" size="3" multiple>
-                    <option value="">Escolha uma Causa/Pauta</option>
-                    {{range $i, $v := .Tags}}
-                        <option
-                            value="{{$v}}"
-                            {{if eq $v $.Filters.Tag}}selected{{end}}
-                        >
-                            {{$v}}
-                        </option>
-                    {{end}}
-                </select>
-            </div>
+        <div class="form-group col-4">
+            <select name="cargo" class="custom-select">
+                <option value="">Cargo</option>
+                {{range $i, $v := .AllRoles}}
+                <option value="{{$i}}" {{if eq $i $.Filters.Role}}selected{{end}}>
+                    {{$v}}
+                </option>
+                {{end}}
+            </select>
         </div>
-        {{end}}
-    </form>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-12 col-md-8">
+            <select name="tags" class="custom-select" size="3" multiple>
+                <option value="">Escolha uma Causa/Pauta</option>
+                {{range $i, $v := .Tags}}
+                <option value="{{$v}}" {{if eq $v $.Filters.Tag}}selected{{end}}>
+                    {{$v}}
+                </option>
+                {{end}}
+            </select>
+        </div>
+    </div>
+    {{end}}
+</form>
 {{end}}
 
 {{define "transparentCandidates"}}
-    <div>
-        <div 
-            x-data="{
+<div>
+    <div x-data="{
                 showDetails: localStorage.getItem('transparentsDropdown') === null
                     ? true
                     : localStorage.getItem('transparentsDropdown') === '1',
@@ -87,67 +67,63 @@
                     this.showDetails = !this.showDetails;
                     localStorage.setItem('transparentsDropdown', this.showDetails ? 1 : 0);
                 }
-            }"
-        >
-            <div class="d-flex justify-content-center align-items-center space-x-2">
-                <div class="transparency-card d-flex flex-column justify-content-center">
-                    {{template "candidateTransparencyDiamond" 100.}}
-                </div>
-    
-                <h3 class="home-section--title font-weight-bold m-0">
-                    Candidaturas Transparentes
-                </h3>
-
-                <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
-                    <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+            }">
+        <div class="d-flex justify-content-center align-items-center space-x-2">
+            <div class="transparency-card d-flex flex-column justify-content-center">
+                {{template "candidateTransparencyDiamond" 100.}}
             </div>
-            <div class="my-3" x-show="showDetails">
-                <p>
-                    São consideradas candidaturas 100% transparentes aquelas que a pessoa candidata forneceu todas as informações requeridas sobre a candidatura, como por exemplo, causas/pautas defendidas e propostas.
-                </p>
 
-                <p>
-                    Para ter uma candidatura transparente, cadastre-se e adicione informações aqui.
-                </p>
-            </div>
-        </div>
-        {{if .TransparentCandidates}}
-        <div
-            class="row mt-3"
-            style="margin-left: -8px; margin-right: -8px; align-items: stretch;"
-            id="candidatesList"
-        >
-            {{range .TransparentCandidates}}
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3" style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
-                <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
-                    {{template "candidatoCard" .}}
-                </a>
-            </div>
-            {{end}}
-        </div>
+            <h3 class="home-section--title font-weight-bold m-0">
+                Candidaturas Transparentes
+            </h3>
 
-        <div
-            class="load-more-btn text-center pb-2"
-            data-append-section="#candidatesList"
-            data-load-more-section="#transparentCandidatesLoadMore"
-            id="transparentCandidatesLoadMore"
-        >
-            <a href="{{$.TransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto d-flex align-items-center justify-content-center space-x-2">
-                <span>ver mais</span>
+            <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
                 <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round"
+                        stroke-linejoin="round" />
                 </svg>
-            </a>
+            </button>
         </div>
-        {{else}}
-        <div class="mb-3">
-            {{template "emptyTransparentCandidates" .}}
+        <div class="my-3" x-show="showDetails">
+            <p>
+                São consideradas candidaturas 100% transparentes aquelas que a pessoa candidata forneceu todas as
+                informações requeridas sobre a candidatura, como por exemplo, causas/pautas defendidas e propostas.
+            </p>
+
+            <p>
+                Para ter uma candidatura transparente, cadastre-se e adicione informações aqui.
+            </p>
+        </div>
+    </div>
+    {{if .TransparentCandidates}}
+    <div class="row mt-3" style="margin-left: -8px; margin-right: -8px; align-items: stretch;" id="candidatesList">
+        {{range .TransparentCandidates}}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3"
+            style="padding-left: 8px; padding-right: 8px; margin-bottom: 16px;">
+            <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset">
+                {{template "candidatoCard" .}}
+            </a>
         </div>
         {{end}}
     </div>
+
+    <div class="load-more-btn text-center pb-2" data-append-section="#candidatesList"
+        data-load-more-section="#transparentCandidatesLoadMore" id="transparentCandidatesLoadMore">
+        <a href="{{$.TransparentLoadMoreUrl}}"
+            class="btn btn-link btn-sm text-dark mx-auto d-flex align-items-center justify-content-center space-x-2">
+            <span>ver mais</span>
+            <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+        </a>
+    </div>
+    {{else}}
+    <div class="mb-3">
+        {{template "emptyTransparentCandidates" .}}
+    </div>
+    {{end}}
+</div>
 {{end}}
 
 {{define "emptyTransparentCandidates"}}
@@ -163,10 +139,9 @@
 {{end}}
 
 {{define "nonTransparentCandidates"}}
-    {{if .NonTransparentCandidates}}
-    <div class="my-4 mx-2">
-        <div 
-            x-data="{
+{{if .NonTransparentCandidates}}
+<div class="my-4 mx-2">
+    <div x-data="{
                 showDetails: localStorage.getItem('nonTransparentsDropdown') === null
                     ? true
                     : localStorage.getItem('nonTransparentsDropdown') === '1',
@@ -174,65 +149,63 @@
                     this.showDetails = !this.showDetails;
                     localStorage.setItem('nonTransparentsDropdown', this.showDetails ? 1 : 0);
                 }
-            }"
-        >
-            <div class="d-flex justify-content-center align-items-center space-x-2">
-                <div class="transparency-card d-flex flex-column justify-content-center">
-                    {{template "candidateTransparencyDiamond" 0.}}
-                </div>
-
-                <h3 class="home-section--title font-weight-bold m-0">
-                    Candidaturas não Transparentes
-                </h3>
-
-                <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
-                    <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>                        
-                </button>
+            }">
+        <div class="d-flex justify-content-center align-items-center space-x-2">
+            <div class="transparency-card d-flex flex-column justify-content-center">
+                {{template "candidateTransparencyDiamond" 0.}}
             </div>
-            <div class="my-3" x-show="showDetails">
-                <p>
-                    Candidaturas sem informações básicas, nem descrição sobre suas causas e propostas.
-                </p>
 
-                <p>
-                    Para ter uma candidatura transparente, cadastre-se e adicione informações aqui.
-                </p>
+            <h3 class="home-section--title font-weight-bold m-0">
+                Candidaturas não Transparentes
+            </h3>
+
+            <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
+                <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="my-3" x-show="showDetails">
+            <p>
+                Candidaturas sem informações básicas, nem descrição sobre suas causas e propostas.
+            </p>
+
+            <p>
+                Para ter uma candidatura transparente, cadastre-se e adicione informações aqui.
+            </p>
+        </div>
+    </div>
+
+    <section class="mt-2">
+        <div style="margin-left: 0; margin-right: 0;">
+            <div id="nonTransparentCandidatesCard" class="overflow-auto row flex-row flex-nowrap">
+                {{range .NonTransparentCandidates}}
+                <div class="col-7 col-md-4 col-lg-2" style="padding: 4px;">
+                    <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset;">
+                        {{template "candidatoCard" .}}
+                    </a>
+                </div>
+                {{end}}
+
+                <div class="load-more-btn col-2 d-flex flex-column justify-content-center" style="padding: 4px;"
+                    data-append-section="#nonTransparentCandidatesCard"
+                    data-load-more-section="#nonTransparentCandidatesLoadMore" data-replace-load-more
+                    id="nonTransparentCandidatesLoadMore">
+                    <a href="{{.NonTransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">
+                        <span>ver mais</span>
+                        <svg class="-rotate-90" width="12" height="7" viewBox="0 0 12 7" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </a>
+                </div>
             </div>
         </div>
-
-        <section class="mt-2">
-            <div style="margin-left: 0; margin-right: 0;">
-                <div id="nonTransparentCandidatesCard" class="overflow-auto row flex-row flex-nowrap">
-                    {{range .NonTransparentCandidates}}
-                    <div class="col-7 col-md-4 col-lg-2" style="padding: 4px;">
-                        <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset;">
-                            {{template "candidatoCard" .}}
-                        </a>
-                    </div>
-                    {{end}}
-
-                    <div
-                        class="load-more-btn col-2 d-flex flex-column justify-content-center"
-                        style="padding: 4px;" 
-                        data-append-section="#nonTransparentCandidatesCard"
-                        data-load-more-section="#nonTransparentCandidatesLoadMore"
-                        data-replace-load-more
-                        id="nonTransparentCandidatesLoadMore"
-                    >
-                        <a href="{{.NonTransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">
-                            <span>ver mais</span>
-                            <svg class="-rotate-90" width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-    {{end}}
+    </section>
+</div>
+{{end}}
 {{end}}
 
 {{define "emptyCandidatos"}}
@@ -242,18 +215,18 @@
 {{end}}
 
 {{define "content"}}
-    <div class="container mt-2" id="home">
-        {{template "filters" .}}
+<div class="container mt-2" id="home">
+    {{template "filters" .}}
 
-        <div class="mt-2" id="candidates">
-            {{ if (ne .Filters.State "") }}
-                {{template "transparentCandidates" .}}
-                {{template "nonTransparentCandidates" .}}
-            {{else}}
-                {{template "emptyCandidatos" .}}
-            {{end}}
-        </div>
+    <div class="mt-2" id="candidates">
+        {{ if (ne .Filters.State "") }}
+        {{template "transparentCandidates" .}}
+        {{template "nonTransparentCandidates" .}}
+        {{else}}
+        {{template "emptyCandidatos" .}}
+        {{end}}
     </div>
+</div>
 {{end}}
 
 {{define "scripts"}}
@@ -271,7 +244,7 @@
             $.ajax({
                 method: 'get',
                 url: $(e.target).closest('a')[0].href,
-                success : function( data ) {
+                success: function (data) {
                     appendCandidates(data, appendSection, loadMoreSectionId, replaceLoadMore);
                 }
             });
@@ -279,6 +252,7 @@
 
         $home.on('change', '#filtros', function (e) {
             e.preventDefault();
+            console.log("FILTROS MUDARAM");
             var $filtersForm = $(this);
             var replaceFilters = false;
             var currentFieldName = e.target.name;
@@ -293,7 +267,7 @@
 
             submitForm($filtersForm, replaceFilters).done(function () {
                 if (replaceFilters && currentFieldName) {
-                    $home.find("[name="+currentFieldName+"]").focus();
+                    $home.find("[name=" + currentFieldName + "]").focus();
                 }
             });
         });
@@ -308,12 +282,13 @@
          * @returns {*}
          */
         function submitForm($filtersForm, replacingFilters = false) {
+            console.log(" URL " + $filtersForm.attr('action'));
             return $.ajax({
                 url: $filtersForm.attr('action'),
                 type: $filtersForm.attr('method'),
                 data: $filtersForm.serialize(),
-                success : function( data ) {
-                    history.pushState("", "" , "?"+$filtersForm.serialize());
+                success: function (data) {
+                    history.pushState("", "", "?" + $filtersForm.serialize());
 
                     var $html = $(data);
 
@@ -323,7 +298,7 @@
 
                     $home.find('#candidates').replaceWith($html.find('#candidates'));
                 },
-                error: function( xhr, err ) {
+                error: function (xhr, err) {
                     console.log('Ocorreu um erro.');
                 }
             });
@@ -337,7 +312,7 @@
             // Se a pagina nova tiver a seção de "load-more" quer dizer
             // que temos outras paginas além dessa. Logo, trocaremos o
             // href do link atual. Caso contrario, remove a seção da tela.
-            if ($newLoadMoreSection.length > 0 && ! shouldReplaceButton) {
+            if ($newLoadMoreSection.length > 0 && !shouldReplaceButton) {
                 $existingLoadMoreSection.find('a').attr('href', $newLoadMoreSection.find('a').attr('href'));
             }
 
