@@ -36,6 +36,7 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 			candidateTags = append(candidateTags, proposal.Topic)
 		}
 		queryMap["tags"] = candidateTags
+		queryMap["role"] = candidate.Role
 		var page int
 		queryPage := c.QueryParam("p")
 		if queryPage == "" {

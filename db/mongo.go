@@ -155,9 +155,6 @@ func (c *Client) FindCandidatesWithParams(queryMap map[string]interface{}, pageS
 
 // FindRelatedCandidatesWithParams searches for a list of candidates with given params
 func (c *Client) FindRelatedCandidatesWithParams(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
-	if len(queryMap["tags"].([]string)) == 0 {
-		return []*descritor.CandidateForDB{}, &pagination.PaginationData{}, nil
-	}
 	query := make(bson.M, len(queryMap))
 	for k, v := range query {
 		switch k {
