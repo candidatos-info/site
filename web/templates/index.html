@@ -257,7 +257,6 @@
             var replaceFilters = false;
             var currentFieldName = e.target.name;
 
-            console.log("CURRENT FILD NAME ", currentFieldName)
             // Só trocamos o filtro quando o estado muda.
             // Caso contrário, apenas trocaremos o
             // conteúdo da div de candidatos.
@@ -283,7 +282,6 @@
          * @returns {*}
          */
         function submitForm($filtersForm, replacingFilters = false) {
-            console.log(" URL " + $filtersForm.attr('action'));
             return $.ajax({
                 url: $filtersForm.attr('action'),
                 type: $filtersForm.attr('method'),
@@ -298,6 +296,8 @@
                     }
 
                     $home.find('#candidates').replaceWith($html.find('#candidates'));
+                    //$home.find("#nonTransparentCandidatesCard").replaceWith($html.find("#nonTransparentCandidatesCard"));
+                    console.log("CHANGED HTML CONTENT");
                 },
                 error: function (xhr, err) {
                     console.log('Ocorreu um erro.');

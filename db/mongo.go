@@ -124,7 +124,7 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 // FindTransparentCandidatures searches for a list of candidatures with proposals defined
 func (c *Client) FindTransparentCandidatures(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
 	query := make(bson.M, len(queryMap))
-	for k, v := range query {
+	for k, v := range queryMap {
 		switch k {
 		case "name":
 			query["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}
@@ -157,7 +157,7 @@ func (c *Client) FindTransparentCandidatures(queryMap map[string]interface{}, pa
 // FindNonTransparentCandidatures searches for non transparent candidatures
 func (c *Client) FindNonTransparentCandidatures(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
 	query := make(bson.M, len(queryMap))
-	for k, v := range query {
+	for k, v := range queryMap {
 		switch k {
 		case "name":
 			query["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}

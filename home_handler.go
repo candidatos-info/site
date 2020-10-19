@@ -96,7 +96,6 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 		// }
 		homeResultSet := &homeResultSet{}
 		if state != "" {
-			fmt.Println("buscando candidatos")
 			var err error
 			cities, err = db.GetCities(state)
 			if err != nil {
@@ -118,7 +117,6 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			NextPage: page + 1,
 			Tag:      c.QueryParam("tag"),
 		}
-		fmt.Println(filter)
 		r := c.Render(http.StatusOK, "index.html", map[string]interface{}{
 			"AllStates":                 uiStates,
 			"AllRoles":                  uiRoles,
@@ -334,7 +332,7 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) (*rawHomeResultS
 		log.Printf("failed to get page, error %v\n", err)
 		page = 1
 	}
-	fmt.Println(queryMap)
+	fmt.Println("QUERY MAP TO FILTER ", queryMap)
 	transparentCandidatures, pagination, err := dbClient.FindTransparentCandidatures(queryMap, pageSize, page)
 	nonTransparentCandidatures, pagination, err := dbClient.FindNonTransparentCandidatures(queryMap, pageSize, page)
 	return &rawHomeResultSet{
@@ -381,5 +379,6 @@ func getQueryFilters(c echo.Context) (map[string]interface{}, error) {
 	if name != "" {
 		queryMap["name"] = name
 	}
+	fmt.Println("[getQueryFilters] queryMap gerado ", queryMap)
 	return queryMap, nil
 }
