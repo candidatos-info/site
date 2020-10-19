@@ -58,8 +58,8 @@
             </div>
         </div>
         <div class="form-row">
-            <div class="form-group col-8">
-                <select name="tags" class="custom-select">
+            <div class="form-group col-12 col-md-8">
+                <select name="tags" class="custom-select" size="3" multiple>
                     <option value="">Escolha uma Causa/Pauta</option>
                     {{range $i, $v := .Tags}}
                         <option
