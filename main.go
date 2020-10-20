@@ -28,6 +28,7 @@ const (
 	searchCookieExpiration   = 360 //in hours
 	searchCacheCookie        = "searchCookie"
 	defaultPageSize          = 20
+	nonTransparentMaxCards   = 30
 	prodEnvironmentName      = "standard"
 )
 
@@ -153,7 +154,6 @@ func main() {
 	templates := make(map[string]*template.Template)
 	templates["index.html"] = template.Must(template.ParseFiles("web/templates/index.html", "web/templates/layout.html"))
 	templates["index-transparent-load-more.html"] = template.Must(template.ParseFiles("web/templates/index-transparent-load-more.html", "web/templates/layout.html"))
-	templates["index-nontransparent-load-more.html"] = template.Must(template.ParseFiles("web/templates/index-nontransparent-load-more.html", "web/templates/layout.html"))
 	templates["sobre.html"] = template.Must(template.ParseFiles("web/templates/sobre.html", "web/templates/layout.html"))
 	templates["candidato.html"] = template.Must(template.ParseFiles("web/templates/candidato.html", "web/templates/layout.html"))
 	templates["sou-candidato.html"] = template.Must(template.ParseFiles("web/templates/sou-candidato.html", "web/templates/layout.html"))
@@ -173,7 +173,6 @@ func main() {
 	e.Static("/", "web/public")
 	e.GET("/", newHomeHandler(dbClient))
 	e.GET("/transparent-partial", newHomeLoadMoreTransparentCandidates(dbClient))
-	e.GET("/nontransparent-partial", newHomeLoadMoreNonTransparentCandidates(dbClient))
 	e.GET("/c/:year/:id", newCandidateHandler(dbClient))
 	e.GET("/sobre", sobreHandler)
 	e.GET("/sou-candidato", souCandidatoGET)
