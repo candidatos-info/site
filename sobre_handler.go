@@ -37,39 +37,35 @@ func newTeamMember(name string, title string, imageURL string, socialLinks []*so
 func getTeamMembers() []*teamMember {
 	return []*teamMember{
 		newTeamMember("Ana Paula Gomes", "Pitaqueira", "/img/team/ana.jpeg", []*socialLink{
-			newSocialLink("linkedin", "#"),
+			newSocialLink("twitter", "https://twitter.com/anapaulagomess"),
+			newSocialLink("github", "https://github.com/anapaulagomes"),
 		}),
 		newTeamMember("Aurélio Buarque", "Desenvolvedor", "/img/team/aurelio.jpeg", []*socialLink{
-			newSocialLink("twitter", "#"),
-			newSocialLink("github", "#"),
+			newSocialLink("twitter", "https://twitter.com/abuarquemf"),
+			newSocialLink("github", "https://github.com/ABuarque"),
+			newSocialLink("linkedin", "https://www.linkedin.com/in/aurelio-buarque/"),
 		}),
 		newTeamMember("Bruno Morassutti", "Palpiteiro jurídico", "/img/team/bruno.jpeg", []*socialLink{
-			newSocialLink("twitter", "#"),
-			newSocialLink("linkedin", "#"),
+			newSocialLink("github", "https://github.com/jedibruno"),
 		}),
 		newTeamMember("Daniel Fireman", "Coordenador", "/img/team/daniel.jpeg", []*socialLink{
-			newSocialLink("twitter", "#"),
-			newSocialLink("github", "#"),
-			newSocialLink("linkedin", "#"),
-			newSocialLink("instagram", "#"),
+			newSocialLink("twitter", "https://twitter.com/daniellfireman"),
+			newSocialLink("github", "https://github.com/danielfireman"),
 		}),
 		newTeamMember("Eduardo Cuducos", "Palpiteiro", "/img/team/eduardo.jpeg", []*socialLink{
-			newSocialLink("twitter", "#"),
-			newSocialLink("github", "#"),
+			newSocialLink("twitter", "https://twitter.com/cuducos"),
+			newSocialLink("github", "https://github.com/cuducos"),
 		}),
 		newTeamMember("Evelyn Gomes", "Articuladora ", "/img/team/evelyn.jpeg", []*socialLink{
-			newSocialLink("twitter", "#"),
-			newSocialLink("linkedin", "#"),
-			newSocialLink("github", "#"),
+			newSocialLink("instagram", "https://www.instagram.com/evygomes"),
 		}),
 		newTeamMember("Laura Cavalcante", "Advogada ", "/img/team/laura.jpeg", []*socialLink{
-			newSocialLink("twitter", "#"),
-			newSocialLink("linkedin", "#"),
+			newSocialLink("instagram", "https://www.instagram.com/lauracavalcante/"),
 		}),
 		newTeamMember("Mariana Souto", "Designer ", "/img/team/mariana.jpeg", []*socialLink{
-			newSocialLink("twitter", "#"),
-			newSocialLink("instagram", "#"),
-			newSocialLink("linkedin", "#"),
+			newSocialLink("github", "https://github.com/soutoam"),
+			newSocialLink("instagram", "https://www.instagram.com/soutoam/"),
+			newSocialLink("linkedin", "https://www.linkedin.com/in/soutomariana/"),
 		}),
 	}
 }
