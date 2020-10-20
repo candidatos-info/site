@@ -48,13 +48,18 @@
                     Escolha uma Causa/Pauta
                 </option>
                 {{range $i, $v := .Tags}}
-                    {{if ne $v ""}}
-                        <option value="{{$v}}" {{if eq $v $.Filters.Tag}}selected{{end}}>
-                            {{$v}}
-                        </option>
-                   {{end}}
-               {{end}}
+                {{if ne $v ""}}
+                <option value="{{$v}}" {{if eq $v $.Filters.Tag}}selected{{end}}>
+                    {{$v}}
+                </option>
+                {{end}}
+                {{end}}
             </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-12 col-md-8">
+            <input style="width: 100%" id="candidateName" type="text" name="nome" placeholder="Busque pelo nome">
         </div>
     </div>
     {{end}}
@@ -90,13 +95,15 @@
         </div>
         <div class="my-3" x-show="showDetails">
             <p>
-                Candidaturas transparentes são aquelas em que a pessoa candidata preencheu ao menos uma das informações que
+                Candidaturas transparentes são aquelas em que a pessoa candidata preencheu ao menos uma das informações
+                que
                 solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. As candidaturas mais
                 transparentes aparecem primeiro nos resultados abaixo.
             </p>
 
             <p>
-                É uma pessoa candidata? Para ter uma candidatura (ainda) mais transparente, adicione informações <a href="http://candidatos.info/sou-candidato">aqui</a>.
+                É uma pessoa candidata? Para ter uma candidatura (ainda) mais transparente, adicione informações <a
+                    href="http://candidatos.info/sou-candidato">aqui</a>.
             </p>
         </div>
     </div>
@@ -173,15 +180,18 @@
         </div>
         <div class="my-3" x-show="showDetails">
             <p>
-                Candidaturas não-transparentes são aquelas em que a pessoa candidata não preencheu nenhuma das informações que
-                solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. Como a plataforma tem por
+                Candidaturas não-transparentes são aquelas em que a pessoa candidata não preencheu nenhuma das
+                informações que
+                solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. Como a plataforma tem
+                por
                 objetivo principal melhorar a qualidade do debate, não podemos priorizar candidaturas
                 não-transparentes. Dessa forma, os resultados abaixo são apresentadas sem ordem pré-definida, a qual
                 mudará frequentemente.
             </p>
 
             <p>
-                É uma pessoa candidata? Comece a pautar o debate eleitoral adicionando informações <a href="http://candidatos.info/sou-candidato">aqui</a>.
+                É uma pessoa candidata? Comece a pautar o debate eleitoral adicionando informações <a
+                    href="http://candidatos.info/sou-candidato">aqui</a>.
             </p>
         </div>
     </div>

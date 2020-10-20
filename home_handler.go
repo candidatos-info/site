@@ -109,6 +109,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 				return c.String(http.StatusInternalServerError, "erro filtrando candidatos.")
 			}
 		}
+		// @TODO CHECK IF IS NECESSARY ADD NAME
 		filter := &homeFilter{
 			State:    state,
 			City:     c.QueryParam("cidade"),
