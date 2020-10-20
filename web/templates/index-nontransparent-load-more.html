@@ -2,7 +2,7 @@
     {{if .NonTransparentCandidates}}
         <div id="nonTransparentCandidatesCard" class="overflow-auto row flex-row flex-nowrap">
             {{range .NonTransparentCandidates}}
-            <div class="col-7 col-md-4 col-lg-2" style="padding: 4px;">
+            <div class="col-8 col-md-4 col-lg-2" style="padding: 4px;">
                 <a href="/c/{{$.Filters.Year}}/{{.SequentialID}}" style="color: unset;">
                     {{template "candidatoCard" .}}
                 </a>
