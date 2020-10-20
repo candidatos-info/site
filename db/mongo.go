@@ -232,8 +232,7 @@ func (c *Client) FindRelatedCandidatesWithParams(queryMap map[string]interface{}
 			query[k] = v
 		}
 	}
-	// OBS: COMENTADO TEMPORARIMENTE!!!
-	// query["transparency"] = bson.M{"$gte": 0.0} // candidatures without proposals does not count!
+	query["transparency"] = bson.M{"$gte": 0.0} // candidatures without proposals does not count!
 	var candidatures []*descritor.CandidateForDB
 	db := c.client.Database(c.dbName)
 	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
