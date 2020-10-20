@@ -175,9 +175,9 @@
             <p>
                 Candidaturas não-transparentes são aquelas em que a pessoa candidata não preencheu nenhuma das informações que
                 solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. Como a plataforma tem por
-                objetivo principal melhorar a qualidade do debate, não podemos priorizar candidaturas
-                não-transparentes. Dessa forma, os resultados abaixo são apresentadas sem ordem pré-definida, a qual
-                mudará frequentemente.
+                objetivo melhorar a qualidade do debate, não temos como priorizar candidaturas não-transparentes. Daremos a todas
+                igual chance de aparecer, apresentando máximo {{.NonTransparentMaxCards}} resultados sem ordem pré-definda. Esses resultados
+                poddem mudar cada vez que você acessar essa página.
             </p>
 
             <p>
@@ -196,20 +196,6 @@
                     </a>
                 </div>
                 {{end}}
-
-                <div class="load-more-btn col-2 d-flex flex-column justify-content-center" style="padding: 4px;"
-                    data-append-section="#nonTransparentCandidatesCard"
-                    data-load-more-section="#nonTransparentCandidatesLoadMore" data-replace-load-more
-                    id="nonTransparentCandidatesLoadMore">
-                    <a href="{{.NonTransparentLoadMoreUrl}}" class="btn btn-link btn-sm text-dark mx-auto">
-                        <span>ver mais</span>
-                        <svg class="-rotate-90" width="12" height="7" viewBox="0 0 12 7" fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                    </a>
-                </div>
             </div>
         </div>
     </section>
@@ -260,59 +246,12 @@
         });
 
         $home.on('change', '#filtros', function (e) {
-            e.preventDefault();
-            console.log("FILTROS MUDARAM");
             var $filtersForm = $(this);
-            var replaceFilters = false;
+            $filtersForm.submit()
+
             var currentFieldName = e.target.name;
-
-            // Só trocamos o filtro quando o estado muda.
-            // Caso contrário, apenas trocaremos o
-            // conteúdo da div de candidatos.
-            if (currentFieldName === "estado") {
-                replaceFilters = true;
-                $filtersForm.find('[name=cidade]').val('');
-            }
-
-            submitForm($filtersForm, replaceFilters).done(function () {
-                if (replaceFilters && currentFieldName) {
-                    $home.find("[name=" + currentFieldName + "]").focus();
-                }
-            });
+            $home.find("[name=" + currentFieldName + "]").focus();
         });
-
-        /**
-         * Faremos o submit do form de filtros via AJAX e trocaremos
-         * as partes necessárias do body (a lista de candidatos
-         * ou filtro, por exemplo).
-         *
-         * @param $filtersForm
-         * @param replacingFilters
-         * @returns {*}
-         */
-        function submitForm($filtersForm, replacingFilters = false) {
-            return $.ajax({
-                url: $filtersForm.attr('action'),
-                type: $filtersForm.attr('method'),
-                data: $filtersForm.serialize(),
-                success: function (data) {
-                    history.pushState("", "", "?" + $filtersForm.serialize());
-
-                    var $html = $(data);
-
-                    if (replacingFilters) {
-                        $home.find('#filtros').replaceWith($html.find('#filtros'));
-                    }
-
-                    $home.find('#candidates').replaceWith($html.find('#candidates'));
-                    //$home.find("#nonTransparentCandidatesCard").replaceWith($html.find("#nonTransparentCandidatesCard"));
-                    console.log("CHANGED HTML CONTENT");
-                },
-                error: function (xhr, err) {
-                    console.log('Ocorreu um erro.');
-                }
-            });
-        }
 
         function appendCandidates(newPage, appendSection, loadMoreId, shouldReplaceButton) {
             var $newPage = $(newPage);

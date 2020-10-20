@@ -118,15 +118,15 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			Tag:      c.QueryParam("tag"),
 		}
 		r := c.Render(http.StatusOK, "index.html", map[string]interface{}{
-			"AllStates":                 uiStates,
-			"AllRoles":                  uiRoles,
-			"CitiesOfState":             cities,
-			"Filters":                   filter,
-			"TransparentCandidates":     homeResultSet.transparentCandidatures,
-			"NonTransparentCandidates":  homeResultSet.nonTransparentCandidatures,
-			"TransparentLoadMoreUrl":    buildLoadMoreURL(filter, "/transparent-partial"),
-			"NonTransparentLoadMoreUrl": buildLoadMoreURL(filter, "/nontransparent-partial"),
-			"Tags":                      tags,
+			"AllStates":                uiStates,
+			"AllRoles":                 uiRoles,
+			"CitiesOfState":            cities,
+			"Filters":                  filter,
+			"TransparentCandidates":    homeResultSet.transparentCandidatures,
+			"TransparentLoadMoreUrl":   buildLoadMoreURL(filter, "/transparent-partial"),
+			"Tags":                     tags,
+			"NonTransparentMaxCards":   nonTransparentMaxCards,
+			"NonTransparentCandidates": homeResultSet.nonTransparentCandidatures,
 		})
 		fmt.Println(r)
 		c.SetCookie(&http.Cookie{
@@ -202,70 +202,6 @@ func newHomeLoadMoreTransparentCandidates(db *db.Client) echo.HandlerFunc {
 	}
 }
 
-func newHomeLoadMoreNonTransparentCandidates(db *db.Client) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		year := c.QueryParam("ano")
-		if year == "" {
-			year = strconv.Itoa(time.Now().Year())
-		}
-		page := c.QueryParam("page")
-		var nextPage int
-		if page == "" {
-			nextPage = 1
-		} else {
-			p, err := strconv.Atoi(page)
-			if err != nil {
-				log.Printf("failed to parse page [%s] to int, error %v\n", page, err)
-			}
-			nextPage = p
-		}
-		queryMap, err := getQueryFilters(c)
-		nonTransparentCandidatures, paginationData, err := db.FindNonTransparentCandidatures(queryMap, defaultPageSize, nextPage)
-		// TODO: substituir por página de erro.
-		if err != nil {
-			log.Printf("error filtering candidates:%q", err)
-			return c.String(http.StatusInternalServerError, "erro filtrando candidatos.")
-		}
-		var cc []*candidateCard
-		for _, c := range nonTransparentCandidatures {
-			var candidateTags []string
-			for _, proposal := range c.Proposals {
-				candidateTags = append(candidateTags, proposal.Topic)
-			}
-			cc = append(cc, &candidateCard{
-				c.Transparency,
-				c.PhotoURL,
-				c.BallotName,
-				strings.Title(strings.ToLower(c.City)),
-				c.State,
-				uiRoles[c.Role],
-				c.Party,
-				c.BallotNumber,
-				candidateTags,
-				c.SequencialCandidate,
-				c.Gender,
-			})
-		}
-		filter := &homeFilter{
-			State:    c.QueryParam("estado"),
-			City:     c.QueryParam("cidade"),
-			Year:     year,
-			Role:     c.QueryParam("cargo"),
-			NextPage: int(paginationData.Next),
-			Tag:      c.QueryParam("tag"),
-		}
-		r := c.Render(http.StatusOK, "index-nontransparent-load-more.html", map[string]interface{}{
-			"NonTransparentCandidates": cc,
-			"Filters":                  filter,
-			"LoadMoreUrl":              buildLoadMoreURL(filter, "/nontransparent-partial"),
-		})
-		if r != nil {
-			log.Printf("[newHomeLoadMoreNonTransparentCandidates] failed to render template, error %v\n", err)
-		}
-		return r
-	}
-}
-
 func filterCandidates(c echo.Context, dbClient *db.Client) (*homeResultSet, int, error) {
 	rawHomeResultSet, pagination, err := getCandidatesByParams(c, dbClient)
 	if err != nil {
@@ -323,18 +259,17 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) (*rawHomeResultS
 		log.Printf("failed to get filters, error %v\n", err)
 		return nil, nil, err
 	}
-	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
-	if err != nil {
-		pageSize = defaultPageSize
-	}
-	page, err := strconv.Atoi(c.QueryParam("page"))
-	if err != nil {
-		log.Printf("failed to get page, error %v\n", err)
-		page = 1
+	page := 1
+	if c.QueryParam("page") != "" {
+		var err error
+		page, err = strconv.Atoi(c.QueryParam("page"))
+		if err != nil {
+			log.Printf("failed to get page, error %v\n", err)
+		}
 	}
 	fmt.Println("QUERY MAP TO FILTER ", queryMap)
-	transparentCandidatures, pagination, err := dbClient.FindTransparentCandidatures(queryMap, pageSize, page)
-	nonTransparentCandidatures, pagination, err := dbClient.FindNonTransparentCandidatures(queryMap, pageSize, page)
+	transparentCandidatures, pagination, err := dbClient.FindTransparentCandidatures(queryMap, defaultPageSize, page)
+	nonTransparentCandidatures, err := dbClient.FindNonTransparentCandidatures(queryMap, defaultPageSize)
 	return &rawHomeResultSet{
 		transparentCandidatures:    transparentCandidatures,
 		nonTransparentCandidatures: nonTransparentCandidatures,
