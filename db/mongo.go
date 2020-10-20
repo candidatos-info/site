@@ -164,7 +164,9 @@ func (c *Client) FindNonTransparentCandidatures(queryMap map[string]interface{},
 		bson.M{"transparency": nil},
 	}
 	for k, v := range queryMap {
-		if v != "" && k != "tags" {
+		if k == "name" {
+			bsonQuery = append(bsonQuery, bson.M{"ballot_name": bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}})
+		} else {
 			bsonQuery = append(bsonQuery, bson.M{k: v})
 		}
 	}
