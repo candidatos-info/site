@@ -59,7 +59,8 @@
     </div>
     <div class="form-row">
         <div class="form-group col-12 col-md-8">
-            <input style="width: 100%" id="candidateName" type="text" name="nome" placeholder="Busque pelo nome">
+            <input style="width: 100%" value="{{ $.Filters.Name }}" id="candidateName" type="text" name="nome"
+                placeholder="Busque pelo nome">
         </div>
     </div>
     {{end}}
@@ -180,10 +181,14 @@
         </div>
         <div class="my-3" x-show="showDetails">
             <p>
-                Candidaturas não-transparentes são aquelas em que a pessoa candidata não preencheu nenhuma das informações que
-                solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. Como a plataforma tem por
-                objetivo melhorar a qualidade do debate, não temos como priorizar candidaturas não-transparentes. Daremos a todas
-                igual chance de aparecer, apresentando máximo {{.NonTransparentMaxCards}} resultados sem ordem pré-definda. Esses resultados
+                Candidaturas não-transparentes são aquelas em que a pessoa candidata não preencheu nenhuma das
+                informações que
+                solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. Como a plataforma tem
+                por
+                objetivo melhorar a qualidade do debate, não temos como priorizar candidaturas não-transparentes.
+                Daremos a todas
+                igual chance de aparecer, apresentando máximo {{.NonTransparentMaxCards}} resultados sem ordem
+                pré-definda. Esses resultados
                 poddem mudar cada vez que você acessar essa página.
             </p>
 
