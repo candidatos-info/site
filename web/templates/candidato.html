@@ -91,7 +91,7 @@
         <div class="overflow-auto row flex-row flex-nowrap" style="margin-left: 0; margin-right: 0;"
             id="relatedCandidaturesList">
             {{range .RelatedCandidates}}
-            <div class="col-6 col-md-4 col-lg-2" style="padding: 4px;">
+            <div class="col-8 col-md-4 col-lg-2" style="padding: 4px;">
                 <a href="/c/{{$.Candidato.Year}}/{{.SequentialID}}" style="color: unset;">
                     {{template "candidatoCard" .}}
                 </a>

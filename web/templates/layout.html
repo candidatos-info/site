@@ -20,8 +20,15 @@
     <link href="https://fonts.googleapis.com/css?family=Work+Sans:400,700&display=swap" rel="stylesheet">
     <title>{{template "title" .}}</title>
     <style>
-        * {
+        :root {
             font-family: "Work Sans", sans-serif;
+            font-size: 100%;
+        }
+
+        @media screen and (max-width: 769px) {
+            :root {
+                font-size: 120%;
+            }
         }
 
         .custom-shadow-bottom {
@@ -115,6 +122,9 @@
             margin-left: 0.5rem;
         }
 
+        .space-y-1 > * + *	{
+            margin-top: 0.25rem;
+        }
         .space-y-2 > * + *	{
             margin-top: 0.5rem;
         }
@@ -156,7 +166,7 @@
             font-size: .625rem;
         }
         .candidate-card .candidate-card--contact-icon {
-            font-size: .9375rem;
+            font-size: 1.2rem;
         }
 
         /** Transparency Card */
@@ -381,9 +391,9 @@ border-success
             <p class="card-text candidate-card--number text-text font-weight-bold">{{.Number}}</p>
         </div>
         {{if .Tags}}
-        <div class="mt-2 text-left overflow-hidden">
+        <div class="mt-2 text-left overflow-hidden space-y-1">
             {{range .Tags}}
-            <span class="badge badge-pill bg-button px-1">{{.}}</span>
+            <span class="badge badge-pill bg-button p-1 text-wrap">{{.}}</span>
             {{end}}
         </div>
         {{end}}
