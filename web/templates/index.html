@@ -48,10 +48,12 @@
                     Escolha uma Causa/Pauta
                 </option>
                 {{range $i, $v := .Tags}}
-                <option value="{{$v}}" {{if eq $v $.Filters.Tag}}selected{{end}}>
-                    {{$v}}
-                </option>
-                {{end}}
+                    {{if ne $v ""}}
+                        <option value="{{$v}}" {{if eq $v $.Filters.Tag}}selected{{end}}>
+                            {{$v}}
+                        </option>
+                   {{end}}
+               {{end}}
             </select>
         </div>
     </div>
