@@ -44,7 +44,7 @@
     <div class="form-row">
         <div class="form-group col-12 col-md-8">
             <select name="tags" class="custom-select" size="3" multiple>
-                <option value="" default disabled selected>
+                <option value="" default disabled>
                     Escolha uma Causa/Pauta
                 </option>
                 {{range $i, $v := .Tags}}
@@ -59,8 +59,8 @@
     </div>
     <div class="form-row">
         <div class="form-group col-12 col-md-8">
-            <input class="form-control" style="width: 100%" value="{{ $.Filters.Name }}" id="candidateName" type="text" name="nome"
-                placeholder="Busque pelo nome">
+            <input class="form-control" style="width: 100%" value="{{ $.Filters.Name }}" id="candidateName" type="text"
+                name="nome" placeholder="Busque pelo nome">
         </div>
     </div>
     {{end}}

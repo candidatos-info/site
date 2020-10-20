@@ -117,7 +117,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			Year:     year,
 			Role:     c.QueryParam("cargo"),
 			NextPage: page + 1,
-			Tag:      c.QueryParam("tag"),
+			Tag:      c.QueryParam("tags"),
 			Name:     c.QueryParam("nome"),
 		}
 		r := c.Render(http.StatusOK, "index.html", map[string]interface{}{
