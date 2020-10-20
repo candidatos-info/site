@@ -269,7 +269,7 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) (*rawHomeResultS
 	}
 	fmt.Println("QUERY MAP TO FILTER ", queryMap)
 	transparentCandidatures, pagination, err := dbClient.FindTransparentCandidatures(queryMap, defaultPageSize, page)
-	nonTransparentCandidatures, err := dbClient.FindNonTransparentCandidatures(queryMap, defaultPageSize)
+	nonTransparentCandidatures, err := dbClient.FindNonTransparentCandidatures(queryMap, nonTransparentMaxCards)
 	return &rawHomeResultSet{
 		transparentCandidatures:    transparentCandidatures,
 		nonTransparentCandidatures: nonTransparentCandidatures,

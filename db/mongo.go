@@ -170,8 +170,7 @@ func (c *Client) FindNonTransparentCandidatures(queryMap map[string]interface{},
 	}
 	cur, err := db.Collection(descritor.CandidaturesCollection).Aggregate(context.Background(), []bson.M{
 		bson.M{"$match": bson.M{"$and": bsonQuery}},
-		bson.M{"$sample": bson.M{"size": pageSize * 2}}, // selecting pageSize records randomly.
-		bson.M{"$limit": pageSize},
+		bson.M{"$sample": bson.M{"size": pageSize}},
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -181,13 +180,13 @@ func (c *Client) FindNonTransparentCandidatures(queryMap map[string]interface{},
 		var c *descritor.CandidateForDB
 		err := cur.Decode(&c)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf(fmt.Sprintf("Falha ao deserializar struct de candidatura não transparente a partir da resposta do banco, erro %v", err))
 		}
 		results = append(results, c)
 	}
 
 	if err := cur.Err(); err != nil {
-		return nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao deserializar struct de candidatura a partir da resposta do banco, erro %v", err), nil)
+		return nil, fmt.Errorf(fmt.Sprintf("Erro no cursor de candidatura não transparente, erro %v", err))
 	}
 	return results, nil
 }
