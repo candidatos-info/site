@@ -41,6 +41,7 @@ type homeFilter struct {
 	Role     string
 	Tag      string
 	NextPage int
+	Name     string
 }
 
 func buildLoadMoreURL(filter *homeFilter, baseURL string) string {
@@ -49,6 +50,7 @@ func buildLoadMoreURL(filter *homeFilter, baseURL string) string {
 		"ano":    filter.Year,
 		"cidade": filter.City,
 		"cargo":  filter.Role,
+		"nome":   filter.Name,
 	}
 
 	var url string
@@ -117,6 +119,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			Role:     c.QueryParam("cargo"),
 			NextPage: page + 1,
 			Tag:      c.QueryParam("tag"),
+			Name:     c.QueryParam("nome"),
 		}
 		r := c.Render(http.StatusOK, "index.html", map[string]interface{}{
 			"AllStates":                 uiStates,
