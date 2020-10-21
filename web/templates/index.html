@@ -154,10 +154,12 @@
 {{define "emptyTransparentCandidates"}}
 <div class="row justify-content-center home-section--empty-text">
     <div class="col-10">
-        <div class="text-text pt-4 d-flex flex-column justify-content-center align-items-start">
-            {{template "emptyState" "Não existem candidaturas transparentes para a sua busca :("}}
-            <p class="mb-0">Se for um Candidato, cadastre-se no Candidatos.info.</p>
-            <p class="mb-0">Se for um Eleitor, cobre do seu candidato.</p>
+        <div class="text-text d-flex flex-column justify-content-center align-items-start">
+            <div class="mx-auto pt-4 pb-6">
+                {{template "emptyState" "Não existem candidaturas transparentes para a sua busca :("}}
+                <p class="mb-0">Se for um Candidato, cadastre-se no Candidatos.info.</p>
+                <p class="mb-0">Se for um Eleitor, cobre do seu candidato.</p>
+            </div>
         </div>
     </div>
 </div>
@@ -271,11 +273,7 @@
         });
 
         $home.on('change', '#filtros', function (e) {
-            var $filtersForm = $(this);
-            $filtersForm.submit()
-
-            var currentFieldName = e.target.name;
-            $home.find("[name=" + currentFieldName + "]").focus();
+            $(this).submit();
         });
 
         function appendCandidates(newPage, appendSection, loadMoreId, shouldReplaceButton) {

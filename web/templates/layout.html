@@ -142,6 +142,10 @@
             transform: rotate(-90deg);
         }
 
+        .min-vh-60 {
+            min-height: 60vh;
+        }
+
         /** Candidate Card */
         .candidate-card .candidate-card--title {
             font-size: .875rem;
@@ -196,7 +200,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100 position-relative">
 {{template "nav" .}}
-<main class="pt-2 flex-grow-1 d-flex flex-column">
+<main class="pt-2 flex-grow-1 d-flex flex-column min-vh-60">
     {{template "content" .}}
 </main>
 {{template "footer" .}}
@@ -229,8 +233,8 @@
         <div class="row">
             <div class="col-6">
                 <div class="d-flex flex-column">
-                    <div class="mt-4"><a class="text-dark" href="/sobre">Sobre</a></div>
-                    <div class="mt-4"><a class="text-dark" href="/sou-candidato">Sou candidato</a></div>
+                    <div class="mt-4"><a class="text-primary font-weight-bold" href="/sobre">Sobre</a></div>
+                    <div class="mt-4"><a class="text-primary font-weight-bold" href="/sou-candidato">Sou candidato</a></div>
                 </div>
             </div>
         </div>
@@ -289,21 +293,18 @@ candidatos.info
 <nav class="navbar navbar-expand-lg navbar-light bg-fluxo-candidato position-relative">
     <div class="container-md">
         <a class="navbar-brand mx-auto" href="/">{{template "appLogo"}}</a>
-        <button class="navbar-toggler position-absolute" style="right: 15px; top: 15px;" type="button"
+        <button class="navbar-toggler position-absolute border-0 text-primary" style="right: 15px; top: 15px;" type="button"
                 data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03"
                 aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+                <svg style="height: 1.5rem; width: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
         <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home</a>
+            <ul class="navbar-nav mt-2 mt-lg-0 ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-primary font-weight-bold" href="/sobre">Sobre</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/sobre">Sobre</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/sou-candidato">Sou um Candidato</a>
+                    <a class="nav-link text-primary font-weight-bold" href="/sou-candidato">Sou um Candidato</a>
                 </li>
             </ul>
         </div>
