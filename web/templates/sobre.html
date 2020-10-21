@@ -1,6 +1,7 @@
 {{define "cardColaborador"}}
 <div class="card shadow rounded bg-text-dark py-4" style="border: 0;">
-    <img class="card-img-top p-4 rounded-circle" style="filter: grayscale(100%)" src="{{.ImageURL}}" alt="Foto do perfil de {{.Name}}" />
+    <img class="card-img-top p-4 rounded-circle" style="filter: grayscale(100%)" src="{{.ImageURL}}"
+        alt="Foto do perfil de {{.Name}}" />
     <h5 class="text-center colaborador-title text-fluxo-candidato">{{.Name}}</h5>
     <h6 class="text-center colaborador-subtitle text-text">{{.Title}}</h6>
     <div class="d-flex justify-content-center align-items-center">
@@ -17,6 +18,7 @@
         font-size: 14px;
         font-weight: bold;
     }
+
     .colaborador-subtitle {
         font-size: 12px;
     }
@@ -24,26 +26,34 @@
 {{end}}
 
 {{define "content"}}
-    <div class="d-flex flex-column flex-grow">
-        <div class="container" style="padding-bottom: 60px">
-            <h1 class="text-center page-title">Sobre</h1>
-            <p>Esta plataforma é uma criação colaborativa e aberta que permite o enriquecimento e disponibilização das informações e pautas sobre as candidaturas legislativas e executivas no âmbito municipal (vereadores e prefeitos).
-            </p>
-
-            <p>
-            Compreendemos que o impacto das pessoas candidatas no eleitorado potencial é muito desigual, acreditamos que o estímulo colaborativo de criação e exposição das pautas é importante para agregar e publicar informações sobre as candidaturas, sendo assim um meio importante de ajudar a população a conhecer mais e melhor seus possíveis representantes. 
-            </p>
-            
-            <p>
-            Por exemplo, uma candidata pode contribuir com conteúdo do site atualizando suas propostas e uma desenvolvedora pode contribuir com o código que obtém informações sobre patrimônio declarado dos políticos. 
-           </p>
-   
-           <p>
-            Queremos por meio desta estimular pautar o debate eleitoral, ajudando a pessoa eleitora a escolher os representantes com base em um maior número de informações, dentre elas as causas/pautas defendidas e propostas para endereçar problemas relacionados a essas pautas.
+<div class="d-flex flex-column flex-grow">
+    <div class="container" style="padding-bottom: 60px">
+        <h1 class="text-center page-title">Sobre</h1>
+        <p>Esta plataforma é uma criação colaborativa e aberta que permite o enriquecimento e disponibilização das
+            informações e pautas sobre as candidaturas legislativas e executivas no âmbito municipal (vereadores e
+            prefeitos).
         </p>
-        </div>
 
-        <!--
+        <p>
+            Compreendemos que o impacto das pessoas candidatas no eleitorado potencial é muito desigual, acreditamos que
+            o estímulo colaborativo de criação e exposição das pautas é importante para agregar e publicar informações
+            sobre as candidaturas, sendo assim um meio importante de ajudar a população a conhecer mais e melhor seus
+            possíveis representantes.
+        </p>
+
+        <p>
+            Por exemplo, uma candidata pode contribuir com conteúdo do site atualizando suas propostas e uma
+            desenvolvedora pode contribuir com o código que obtém informações sobre patrimônio declarado dos políticos.
+        </p>
+
+        <p>
+            Queremos por meio desta estimular pautar o debate eleitoral, ajudando a pessoa eleitora a escolher os
+            representantes com base em um maior número de informações, dentre elas as causas/pautas defendidas e
+            propostas para endereçar problemas relacionados a essas pautas.
+        </p>
+    </div>
+
+    <!--
         <div class="bg-secondary-button text-fluxo-candidato" style="padding-bottom: 60px">
             <div class="container">
                 <h2 class="page-title text-center">Parceiros</h2>
@@ -65,18 +75,18 @@
             </div>
         </div>
 -->
-        <div class="bg-text-dark text-fluxo-candidato" style="padding-bottom: 60px">
-            <div class="container">
-                <h2 class="text-center page-title">Equipe</h2>
+    <div class="bg-text-dark text-fluxo-candidato" style="padding-bottom: 60px">
+        <div class="container">
+            <h2 class="text-center page-title">Equipe</h2>
 
-                <div class="row">
-                    {{range .Team}}
-                        <div class="col-6 col-md-3 mb-4">
-                            {{template "cardColaborador" .}}
-                        </div>
-                    {{end}}
+            <div class="row">
+                {{range .Team}}
+                <div class="col-6 col-md-3 mb-4">
+                    {{template "cardColaborador" .}}
                 </div>
+                {{end}}
             </div>
         </div>
     </div>
+</div>
 {{end}}
