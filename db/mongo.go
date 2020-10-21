@@ -137,7 +137,7 @@ func (c *Client) FindTransparentCandidatures(queryMap map[string]interface{}, pa
 			query[k] = v
 		}
 	}
-	query["transparency"] = bson.M{"$gte": 0.0} // candidatures without proposals does not count!
+	query["transparency"] = bson.M{"$gt": 0.0} // candidatures without proposals does not count!
 	var candidatures []*descritor.CandidateForDB
 	db := c.client.Database(c.dbName)
 	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
