@@ -9,3 +9,4 @@ Public candidatos.info website
 - [Bootstrap](https://getbootstrap.com/)
 - [jQuery](https://jquery.com/)
 - [Font Awesome](https://fontawesome.com/)
+- [Heroicons](https://heroicons.dev/)
