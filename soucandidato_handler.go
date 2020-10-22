@@ -18,7 +18,7 @@ import (
 const (
 	imageWidth  = 100
 	imageHeight = 30
-	logoURL     = "https://s3.amazonaws.com/candidatos.info-public/Logo-1px.png"
+	logoURL     = "https://s3.amazonaws.com/candidatos-info-public/Logo-1px.png"
 )
 
 func newSouCandidatoFormHandler(db *db.Client, tokenService *token.Token, emailClient *email.Client) echo.HandlerFunc {
