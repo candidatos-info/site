@@ -62,7 +62,6 @@ func buildLoadMoreURL(filter *homeFilter, baseURL string) string {
 }
 
 func newHomeHandler(db *db.Client) echo.HandlerFunc {
-	fmt.Println("HOME REQUEST")
 	return func(c echo.Context) error {
 		cities := []string{}
 		page := 0
