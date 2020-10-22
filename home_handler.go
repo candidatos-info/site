@@ -19,7 +19,7 @@ import (
 //  in the format they are going to be presented in UI
 var (
 	uiRoles  = map[string]string{"vereador": "Vereador(a)", "prefeito": "Prefeito(a)", "vice-prefeito": "Vice Prefeito(a)"}
-	uiStates = map[string]string{"AL": "Alagoas"}
+	uiStates = map[string]string{"AL": "Alagoas", "BA": "Bahia"}
 )
 
 // struct with the result set from db
