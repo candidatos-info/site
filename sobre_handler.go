@@ -67,6 +67,10 @@ func getTeamMembers() []*teamMember {
 			newSocialLink("instagram", "https://www.instagram.com/soutoam/"),
 			newSocialLink("linkedin", "https://www.linkedin.com/in/soutomariana/"),
 		}),
+		newTeamMember("Tony Messias", "Desenvolvedor", "/img/team/tony.jpeg", []*socialLink{
+			newSocialLink("twitter", "https://twitter.com/tonysmdev"),
+			newSocialLink("github", "https://github.com/tonysm"),
+		}),
 	}
 }
 
