@@ -10,8 +10,16 @@
 
 {{end}}
 
+{{define "pageStyles"}}
+<style>
+    .filters-wrapper {
+        box-shadow: 0 4px 2px -2px  rgba(0, 151, 255, 0.1);
+    }
+</style>
+{{end}}
+
 {{define "filters"}}
-<form name="filtros" id="filtros" method="get">
+<form name="filtros" id="filtros" method="get" class="col-12">
     <div class="form-row">
         <div class="form-group col-8">
             <select class="custom-select" name="estado">
@@ -231,22 +239,34 @@
 {{end}}
 
 {{define "emptyCandidatos"}}
-<div class="jumbotron mt-4" style="padding: 0;">
-    <p class="lead">Busque por candidaturas com propostas que você mais acredita!</p>
+<div class="col-12 col-md-5 mx-auto">
+    <div class="jumbotron mt-5" style="padding: 0;">
+        <p class="lead">Busque por candidaturas com propostas que você mais acredita!</p>
+    </div>
 </div>
 {{end}}
 
 {{define "content"}}
-<div class="container mt-2" id="home">
-    {{template "filters" .}}
+<div id="home">
+    <div class="filters-wrapper">
+        <div class="container mt-2">
+            <div class="col-12 col-md-5 mx-auto">
+                <div class="row">
+                    {{template "filters" .}}
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="mt-2" id="candidates">
-        {{ if (ne .Filters.State "") }}
-        {{template "transparentCandidates" .}}
-        {{template "nonTransparentCandidates" .}}
-        {{else}}
-        {{template "emptyCandidatos" .}}
-        {{end}}
+    <div class="container mt-4">
+        <div id="candidates">
+            {{ if (ne .Filters.State "") }}
+            {{template "transparentCandidates" .}}
+            {{template "nonTransparentCandidates" .}}
+            {{else}}
+            {{template "emptyCandidatos" .}}
+            {{end}}
+        </div>
     </div>
 </div>
 {{end}}

@@ -1,6 +1,9 @@
 {{define "content"}}
 <div class="flex-grow-1">
-    <div class="container" style="padding-bottom: 60px;">
+    <div
+        class="container"
+        style="padding-bottom: 60px;"
+    >
         <h1 class="page-title text-center text-dark">
             Perfil do candidato
         </h1>
@@ -90,7 +93,20 @@
                     <div class="form-group">
                         <input type="hidden" :name="`descriptions[${index}][tag]`" :value="subject.tag" />
                         <label :for="`tags${subject.tag}`"><span x-text="subject.tag"></span> (Escreva sua proposta para esta causa (MÁX 100 CARACTERES)</label>
-                        <textarea class="form-control" :name="`descriptions[${index}][description]`" :id="`tags${subject.tag}`" maxlength="100" rows="3" x-text="subject.description"></textarea>
+                        <textarea
+                            class="form-control"
+                            :name="`descriptions[${index}][description]`"
+                            :id="`tags${subject.tag}`"
+                            x-model="subject.description"
+                            :maxlength="maxDescriptionLength"
+                            rows="3"
+                            required
+                        ></textarea>
+                        <div class="text-right">
+                            <small id="passwordHelpBlock" class="form-text text-muted">
+                                <span x-text="subject.length"></span>/<span x-text="maxDescriptionLength"></span>
+                            </small>
+                        </div>
                     </div>
                 </template>
                 <input type="hidden" name="numTags" x-bind:value="subjects.length"/>
@@ -115,6 +131,7 @@
     function subjectsComponent() {
         return {
             maxSubjects: {{.MaxProposals}},
+            maxDescriptionLength: 100,
             allSubjects: [
                 {{range .AllTags}}"{{.}}",{{end}}
             ],
