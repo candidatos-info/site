@@ -16,9 +16,24 @@ import (
 )
 
 const (
-	maxProposals     = 5
-	maxContactsChars = 100
+	maxBiographyTextSize     = 500
+	maxProposalsTextSize     = 100
+	maxProposalsPerCandidate = 5
+	maxTagsSize              = 4
+	maxProposals             = 5
+	maxContactsTextSize      = 100
+	numTagsFieldName         = "numTags"
+	bioFieldName             = "biography"
+	contactFieldName         = "contact"
+	providerFieldName        = "provider"
 )
+
+type atualizarCandidaturaParams struct {
+	NumTags   int
+	Bio       string
+	Contacts  []*descritor.Contact
+	Proposals []*descritor.Proposal
+}
 
 var (
 	socialNetworksUI = map[string]string{
@@ -58,49 +73,6 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 				"Success":  false,
 			})
 		}
-		// Processing and validating form values.
-		numTags, err := strconv.Atoi(c.FormValue("numTags"))
-		if err != nil {
-			log.Printf("invalid numTags :%s, error %v\n", c.FormValue("numTags"), err)
-			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
-				"Success":  false,
-			})
-		}
-		var props []*descritor.Proposal
-		for i := 0; i < numTags; i++ {
-			p := descritor.Proposal{
-				Topic:       c.FormValue(fmt.Sprintf("descriptions[%d][tag]", i)),
-				Description: c.FormValue(fmt.Sprintf("descriptions[%d][description]", i)),
-			}
-			if len(p.Description) > maxDescriptionTextSize {
-				return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-					"ErrorMsg": fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres. Tamanho das descrição do tópico %s é de %d caracteres", maxDescriptionTextSize, p.Topic, len(p.Description)),
-					"Success":  false,
-				})
-			}
-			props = append(props, &p)
-		}
-		bio := c.FormValue("biography")
-		if len(bio) > maxBiographyTextSize {
-			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-				"ErrorMsg": fmt.Sprintf("Tamanho máximo de descrição é de %d caracteres.", maxBiographyTextSize),
-				"Success":  false,
-			})
-		}
-		contact := c.FormValue("contact")
-		if len(contact) == 0 {
-			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-				"ErrorMsg": "Contato é um campo obrigatório. Por favor, preencher",
-				"Success":  false,
-			})
-		}
-		if len(contact) > maxContactsChars {
-			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-				"ErrorMsg": fmt.Sprintf("Tamanho máximo do contato é de %d caracteres.", maxBiographyTextSize),
-				"Success":  false,
-			})
-		}
 		// Fetching candidate and updating counters.
 		email := claims["email"]
 		candidate, err := dbClient.GetCandidateByEmail(email, globals.Year)
@@ -111,22 +83,17 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 				"Success":  false,
 			})
 		}
-		candidate.Biography = bio
-		candidate.Proposals = props
-		candidate.Contacts = []*descritor.Contact{getContact(contact, c.FormValue("provider"))}
-		counter := 0.0
-		if candidate.Biography != "" {
-			counter++
+		// Processing and validating form values.
+		params, err := parseFormValues(c)
+		if err != nil {
+			return err
 		}
-		if candidate.Proposals != nil && len(candidate.Proposals) > 0 {
-			counter++
-		}
-		if candidate.Contacts != nil && len(candidate.Contacts) > 0 {
-			counter++
-		}
-		candidate.Transparency = (counter / 3.0) * 100
+		candidate.Biography = params.Bio
+		candidate.Proposals = params.Proposals
+		candidate.Contacts = params.Contacts
+		candidate.Transparency = 100 // Since we made all fields mandatory, if the candidate has registered, its transparency will be 100%
 
-		// Updating candidates.
+		// Updating candidates DB
 		if _, err := dbClient.UpdateCandidateProfile(candidate); err != nil {
 			log.Printf("failed to update candidates profile, erro %v\n", err)
 			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
@@ -140,6 +107,78 @@ func newAtualizarCandidaturaFormHandler(dbClient *db.Client) echo.HandlerFunc {
 			"SequentialID": candidate.SequencialCandidate,
 		})
 	}
+}
+
+func parseFormValues(ctx echo.Context) (atualizarCandidaturaParams, error) {
+	numTags, err := strconv.Atoi(ctx.FormValue(numTagsFieldName))
+	if err != nil {
+		log.Printf("invalid num tags %s :%s, error %v\n", numTagsFieldName, ctx.FormValue(numTagsFieldName), err)
+		return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+			"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+			"Success":  false,
+		})
+	}
+	if numTags == 0 {
+		return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+			"ErrorMsg": "É necessário o preenchimento de, ao menos, uma pauta.",
+			"Success":  false,
+		})
+	}
+	var props []*descritor.Proposal
+	for i := 0; i < numTags; i++ {
+		p := descritor.Proposal{
+			Topic:       ctx.FormValue(fmt.Sprintf("descriptions[%d][tag]", i)),
+			Description: ctx.FormValue(fmt.Sprintf("descriptions[%d][description]", i)),
+		}
+		if len(p.Description) == 0 {
+			return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": fmt.Sprintf("O campo proposta da pauta %s é obrigatório", p.Topic),
+				"Success":  false,
+			})
+		}
+		if len(p.Description) > maxProposalsTextSize {
+			return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+				"ErrorMsg": fmt.Sprintf("Tamanho da proposta da pauta %s é de %d caracteres. O tamanho máximo permitido é de %d.", p.Topic, len(p.Description), maxProposalsTextSize),
+				"Success":  false,
+			})
+		}
+		props = append(props, &p)
+	}
+	bio := ctx.FormValue(bioFieldName)
+	if len(bio) == 0 {
+		return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+			"ErrorMsg": "Biografia é um campo obrigatório. Por favor, preencher",
+			"Success":  false,
+		})
+	}
+	if len(bio) > maxBiographyTextSize {
+		return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+			"ErrorMsg": fmt.Sprintf("Tamanho máximo do campo mini-biografia é de %d caracteres.", maxBiographyTextSize),
+			"Success":  false,
+		})
+	}
+	contact := ctx.FormValue(contactFieldName)
+	if len(contact) == 0 {
+		return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+			"ErrorMsg": "Contato é um campo obrigatório. Por favor, preencher",
+			"Success":  false,
+		})
+	}
+	if len(contact) > maxContactsTextSize {
+		return atualizarCandidaturaParams{}, ctx.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+			"ErrorMsg": fmt.Sprintf("Tamanho máximo do campo contato é de %d caracteres.", maxContactsTextSize),
+			"Success":  false,
+		})
+	}
+	return atualizarCandidaturaParams{
+		NumTags: numTags,
+		Bio:     bio,
+		Contacts: []*descritor.Contact{&descritor.Contact{
+			SocialNetwork: ctx.FormValue(providerFieldName),
+			Value:         contact,
+		}},
+		Proposals: props,
+	}, nil
 }
 
 func mapMonthsToPortuguese(month time.Month) string {
@@ -233,12 +272,5 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 		})
 		fmt.Println(r)
 		return r
-	}
-}
-
-func getContact(addr, provider string) *descritor.Contact {
-	return &descritor.Contact{
-		SocialNetwork: provider,
-		Value:         addr,
 	}
 }

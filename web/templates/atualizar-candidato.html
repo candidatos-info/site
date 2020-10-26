@@ -56,14 +56,14 @@
             </div>
             <div class="form-group">
                 <label for="biography">BIOGRAFIA (MÁX 500 CARACTERES)*:</label>
-                <textarea maxlength="500" class="form-control" name="biography" id="biography" rows="5">{{.Candidato.Biography}}</textarea>
+                <textarea maxlength="500" class="form-control" name="biography" id="biography" rows="5" required>{{.Candidato.Biography}}</textarea>
             </div>
 
             <div
                 x-data="subjectsComponent()"
             >
                 <div class="form-group">
-                    <label for="pautas">PAUTAS:</label>
+                    <label for="pautas">PAUTAS*:</label>
                     <input
                         type="text"
                         list="tagsList"
