@@ -124,14 +124,13 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 
 // FindTransparentCandidatures searches for a list of candidatures with proposals defined
 func (c *Client) FindTransparentCandidatures(queryMap map[string]interface{}, pageSize int) ([]*descritor.CandidateForDB, error) {
-	queryMap["transparency"] = bson.M{"$gt": 0.0} // candidatures without proposals does not count!
+	queryMap["proposals"] = bson.M{"$ne": nil} // candidatures without proposals does not count!
 	return c.findCandidatures(queryMap, pageSize)
 }
 
 // FindNonTransparentCandidatures searches for non transparent candidatures
 func (c *Client) FindNonTransparentCandidatures(queryMap map[string]interface{}, pageSize int) ([]*descritor.CandidateForDB, error) {
-	queryMap["transparency"] = nil
-	queryMap["tags"] = nil
+	queryMap["proposals"] = bson.M{"$eq": nil} // candidatures without proposals does not count!
 	return c.findCandidatures(queryMap, pageSize)
 }
 
@@ -144,7 +143,6 @@ func (c *Client) findCandidatures(queryMap map[string]interface{}, pageSize int)
 		case "name":
 			bsonQuery = append(bsonQuery, bson.M{"ballot_name": bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}})
 		case "tags":
-
 			if tags, ok := queryMap["tags"].([]string); ok && len(tags) > 0 {
 				bsonQuery = append(bsonQuery, bson.M{"proposals.topic": bson.M{"$in": tags}})
 			}

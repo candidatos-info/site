@@ -391,11 +391,6 @@ border-success
     "
     style="border-width: 5px 0 0; height: 100%;"
 >
-    <div>
-        <div class="my-2 px-3">
-            {{template "candidateTransparency" .}}
-        </div>
-    </div>
     <img
         class="card-img-top d-block img-fluid w-25 mx-auto my-2"
         src="{{.Picture}}"
@@ -472,27 +467,6 @@ bg-success
             <path d="M2 6.00006L6.5 11.0001L5 6.00006L2 6.00006Z" fill="#E6F5FF" stroke="#4975A9" stroke-width="0.75" stroke-linejoin="round"/>
         </svg>
     </span>
-{{end}}
-
-{{define "candidateTransparency"}}
-<span class="d-flex justify-content-start align-items-center transparency-card">
-    <div>
-        {{template "candidateTransparencyDiamond" .Transparency}}
-    </div>
-
-    <span
-        class="text-left transparency-card--text"
-    >
-        {{if (lt .Transparency 25.) }}
-            Perfil pouco transparente.
-        {{else if (and (ge .Transparency 25.) (lt .Transparency 75.))}}
-            Perfil com transparência mediana.
-        {{else}}
-            Perfil muito transparente.
-        {{end}}
-
-    </span>
-</span>
 {{end}}
 
 {{define "emptyState"}}
