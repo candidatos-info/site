@@ -10,7 +10,6 @@ import (
 
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/exception"
-	pagination "github.com/gobeam/mongo-go-pagination"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -172,37 +171,4 @@ func (c *Client) findCandidatures(queryMap map[string]interface{}, pageSize int)
 		return nil, fmt.Errorf(fmt.Sprintf("Erro no cursor de candidatura não transparente, erro %v", err))
 	}
 	return results, nil
-}
-
-// FindRelatedCandidatesWithParams searches for a list of candidates with given params
-func (c *Client) FindRelatedCandidatesWithParams(queryMap map[string]interface{}, pageSize, page int) ([]*descritor.CandidateForDB, *pagination.PaginationData, error) {
-	query := make(bson.M, len(queryMap))
-	for k, v := range queryMap {
-		switch k {
-		case "name":
-			query["ballot_name"] = bson.M{"$regex": primitive.Regex{Pattern: fmt.Sprintf(".*%s.*", queryMap["name"]), Options: "i"}}
-		case "tags":
-			if len(queryMap["tags"].([]string)) > 0 {
-				query["proposals.topic"] = bson.M{"$in": queryMap["tags"]}
-			}
-		default:
-			query[k] = v
-		}
-	}
-	query["transparency"] = bson.M{"$gte": 0.0} // candidatures without proposals does not count!
-	var candidatures []*descritor.CandidateForDB
-	db := c.client.Database(c.dbName)
-	p := pagination.New(db.Collection(descritor.CandidaturesCollection))
-	paginatedData, err := p.Limit(int64(pageSize)).Page(int64(page)).Sort("transparency", -1).Filter(query).Find()
-	if err != nil {
-		return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao buscar por lista candidatos, erro %v", err), nil)
-	}
-	for _, raw := range paginatedData.Data {
-		var candidature *descritor.CandidateForDB
-		if err := bson.Unmarshal(raw, &candidature); err != nil {
-			return nil, nil, exception.New(exception.NotFound, fmt.Sprintf("Falha ao deserializar struct de candidatura a partir da resposta do banco, erro %v", err), nil)
-		}
-		candidatures = append(candidatures, candidature)
-	}
-	return candidatures, &paginatedData.Pagination, nil
 }

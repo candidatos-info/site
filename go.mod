@@ -6,7 +6,6 @@ require (
 	github.com/aws/aws-sdk-go v1.35.4 // indirect
 	github.com/candidatos-info/descritor v0.0.0-20201017053602-c2e4813be4f3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/gobeam/mongo-go-pagination v0.0.2
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/kr/text v0.2.0 // indirect

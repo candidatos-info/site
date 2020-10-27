@@ -84,6 +84,7 @@
 
     <section id="relatedCandidates">
         <h3 class="page-title text-center" style="margin-top: 30px; margin-bottom: 30px;">Candidaturas relacionadas</h3>
+        {{if .RelatedCandidates}}
         <div class="overflow-auto row flex-row flex-nowrap" style="margin-left: 0; margin-right: 0;"
             id="relatedCandidaturesList">
             {{range .RelatedCandidates}}
@@ -93,13 +94,27 @@
                 </a>
             </div>
             {{end}}
-            {{ if $.HasMore }}
-            <div class="load-more-btn text-center pb-2">
-                <a href="{{.LoadMoreURL}}" class="btn btn-link btn-sm text-dark mx-auto">ver mais</a>
-            </div>
-            {{ end }}
         </div>
+        {{else}}
+        <div class="mb-3">
+            {{template "emptyRelated" .}}
+        </div>
+        {{end}}
     </section>
+</div>
+{{end}}
+
+{{define "emptyRelated"}}
+<div class="row justify-content-center home-section--empty-text">
+    <div class="col-10">
+        <div class="text-text d-flex flex-column justify-content-center align-items-start">
+            <div class="mx-auto pt-4 pb-6">
+                {{template "emptyState" "Não encontramos candidaturas com propostas/pautas relacionadas :("}}
+                <p class="mb-0">Se for candidato(a), cadaste-se <a href="http://candidatos.info/sou-candidato">aqui</a>.</p>
+                <p class="mb-0">Se for eleitor(a), cobre do(a) seu candidato(a)!</p>
+            </div>
+        </div>
+    </div>
 </div>
 {{end}}
 

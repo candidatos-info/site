@@ -61,19 +61,7 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 		}
 		queryMap["tags"] = candidateTags
 		queryMap["role"] = candidate.Role
-		var page int
-		queryPage := c.QueryParam("p")
-		if queryPage == "" {
-			page = 1
-		} else {
-			p, err := strconv.Atoi(queryPage)
-			if err != nil {
-				log.Printf("failed to parse query page [%s] to int, error %v\n", queryPage, err)
-				return echo.ErrInternalServerError
-			}
-			page = p
-		}
-		relatedCandidatures, paginationData, err := db.FindRelatedCandidatesWithParams(queryMap, relatedCandidaturesMaxCards, page)
+		relatedCandidatures, err := db.FindTransparentCandidatures(queryMap, relatedCandidaturesMaxCards)
 		if err != nil {
 			log.Printf("failed to find related candidatures, error %v\n", err)
 			return echo.ErrInternalServerError
@@ -100,10 +88,7 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 				})
 			}
 		}
-		loadMoreURL := fmt.Sprintf("%s/c/%d/%s?p=%d", siteURL, year, candidate.SequencialCandidate, paginationData.Next)
 		r := c.Render(http.StatusOK, "candidato.html", map[string]interface{}{
-			"HasMore":           paginationData.Next != 0,
-			"LoadMoreURL":       loadMoreURL,
 			"Candidato":         candidate,
 			"RelatedCandidates": relatedCandidatesCards,
 		})
