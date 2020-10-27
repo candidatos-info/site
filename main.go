@@ -23,8 +23,6 @@ const (
 	whatsAppLogoURL        = "https://i0.wp.com/cantinhodabrantes.com.br/wp-content/uploads/2017/08/whatsapp-logo-PNG-Transparent.png?fit=1000%2C1000&ssl=1"
 	searchCookieExpiration = 360 //in hours
 	searchCacheCookie      = "searchCookie"
-	defaultPageSize        = 20
-	nonTransparentMaxCards = 30
 	prodEnvironmentName    = "standard"
 )
 
@@ -168,7 +166,6 @@ func main() {
 	// Rotes.
 	e.Static("/", "web/public")
 	e.GET("/", newHomeHandler(dbClient))
-	e.GET("/transparent-partial", newHomeLoadMoreTransparentCandidates(dbClient))
 	e.GET("/c/:year/:id", newCandidateHandler(dbClient))
 	e.GET("/sobre", sobreHandler)
 	e.GET("/sou-candidato", souCandidatoGET)

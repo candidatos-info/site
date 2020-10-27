@@ -11,6 +11,10 @@ import (
 	"github.com/labstack/echo"
 )
 
+const (
+	relatedCandidaturesMaxCards = 15
+)
+
 func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// TODO: Create error page.
@@ -69,7 +73,7 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 			}
 			page = p
 		}
-		relatedCandidatures, paginationData, err := db.FindRelatedCandidatesWithParams(queryMap, defaultPageSize, page)
+		relatedCandidatures, paginationData, err := db.FindRelatedCandidatesWithParams(queryMap, relatedCandidaturesMaxCards, page)
 		if err != nil {
 			log.Printf("failed to find related candidatures, error %v\n", err)
 			return echo.ErrInternalServerError
