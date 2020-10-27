@@ -240,3 +240,18 @@
 </div>
 {{end}}
 
+{{define "scripts"}}
+<script>
+    $(function () {
+        var $home = $('#home');
+        $home.on('change', '#filtros', function (e) {
+            var $filtersForm = $(this);
+            var currentFieldName = e.target.name;
+            if (currentFieldName === "estado") {
+                $filtersForm.find('[name=cidade]').val('');
+            }
+            $(this).submit();
+        });
+    });
+</script>
+{{end}}
