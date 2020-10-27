@@ -126,33 +126,3 @@
     }
 </style>
 {{end}}
-{{define "scripts"}}
-<script>
-    $(function () {
-        var $home = $('#relatedCandidates');
-
-        $home.on('click', '.load-more-btn', function (e) {
-            e.preventDefault();
-            const nextPageNumber = e.target.href.split("?p=")[1];
-            if (nextPageNumber === "0") { // if there's no next page, hide the "load more" button
-                $home.find('.load-more-btn').replaceWith('<div></div>');
-            } else {
-                $.ajax({
-                    method: 'get',
-                    url: e.target.href,
-                    success: function (data) {
-                        appendCandidates(data);
-                    }
-                });
-            }
-        });
-
-        function appendCandidates(data) {
-            $html = $(data);
-            $home.find('.load-more-btn').replaceWith('<div></div>');
-            $home.find('#relatedCandidaturesList').append($html.find('#relatedCandidaturesList').html());
-            $home.find('.load-more-btn').replaceWith($(data).find('.load-more-btn'));
-        }
-    });
-</script>
-{{end}}
