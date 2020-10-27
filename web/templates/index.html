@@ -90,12 +90,9 @@
 {{define "transparentCandidates"}}
 <div>
     <div x-data="{
-                showDetails: localStorage.getItem('transparentsDropdown') === null
-                    ? true
-                    : localStorage.getItem('transparentsDropdown') === '1',
+                showDetails: false,
                 toggle: function () {
                     this.showDetails = !this.showDetails;
-                    localStorage.setItem('transparentsDropdown', this.showDetails ? 1 : 0);
                 }
             }">
         <div class="d-flex justify-content-center align-items-center space-x-2">
@@ -104,7 +101,7 @@
             </div>
 
             <h3 class="home-section--title font-weight-bold m-0">
-                Candidaturas Transparentes
+                Candidaturas com Pautas/Propostas
             </h3>
 
             <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
@@ -116,15 +113,8 @@
         </div>
         <div class="my-3" x-show="showDetails">
             <p>
-                Candidaturas transparentes são aquelas em que a pessoa candidata preencheu ao menos uma das informações
-                que
-                solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. As candidaturas mais
-                transparentes aparecem primeiro nos resultados abaixo.
-            </p>
-
-            <p>
-                É uma pessoa candidata? Para ter uma candidatura (ainda) mais transparente, adicione informações <a
-                    href="http://candidatos.info/sou-candidato">aqui</a>.
+                As candidaturas com propostas tem a mesma chance de aparecer. Serão apresentadas no máximo {{.NonTransparentMaxCards}}
+                resultados filtrados e sem ordem pré-definda. Esses resultados podem mudar cada vez que você acessar essa página.
             </p>
         </div>
     </div>
@@ -139,18 +129,6 @@
         </div>
         {{end}}
     </div>
-
-    <div class="load-more-btn text-center pb-2" data-append-section="#candidatesList"
-        data-load-more-section="#transparentCandidatesLoadMore" id="transparentCandidatesLoadMore">
-        <a href="{{$.TransparentLoadMoreUrl}}"
-            class="btn btn-link btn-sm text-dark mx-auto d-flex align-items-center justify-content-center space-x-2">
-            <span>ver mais</span>
-            <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.3164 1L6.31641 6L1.31641 0.999998" stroke="#0A446B" stroke-linecap="round"
-                    stroke-linejoin="round" />
-            </svg>
-        </a>
-    </div>
     {{else}}
     <div class="mb-3">
         {{template "emptyTransparentCandidates" .}}
@@ -164,9 +142,9 @@
     <div class="col-10">
         <div class="text-text d-flex flex-column justify-content-center align-items-start">
             <div class="mx-auto pt-4 pb-6">
-                {{template "emptyState" "Não existem candidaturas transparentes para a sua busca :("}}
-                <p class="mb-0">Se for um Candidato, cadastre-se no Candidatos.info.</p>
-                <p class="mb-0">Se for um Eleitor, cobre do seu candidato.</p>
+                {{template "emptyState" "Não encontramos candidaturas com propostas para a sua busca :("}}
+                <p class="mb-0">Se for candidato(a), cadaste-se <a href="http://candidatos.info/sou-candidato">aqui</a>.</p>
+                <p class="mb-0">Se for eleitor(a), cobre do(a) seu candidato(a)!</p>
             </div>
         </div>
     </div>
@@ -177,12 +155,9 @@
 {{if .NonTransparentCandidates}}
 <div class="my-4 mx-2">
     <div x-data="{
-                showDetails: localStorage.getItem('nonTransparentsDropdown') === null
-                    ? true
-                    : localStorage.getItem('nonTransparentsDropdown') === '1',
+                showDetails: false,
                 toggle: function () {
                     this.showDetails = !this.showDetails;
-                    localStorage.setItem('nonTransparentsDropdown', this.showDetails ? 1 : 0);
                 }
             }">
         <div class="d-flex justify-content-center align-items-center space-x-2">
@@ -191,7 +166,7 @@
             </div>
 
             <h3 class="home-section--title font-weight-bold m-0">
-                Candidaturas não Transparentes
+                Candidaturas sem Pautas/Propostas
             </h3>
 
             <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
@@ -203,20 +178,14 @@
         </div>
         <div class="my-3" x-show="showDetails">
             <p>
-                Candidaturas não-transparentes são aquelas em que a pessoa candidata não preencheu nenhuma das
-                informações que
-                solicitamos: causas/pautas defendidas, propostas, biografia e uma forma contato. Como a plataforma tem
-                por
-                objetivo melhorar a qualidade do debate, não temos como priorizar candidaturas não-transparentes.
-                Daremos a todas
-                igual chance de aparecer, apresentando no máximo {{.NonTransparentMaxCards}} resultados sem ordem
-                pré-definda. Esses resultados
-                podem mudar cada vez que você acessar essa página.
+                Como a plataforma tem por objetivo melhorar a qualidade do debate, não temos como priorizar candidaturas não-transparentes.
+                Daremos a todas igual chance de aparecer, apresentando no máximo {{.NonTransparentMaxCards}} resultados sem ordem
+                pré-definda. Esses resultados podem mudar cada vez que você acessar essa página.
             </p>
 
             <p>
                 É uma pessoa candidata? Comece a pautar o debate eleitoral adicionando informações <a
-                    href="http://candidatos.info/sou-candidato">aqui</a>.
+                    href="http://candidatos.info/sou-candidato">aqui</a>. É eleitora(o)? Cobre da sua(eu) candidata(o) que cadastre pautas/propostas!
             </p>
         </div>
     </div>

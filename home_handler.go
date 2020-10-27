@@ -12,8 +12,12 @@ import (
 	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
 	"github.com/candidatos-info/site/exception"
-	pagination "github.com/gobeam/mongo-go-pagination"
 	"github.com/labstack/echo"
+)
+
+const (
+	nonTransparentMaxCards = 15
+	transparentMaxCards    = 20
 )
 
 //  in the format they are going to be presented in UI
@@ -42,23 +46,6 @@ type homeFilter struct {
 	Tag      string
 	NextPage int
 	Name     string
-}
-
-func buildLoadMoreURL(filter *homeFilter, baseURL string) string {
-	query := map[string]string{
-		"estado": filter.State,
-		"ano":    filter.Year,
-		"cidade": filter.City,
-		"cargo":  filter.Role,
-		"nome":   filter.Name,
-	}
-
-	var url string
-	for key, val := range query {
-		url = url + "&" + fmt.Sprintf("%s=%s", key, val)
-	}
-
-	return baseURL + "?" + strings.Trim(url, "&") + "&page=" + strconv.Itoa(filter.NextPage)
 }
 
 func newHomeHandler(db *db.Client) echo.HandlerFunc {
@@ -103,7 +90,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 				log.Printf("error fetching cities from a state (%s):%q\n", state, err)
 				return c.String(http.StatusInternalServerError, "erro buscando cidades.")
 			}
-			homeResultSet, page, err = filterCandidates(c, db)
+			homeResultSet, err = filterCandidates(c, db)
 			// TODO: substituir por página de erro.
 			if err != nil {
 				log.Printf("error filtering candidates:%q", err)
@@ -125,8 +112,8 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			"CitiesOfState":            cities,
 			"Filters":                  filter,
 			"TransparentCandidates":    homeResultSet.transparentCandidatures,
-			"TransparentLoadMoreUrl":   buildLoadMoreURL(filter, "/transparent-partial"),
 			"Tags":                     tags,
+			"TransparentMaxCards":      transparentMaxCards,
 			"NonTransparentMaxCards":   nonTransparentMaxCards,
 			"NonTransparentCandidates": homeResultSet.nonTransparentCandidatures,
 		})
@@ -140,74 +127,10 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 	}
 }
 
-func newHomeLoadMoreTransparentCandidates(db *db.Client) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		year := c.QueryParam("ano")
-		if year == "" {
-			year = strconv.Itoa(time.Now().Year())
-		}
-		page := c.QueryParam("page")
-		var nextPage int
-		if page == "" {
-			nextPage = 1
-		} else {
-			p, err := strconv.Atoi(page)
-			if err != nil {
-				log.Printf("failed to parse page [%s] to int, error %v\n", page, err)
-			}
-			nextPage = p
-		}
-		queryMap, err := getQueryFilters(c)
-		transparentCandidatures, paginationData, err := db.FindTransparentCandidatures(queryMap, defaultPageSize, nextPage)
-		// TODO: substituir por página de erro.
-		if err != nil {
-			log.Printf("error filtering candidates:%q", err)
-			return c.String(http.StatusInternalServerError, "erro filtrando candidatos.")
-		}
-		var cc []*candidateCard
-		for _, c := range transparentCandidatures {
-			var candidateTags []string
-			for _, proposal := range c.Proposals {
-				candidateTags = append(candidateTags, proposal.Topic)
-			}
-			cc = append(cc, &candidateCard{
-				c.Transparency,
-				c.PhotoURL,
-				c.BallotName,
-				strings.Title(strings.ToLower(c.City)),
-				c.State,
-				uiRoles[c.Role],
-				c.Party,
-				c.BallotNumber,
-				candidateTags,
-				c.SequencialCandidate,
-				c.Gender,
-			})
-		}
-		filter := &homeFilter{
-			State:    c.QueryParam("estado"),
-			City:     c.QueryParam("cidade"),
-			Year:     year,
-			Role:     c.QueryParam("cargo"),
-			NextPage: int(paginationData.Next),
-			Tag:      c.QueryParam("tag"),
-		}
-		r := c.Render(http.StatusOK, "index-transparent-load-more.html", map[string]interface{}{
-			"TransparentCandidates": []*candidateCard{},
-			"Filters":               filter,
-			"LoadMoreUrl":           buildLoadMoreURL(filter, "/transparent-partial"),
-		})
-		if r != nil {
-			log.Printf("[newHomeLoadMoreTransparentCandidates] failed to render template, error %v\n", err)
-		}
-		return r
-	}
-}
-
-func filterCandidates(c echo.Context, dbClient *db.Client) (*homeResultSet, int, error) {
-	rawHomeResultSet, pagination, err := getCandidatesByParams(c, dbClient)
+func filterCandidates(c echo.Context, dbClient *db.Client) (*homeResultSet, error) {
+	rawHomeResultSet, err := getCandidatesByParams(c, dbClient)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	var transparentCandidatures []*candidateCard
 	for _, c := range rawHomeResultSet.transparentCandidatures {
@@ -252,30 +175,22 @@ func filterCandidates(c echo.Context, dbClient *db.Client) (*homeResultSet, int,
 	return &homeResultSet{
 		transparentCandidatures:    transparentCandidatures,
 		nonTransparentCandidatures: nonTransparentCandidatures,
-	}, int(pagination.Page), nil
+	}, nil
 }
 
-func getCandidatesByParams(c echo.Context, dbClient *db.Client) (*rawHomeResultSet, *pagination.PaginationData, error) {
+func getCandidatesByParams(c echo.Context, dbClient *db.Client) (*rawHomeResultSet, error) {
 	queryMap, err := getQueryFilters(c)
 	if err != nil {
 		log.Printf("failed to get filters, error %v\n", err)
-		return nil, nil, err
-	}
-	page := 1
-	if c.QueryParam("page") != "" {
-		var err error
-		page, err = strconv.Atoi(c.QueryParam("page"))
-		if err != nil {
-			log.Printf("failed to get page, error %v\n", err)
-		}
+		return nil, err
 	}
 	fmt.Println("QUERY MAP TO FILTER ", queryMap)
-	transparentCandidatures, pagination, err := dbClient.FindTransparentCandidatures(queryMap, defaultPageSize, page)
+	transparentCandidatures, err := dbClient.FindTransparentCandidatures(queryMap, transparentMaxCards)
 	nonTransparentCandidatures, err := dbClient.FindNonTransparentCandidatures(queryMap, nonTransparentMaxCards)
 	return &rawHomeResultSet{
 		transparentCandidatures:    transparentCandidatures,
 		nonTransparentCandidatures: nonTransparentCandidatures,
-	}, pagination, err
+	}, err
 }
 
 func getQueryFilters(c echo.Context) (map[string]interface{}, error) {
