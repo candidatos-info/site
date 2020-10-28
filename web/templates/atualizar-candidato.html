@@ -131,7 +131,7 @@
     function subjectsComponent() {
         return {
             maxSubjects: {{.MaxProposals}},
-            maxDescriptionLength: 100,
+            maxDescriptionLength: {{.maxProposalsTextSize}},
             allSubjects: [
                 {{range .AllTags}}"{{.}}",{{end}}
             ],

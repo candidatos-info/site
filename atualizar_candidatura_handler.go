@@ -16,16 +16,14 @@ import (
 )
 
 const (
-	maxBiographyTextSize     = 500
-	maxProposalsTextSize     = 100
-	maxProposalsPerCandidate = 5
-	maxTagsSize              = 4
-	maxProposals             = 5
-	maxContactsTextSize      = 100
-	numTagsFieldName         = "numTags"
-	bioFieldName             = "biography"
-	contactFieldName         = "contact"
-	providerFieldName        = "provider"
+	maxBiographyTextSize = 500
+	maxProposalsTextSize = 280
+	maxProposals         = 10
+	maxContactsTextSize  = 100
+	numTagsFieldName     = "numTags"
+	bioFieldName         = "biography"
+	contactFieldName     = "contact"
+	providerFieldName    = "provider"
 )
 
 type atualizarCandidaturaParams struct {
@@ -264,11 +262,12 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 			})
 		}
 		r := c.Render(http.StatusOK, "atualizar-candidato.html", map[string]interface{}{
-			"Token":          encodedAccessToken,
-			"AllTags":        tags,
-			"Candidato":      foundCandidate,
-			"MaxProposals":   maxProposals,
-			"SocialNetworks": socialNetworksUI,
+			"Token":                encodedAccessToken,
+			"AllTags":              tags,
+			"Candidato":            foundCandidate,
+			"MaxProposals":         maxProposals,
+			"MaxProposalsTextSize": maxProposalsTextSize,
+			"SocialNetworks":       socialNetworksUI,
 		})
 		fmt.Println(r)
 		return r
