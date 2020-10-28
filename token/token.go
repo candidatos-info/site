@@ -12,9 +12,9 @@ type Token struct {
 	secret string
 }
 
-const (
-	accessTokenExpirationTime = 25
-	searchTokenExpiration     = 360
+var (
+	// We are going to expire all tokens at zero hour (Brasilia Standard Time) of the day of the election.
+	expirationDate = time.Date(2020, 11, 15, 0, 0, 0, 0, time.UTC).Add(-3 * time.Hour).Unix() // 3 is the difference between UTC and BST.
 )
 
 // New returns a new token service
@@ -26,9 +26,10 @@ func New(secret string) *Token {
 
 // GetToken returns a new token
 func (t *Token) GetToken(email string) (string, error) {
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": email,
-		"exp":   time.Now().Add(time.Hour * accessTokenExpirationTime).Unix(),
+		"exp":   expirationDate,
 	})
 	return token.SignedString([]byte(t.secret))
 }
