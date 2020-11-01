@@ -196,7 +196,7 @@ func getCandidatesByParams(c echo.Context, dbClient *db.Client) (*rawHomeResultS
 func getQueryFilters(c echo.Context) (map[string]interface{}, error) {
 	// TODO: change query parameters to English.
 	year := c.QueryParam("ano")
-	state := c.QueryParam("estado")
+	state := strings.ToUpper(c.QueryParam("estado"))
 	city := c.QueryParam("cidade")
 	gender := c.QueryParam("genero")
 	name := c.QueryParam("nome")
