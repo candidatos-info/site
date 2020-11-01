@@ -57,7 +57,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 		if year == "" {
 			year = strconv.Itoa(time.Now().Year())
 		}
-		state := c.QueryParam("estado")
+		state := strings.ToUpper(c.QueryParam("estado"))
 		city := c.QueryParam("cidade")
 
 		// Check cookies and override query parameters when needed.
