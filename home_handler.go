@@ -23,7 +23,7 @@ const (
 //  in the format they are going to be presented in UI
 var (
 	uiRoles  = map[string]string{"vereador": "Vereador(a)", "prefeito": "Prefeito(a)", "vice-prefeito": "Vice Prefeito(a)"}
-	uiStates = map[string]string{"AL": "Alagoas", "BA": "Bahia", "MA": "Maranhão", "PB": "Paraíba", "PE": "Pernambuco"}
+	uiStates = map[string]string{"AL": "Alagoas", "BA": "Bahia", "Ceará":"CE", "MA": "Maranhão", "PB": "Paraíba", "PE": "Pernambuco", "Piauí":"PI", "Rio Grande do Norte":"RN", "Sergipe":"SE"}
 )
 
 // struct with the result set from db
