@@ -42,7 +42,7 @@
     <div class="form-row">
         <div class="form-group col-8">
             <select name="cidade" class="custom-select">
-                <option value="">Escolha uma Cidade</option>
+                <option value="">Cidade</option>
                 {{range $i, $v := .CitiesOfState}}
                 <option value="{{$v}}" {{if eq $v $.Filters.City}}selected{{end}}>
                     {{$v}}
