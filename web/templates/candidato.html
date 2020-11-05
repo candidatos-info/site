@@ -19,9 +19,9 @@
 {{end}}
 
 {{define "content"}}
-<div class="container py-2">
-    <div class="row mb-4">
-        <div class="col-4">
+<div class="container py-2 space-y-2">
+    <div class="row space-y-2">
+        <div class="col-12 col-md-4 mb-4">
             <section class="bg-white h-100 rounded mb-4">
                 <div class="rounded-top {{template "candidateBgColorForTransparency" .Candidato.Transparency}}"
                     style="height: 6px;"></div>
@@ -62,7 +62,7 @@
                 </div>
             </section>
         </div>
-        <div class="col-8">
+        <div class="col-12 col-md-8 mb-4">
             <section class="bg-white h-100 rounded p-4">
                 <h3 class="box-title">Quem sou eu?</h3>
                 {{if .Candidato.Biography}}
@@ -75,7 +75,7 @@
     </div>
     
 
-    <section class="bg-white rounded p-4 mb-4">
+    <section class="bg-white rounded p-4">
         <h3 class="box-title mb-4">Causas/Pautas</h3>
         {{if not .Candidato.Proposals}}
         {{template "emptyState" "Este candidato não disponibilizou propostas :("}}
