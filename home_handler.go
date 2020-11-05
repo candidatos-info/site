@@ -58,6 +58,12 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			year = strconv.Itoa(time.Now().Year())
 		}
 		state := strings.ToUpper(c.QueryParam("estado"))
+
+		// Hack to quickly make subdomains work using cloudflare page redirects.
+		if state == "WWW" {
+			return c.Redirect(http.StatusPermanentRedirect, "/")
+		}
+		
 		city := c.QueryParam("cidade")
 
 		// Check cookies and override query parameters when needed.
