@@ -23,7 +23,7 @@ const (
 //  in the format they are going to be presented in UI
 var (
 	uiRoles  = map[string]string{"vereador": "Vereador(a)", "prefeito": "Prefeito(a)", "vice-prefeito": "Vice Prefeito(a)"}
-	uiStates = map[string]string{"AL": "Alagoas", "BA": "Bahia", "CE":"Ceará", "MA": "Maranhão", "PB": "Paraíba", "PE": "Pernambuco", "PI":"Piauí", "RN":"Rio Grande do Norte", "SE":"Sergipe"}
+	uiStates = map[string]string{"AL": "Alagoas", "BA": "Bahia", "CE": "Ceará", "MA": "Maranhão", "PB": "Paraíba", "PE": "Pernambuco", "PI": "Piauí", "RN": "Rio Grande do Norte", "SE": "Sergipe"}
 )
 
 // struct with the result set from db
@@ -43,7 +43,7 @@ type homeFilter struct {
 	Year     string
 	City     string
 	Role     string
-	Tag      string
+	Tag      []string
 	NextPage int
 	Name     string
 }
@@ -63,7 +63,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 		if state == "WWW" {
 			return c.Redirect(http.StatusPermanentRedirect, "/")
 		}
-		
+
 		city := c.QueryParam("cidade")
 
 		// Check cookies and override query parameters when needed.
@@ -109,7 +109,7 @@ func newHomeHandler(db *db.Client) echo.HandlerFunc {
 			Year:     year,
 			Role:     c.QueryParam("cargo"),
 			NextPage: page + 1,
-			Tag:      c.QueryParam("tags"),
+			Tag:      c.Request().URL.Query()["tags"],
 			Name:     c.QueryParam("nome"),
 		}
 		r := c.Render(http.StatusOK, "index.html", map[string]interface{}{
@@ -207,7 +207,7 @@ func getQueryFilters(c echo.Context) (map[string]interface{}, error) {
 	gender := c.QueryParam("genero")
 	name := c.QueryParam("nome")
 	role := c.QueryParam("cargo")
-	tags := c.QueryParam("tags")
+	tags := c.Request().URL.Query()["tags"]
 
 	queryMap := make(map[string]interface{})
 	if state != "" {
@@ -231,8 +231,8 @@ func getQueryFilters(c echo.Context) (map[string]interface{}, error) {
 	if role != "" {
 		queryMap["role"] = role
 	}
-	if tags != "" {
-		queryMap["tags"] = strings.Split(tags, ",")
+	if len(tags) > 0 {
+		queryMap["tags"] = tags
 	}
 	if name != "" {
 		queryMap["name"] = name

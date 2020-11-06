@@ -63,13 +63,15 @@
     </div>
     <div class="form-row">
         <div class="form-group col-12 col-md-8">
-            <select name="tags" class="custom-select" size="3" multiple>
-                <option value="" default disabled>
-                    Escolha uma Causa/Pauta
-                </option>
+            <select name="tags" class="custom-select" size=3 multiple>
+                {{if not $.Filters.Tag}}
+                    <option value="" default disabled selected>
+                        Área(s) de Atuação
+                    </option>
+                {{end}}
                 {{range $i, $v := .Tags}}
                 {{if ne $v ""}}
-                <option value="{{$v}}" {{if eq $v $.Filters.Tag}}selected{{end}}>
+                <option value="{{$v}}" {{range $.Filters.Tag}}{{if eq $v .}}selected{{end}}{{end}}>
                     {{$v}}
                 </option>
                 {{end}}
@@ -101,7 +103,7 @@
             </div>
 
             <h3 class="home-section--title font-weight-bold m-0">
-                Candidaturas com Pautas/Propostas
+                Candidaturas COM Propostas
             </h3>
 
             <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
@@ -166,7 +168,7 @@
             </div>
 
             <h3 class="home-section--title font-weight-bold m-0">
-                Candidaturas sem Pautas/Propostas
+                Candidaturas SEM Propostas
             </h3>
 
             <button class="btn btn-link p-0" :class="{'rotate-180': showDetails}" @click="toggle">
