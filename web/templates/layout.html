@@ -147,6 +147,16 @@
             margin-top: 1.6rem;
         }
 
+        @media screen and (min-width: 576px) {
+            .space-x-sm-8 > * + * {
+                margin-left: 2rem;
+            }
+            
+            .space-x-sm-16 > * + *	{
+                margin-left: 4rem;
+            }
+        }
+
         .rotate-180 {
             transform: rotate(180deg);
         }
@@ -319,12 +329,12 @@ candidatos.info
                 <svg style="height: 1.5rem; width: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
         <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-            <ul class="navbar-nav mt-2 mt-lg-0 ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link text-primary font-weight-bold" href="/sobre">Sobre</a>
-                </li>
+            <ul class="navbar-nav mt-2 mt-lg-0 space-x-sm-8 ml-auto">
                 <li class="nav-item">
                     <a class="nav-link text-primary font-weight-bold" href="/sou-candidato">Sou um Candidato</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-primary font-weight-bold" href="/sobre">Sobre</a>
                 </li>
             </ul>
         </div>
