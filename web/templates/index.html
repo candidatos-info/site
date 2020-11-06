@@ -217,7 +217,7 @@
 
 {{define "content"}}
 <div id="home">
-    <div class="filters-wrapper">
+    <div class="filters-wrapper mb-5">
         <div class="container mt-2">
             <div class="col-12 col-md-5 mx-auto">
                 <div class="row">
@@ -230,8 +230,12 @@
     <div class="container mt-4">
         <div id="candidates">
             {{ if (ne .Filters.State "") }}
-            {{template "transparentCandidates" .}}
-            {{template "nonTransparentCandidates" .}}
+            <div class="mb-5">
+                {{template "transparentCandidates" .}}
+            </div>
+            <div>
+                {{template "nonTransparentCandidates" .}}
+            </div>
             {{else}}
             {{template "emptyCandidatos" .}}
             {{end}}
