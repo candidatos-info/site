@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/candidatos-info/site/db"
 	"github.com/candidatos-info/site/exception"
@@ -14,6 +15,12 @@ import (
 const (
 	relatedCandidaturesMaxCards = 15
 )
+
+type requestProposalEmail struct {
+	Body    string
+	Subject string
+	To      string
+}
 
 func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -31,6 +38,27 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 		case err != nil:
 			log.Printf("%q", err)
 			return echo.ErrInternalServerError
+		}
+		email := requestProposalEmail{}
+		if len(candidate.Proposals) == 0 {
+			email.To = strings.ToLower(candidate.Email)
+			email.Subject = "Registro na plataforma candidatos.info"
+			email.Body = fmt.Sprintf(`Olá, sr(a) %s
+
+			Sou eleitor(a) na cidade de %s/%s e percebi que seu perfil https://candidatos.info/c/%d/%s não possui propostas.
+			
+			Para atualizá-lo, basta acessar https://candidatos.info/sou-candidato, escolher as áreas de atuação e preencher as propostas referentes a cada uma das áreas
+
+			Acesse https://candidatos.info/sobre para mais informações sobre a plataforma.
+			
+			Atenciosamente,
+			Um(a) eleitor(a) tentando pautar as eleições`,
+				candidate.Name,
+				candidate.City,
+				candidate.State,
+				candidate.Year,
+				candidate.SequencialCandidate,
+			)
 		}
 		for _, sn := range candidate.Contacts {
 			addrPrefix := ""
@@ -88,9 +116,11 @@ func newCandidateHandler(db *db.Client) echo.HandlerFunc {
 				})
 			}
 		}
+		candidate.Role = strings.Title(candidate.Role) + "(a)"
 		r := c.Render(http.StatusOK, "candidato.html", map[string]interface{}{
 			"Candidato":         candidate,
 			"RelatedCandidates": relatedCandidatesCards,
+			"ReqProposalEmail":  email,
 		})
 		fmt.Println(r)
 		return r

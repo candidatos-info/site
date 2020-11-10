@@ -22,43 +22,51 @@
 <div class="container py-2 space-y-2">
     <div class="row space-y-2">
         <div class="col-12 col-md-4 mb-4">
-            <section class="bg-white h-100 rounded mb-4">
+            <section class="bg-white h-100 rounded mb-0">
                 <div class="rounded-top {{template "candidateBgColorForTransparency" .Candidato.Transparency}}"
                     style="height: 6px;"></div>
         
-                <div class="px-4 py-2 candidate-card">
-                    <div class="row">
-                        <div class="col-12 col-md-6 mx-auto">
-                            <img class="card-img-top d-block img-fluid w-75 mx-auto my-2" src="{{.Candidato.PhotoURL}}"
-                                alt="Foto de {{.Candidato.Name}}" />
-                        </div>
-                    </div>
-        
-                    <div class="row">
-                        <div class="col-10 mx-auto text-center">
-                            <div class="d-flex flex-column space-y-0 mb-2">
-                                <h5 class="card-title candidate-card--title text-secondary-button mb-0">
-                                    {{.Candidato.BallotName}}</h5>
-                                <small class="card-text candidate-card--city text-secondary-button">{{.Candidato.City}}</small>
-                            </div>
-                            <div class="d-flex flex-column space-y-0 ">
-                                <p class="card-text candidate-card--position text-text mb-0">{{.Candidato.Role}}</p>
-                                <p class="card-text candidate-card--number text-text font-weight-bold">
-                                    {{.Candidato.BallotNumber}}</p>
+                <div class="card px-4 py-3 candidate-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-6 mx-auto">
+                                <img class="card-img-top d-block img-fluid w-75 mx-auto my-2" src="{{.Candidato.PhotoURL}}"
+                                    alt="Foto de {{.Candidato.Name}}" />
                             </div>
                         </div>
-                    </div>
-        
-                    {{if .Candidato.Contacts}}
-                    <div class="py-1 d-flex justify-content-center space-x-2">
-                        {{range .Candidato.Contacts}}
-                        <div class="py-1 d-flex justify-content-start align-items-center candidate-card--contact"><a
-                                href="{{.Value}}" class="text-secondary-button"><span
-                                    class="candidate-card--contact-icon">{{template "socialIcon" .SocialNetwork}}</span></a>
+            
+                        <div class="row">
+                            <div class="col-10 mx-auto text-center">
+                                <div class="d-flex flex-column space-y-0 mb-2">
+                                    <h5 class="card-title candidate-card--title text-secondary-button mb-0">
+                                        {{.Candidato.BallotName}}</h5>
+                                    <small class="card-text candidate-card--city text-secondary-button">{{.Candidato.City}}</small>
+                                </div>
+                                <div class="d-flex flex-column space-y-0 ">
+                                    <p class="card-text candidate-card--position text-text mb-0">{{.Candidato.Role}}</p>
+                                    <p class="card-text candidate-card--number text-text font-weight-bold">
+                                        {{.Candidato.BallotNumber}}</p>
+                                </div>
+                            </div>
+                        </div>
+            
+                        {{if .Candidato.Contacts}}
+                        <div class="py-1 d-flex justify-content-center space-x-2">
+                            {{range .Candidato.Contacts}}
+                            <div class="py-1 d-flex justify-content-start align-items-center candidate-card--contact"><a
+                                    href="{{.Value}}" class="text-secondary-button"><span
+                                        class="candidate-card--contact-icon">{{template "socialIcon" .SocialNetwork}}</span></a>
+                            </div>
+                            {{end}}
+                        </div>
+                        {{end}}
+                        
+                        {{if not .Candidato.Proposals}}
+                        <div class="row flex-column pb-0 pt-3 mb-0">
+                            <a class = "btn btn-primary" href="mailto:{{.ReqProposalEmail.To}}?subject={{.ReqProposalEmail.Subject}}&body={{.ReqProposalEmail.Body}}" role = "button">Solicite Propostas</a>
                         </div>
                         {{end}}
                     </div>
-                    {{end}}
                 </div>
             </section>
         </div>
