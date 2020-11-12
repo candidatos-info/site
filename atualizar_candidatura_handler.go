@@ -229,29 +229,45 @@ func newAtualizarCandidaturaHandler(dbClient *db.Client, tags []string) echo.Han
 		}
 		claims, err := token.GetClaims(string(accessTokenBytes))
 		if err != nil {
-			log.Printf("failed to extract email from token claims, error %v\n", err)
+			log.Printf("failed to extract claims, error %v\n", err)
 			return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
 				"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
 				"Success":  false,
 			})
 		}
-		email := claims["email"]
-		foundCandidate, err := dbClient.GetCandidateByEmail(email, globals.Year)
-		if err != nil {
-			log.Printf("failed find candidate on DB (email:%s), error %v\n", email, err)
-			switch {
-			case err != nil && err.(*exception.Exception).Code == exception.NotFound:
-				return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-					"ErrorMsg": fmt.Sprintf("Não encontramos um cadastro de candidatura através do email %s. Por favor verifique se o email está correto.", email),
-					"Success":  false,
-				})
-			case err != nil:
-				return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
-					"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
-					"Success":  false,
-				})
+		var foundCandidate *descritor.CandidateForDB
+		if s, ok := claims["seqid"]; ok {
+			foundCandidate, err = dbClient.FindCandidateBySequencialIDAndYear(globals.Year, s)
+			if err != nil {
+				log.Printf("Failed find candidate on DB (seqID:%s, year:%d), error %q\n", s, globals.Year, err)
+				if err != nil {
+					return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+						"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+						"Success":  false,
+					})
+				}
 			}
 		}
+		if foundCandidate == nil { // fallback on the old behavior.
+			email := claims["email"]
+			foundCandidate, err = dbClient.GetCandidateByEmail(email, globals.Year)
+			if err != nil {
+				log.Printf("failed find candidate on DB (email:%s), error %v\n", email, err)
+				switch {
+				case err != nil && err.(*exception.Exception).Code == exception.NotFound:
+					return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+						"ErrorMsg": fmt.Sprintf("Não encontramos um cadastro de candidatura através do email %s. Por favor verifique se o email está correto.", email),
+						"Success":  false,
+					})
+				case err != nil:
+					return c.Render(http.StatusOK, "atualizar-candidato-success.html", map[string]interface{}{
+						"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+						"Success":  false,
+					})
+				}
+			}
+		}
+
 		_, month, day := time.Now().Date()
 		if foundCandidate.AcceptedTerms.IsZero() {
 			return c.Render(http.StatusOK, "aceitar-termo.html", map[string]interface{}{

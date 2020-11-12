@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/candidatos-info/descritor"
 	"github.com/candidatos-info/site/db"
 	"github.com/candidatos-info/site/email"
+	"github.com/candidatos-info/site/exception"
 	"github.com/candidatos-info/site/token"
 	"github.com/labstack/echo"
 )
@@ -81,8 +83,38 @@ func newFaleConoscoFormHandler(db *db.Client, tokenService *token.Token, emailCl
 				"Success":  false,
 			})
 		}
-		email := claims["email"]
-		cand, err := db.GetCandidateByEmail(email, globals.Year)
+		var cand *descritor.CandidateForDB
+		if s, ok := claims["seqid"]; ok {
+			cand, err = db.FindCandidateBySequencialIDAndYear(globals.Year, s)
+			if err != nil {
+				log.Printf("Failed find candidate on DB (seqID:%s, year:%d), error %q\n", s, globals.Year, err)
+				if err != nil {
+					return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+						"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+						"Success":  false,
+					})
+				}
+			}
+		}
+		if cand == nil { // fallback on the old behavior.
+			email := claims["email"]
+			cand, err = db.GetCandidateByEmail(email, globals.Year)
+			if err != nil {
+				log.Printf("failed find candidate on DB (email:%s), error %v\n", email, err)
+				switch {
+				case err != nil && err.(*exception.Exception).Code == exception.NotFound:
+					return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+						"ErrorMsg": fmt.Sprintf("Não encontramos um cadastro de candidatura através do email %s. Por favor verifique se o email está correto.", email),
+						"Success":  false,
+					})
+				case err != nil:
+					return c.Render(http.StatusOK, "fale-conosco-success.html", map[string]interface{}{
+						"ErrorMsg": "Erro inesperado. Por favor, tente novamente mais tarde.",
+						"Success":  false,
+					})
+				}
+			}
+		}
 		mSub := fmt.Sprintf("[Fale conosco] %s", mType)
 		mContent := fmt.Sprintf(`
 Saudações Equipe Técnica do Candidatos.info,

@@ -103,8 +103,8 @@ func (c *Client) UpdateCandidateProfile(candidate *descritor.CandidateForDB) (*d
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
 	filter := bson.M{
-		"email": candidate.Email,
-		"year":  candidate.Year,
+		"year":                 candidate.Year,
+		"sequencial_candidate": candidate.SequencialCandidate,
 	}
 	update := bson.M{
 		"$set": bson.M{
