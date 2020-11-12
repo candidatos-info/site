@@ -53,7 +53,6 @@ func newAceitarTermoFormHandler(dbClient *db.Client) echo.HandlerFunc {
 				}
 			}
 		}
-		fmt.Println("AHHHH ", *foundCandidate)
 		if foundCandidate == nil { // fallback on the old behavior.
 			email := claims["email"]
 			foundCandidate, err = dbClient.GetCandidateByEmail(email, globals.Year)
@@ -72,7 +71,6 @@ func newAceitarTermoFormHandler(dbClient *db.Client) echo.HandlerFunc {
 					})
 				}
 			}
-			fmt.Println("NOOOO ", *foundCandidate)
 		}
 		loc, err := time.LoadLocation("UTC")
 		if err != nil {
@@ -90,7 +88,6 @@ func newAceitarTermoFormHandler(dbClient *db.Client) echo.HandlerFunc {
 				"Success":  false,
 			})
 		}
-		fmt.Println("DB Atualizado ", *foundCandidate)
 		return c.Redirect(http.StatusSeeOther, "/atualizar-candidatura?access_token="+encodedAccessToken)
 	}
 }
