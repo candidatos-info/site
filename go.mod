@@ -13,10 +13,9 @@ require (
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/tidwall/pretty v1.0.2 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
-	go.mongodb.org/mongo-driver v1.4.1
+	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0 // indirect
 	golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0 // indirect
 	golang.org/x/sync v0.0.0-20200930132711-30421366ff76 // indirect
